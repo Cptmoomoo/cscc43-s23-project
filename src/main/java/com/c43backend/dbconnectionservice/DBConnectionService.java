@@ -13,7 +13,7 @@ public final class DBConnectionService
     private static final String _dbClassName = "com.mysql.cj.jdbc.Driver";
     private static String _connectionString;
     private static Connection _conn;
-    private PreparedStatement _pStmt;
+    private static PreparedStatement _pStmt;
 
     private DBConnectionService() throws ClassNotFoundException, SQLException
     {
@@ -32,9 +32,19 @@ public final class DBConnectionService
                                             dotenv.get("DB_PASSWORD"));
     }
 
-    public DBConnectionService getInstance() throws ClassNotFoundException, SQLException
+    public static DBConnectionService getInstance() throws ClassNotFoundException, SQLException
     {
         return _instance == null ? new DBConnectionService() : _instance;
+    }
+
+    public static void closeAll()
+    {
+        try
+        {
+            _pStmt.close();
+            _conn.close();
+        }
+        catch (Exception e){}
     }
 
     public Boolean createTables(String scriptPath)
