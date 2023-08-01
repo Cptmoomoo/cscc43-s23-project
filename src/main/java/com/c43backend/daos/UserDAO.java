@@ -14,18 +14,18 @@ import resources.utils.Table;
 
 public class UserDAO
 {
-    private static final Integer USER_COL_NUM = 6;
-    private ArrayList<Triplet<String, Integer, Class<?>>> columnMetaData = new ArrayList<Triplet<String, Integer, Class<?>>>()
+    private final Integer userNumCols;
+    private static final ArrayList<Triplet<String, Integer, Class<?>>> columnMetaData = new ArrayList<Triplet<String, Integer, Class<?>>>()
         {
             {
-                new Triplet<String, Integer, Class<?>>("username", 0, String.class);
-                new Triplet<String, Integer, Class<?>>("password", 1, String.class);
-                new Triplet<String, Integer, Class<?>>("SIN", 2, String.class);
-                new Triplet<String, Integer, Class<?>>("occupation", 3, String.class);
-                new Triplet<String, Integer, Class<?>>("birthday", 4, Date.class);
-                new Triplet<String, Integer, Class<?>>("firstName", 5, String.class);
-                new Triplet<String, Integer, Class<?>>("lastName", 6, String.class);
-                new Triplet<String, Integer, Class<?>>("userType", 7, String.class);
+                add(new Triplet<String, Integer, Class<?>>("username", 0, String.class));
+                add(new Triplet<String, Integer, Class<?>>("password", 1, String.class));
+                add(new Triplet<String, Integer, Class<?>>("SIN", 2, Integer.class));
+                add(new Triplet<String, Integer, Class<?>>("occupation", 3, String.class));
+                add(new Triplet<String, Integer, Class<?>>("birthday", 4, Date.class));
+                add(new Triplet<String, Integer, Class<?>>("firstName", 5, String.class));
+                add(new Triplet<String, Integer, Class<?>>("lastName", 6, String.class));
+                add(new Triplet<String, Integer, Class<?>>("userType", 7, String.class));
             }
         };
 
@@ -35,8 +35,10 @@ public class UserDAO
     public UserDAO(DBConnectionService db) throws ClassNotFoundException, SQLException
     {
         this.db = db;
-
-        this.table = new Table(USER_COL_NUM, Globals.TABLE_SIZE, columnMetaData);
+        this.userNumCols = columnMetaData.size();
+        System.out.println("WHAT? " + this.userNumCols);
+        System.out.println("WHAT? " + columnMetaData);
+        this.table = new Table(userNumCols, Globals.TABLE_SIZE, columnMetaData);
     }
     
 
@@ -50,7 +52,7 @@ public class UserDAO
         if (!db.setPStatementString(2, user.getHashedPass()))
             return false;
 
-        if (!db.setPStatementString(3, user.getSIN()))
+        if (!db.setPStatementInt(3, user.getSIN()))
             return false;
         
         if (!db.setPStatementString(4, user.getOccupation()))
@@ -71,23 +73,25 @@ public class UserDAO
         return db.executeUpdateSetQuery();
     }
 
-    public User getUser(String uid)
+    public User getUser(String username)
     {
         db.setPStatement("SELECT * FROM users WHERE Username=?");
-        db.setPStatementString(1, uid);
+        db.setPStatementString(1, username);
 
         try
         {
-            db.executeSetQueryReturnN(1, table);    
+            if (!db.executeSetQueryReturnN(1, table))
+                return null;    
         }
         catch (SQLException e)
         {
+            e.printStackTrace();
             return null;
         }
 
         return new User((String) table.extractValueFromRowByName(0, "username"),
                         UserType.valueOf((String) table.extractValueFromRowByName(0, "userType")),
-                        (String) table.extractValueFromRowByName(0, "SIN"),
+                        (Integer) table.extractValueFromRowByName(0, "SIN"),
                         (String) table.extractValueFromRowByName(0, "occupation"),
                         ((Date) table.extractValueFromRowByName(0, "birthday")).toLocalDate(),
                         (String) table.extractValueFromRowByName(0, "firstName"),

@@ -181,28 +181,37 @@ public final class DBConnectionService
     private Boolean getNRows(Integer n, Table table, ResultSet res) throws SQLException
     {
         ResultSetMetaData rsmd = res.getMetaData();
-        Integer numCols;
+        Integer numCols = rsmd.getColumnCount();
         Integer i = 0;
 
-        if (rsmd.getColumnCount() != table.getNumCols())
-            return false;
+        System.out.println("IN!");
+        System.out.println(rsmd.getColumnCount() );
+        System.out.println(table.getNumCols());
 
-        numCols = rsmd.getColumnCount();
+
+        if (numCols != table.getNumCols())
+            return false;
         
         while (res.next() && i < n)
         {
+            System.out.println("RAN!");
             Row row = new Row(numCols);
+            System.out.println("RAN! 2");
 
-            for (int j = 0; j < numCols; j++)
+            for (int j = 1; j <= numCols; j++)
             {
+                System.out.println("RAN! 2.5");
                 if (!row.addTo(res.getObject(j)))
-                    return false;
-
+                    System.out.println("RAN! 2.75");
+                    //return false;
+                System.out.println("RAN! 3");
             }
             
             if (!table.addRow(row))
                 return false;
             i++;
+
+            System.out.println("RAN END!");
         }
 
         return true;

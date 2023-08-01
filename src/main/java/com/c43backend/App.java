@@ -21,12 +21,12 @@ public class App
         {
             db = DBConnectionService.getInstance();
             if (!db.createTables("airbnb.sql"));
-                 System.out.println("TABLE CREATEFAILED!!");
+                 System.out.println("TABLE CREATE FAILED!!");
 
             udao = new UserDAO(db);
             user = new User("myUsername",
                              UserType.RENTER,
-                             "1234567890",
+                             1234567890,
                              "myOccupation",
                              "1990-02-23",
                              "Vincent",
@@ -34,7 +34,14 @@ public class App
                              "password");
 
             if (!udao.insertUser(user))
-                System.out.println("INSERTFAILED!!");
+                System.out.println("INSERT FAILED!!");
+
+            user = udao.getUser("myUsername");
+
+            if (user == null)
+                System.out.println("GET FAILED!!");
+
+            System.out.println(user);
             
             System.out.println("HI!!");
         }

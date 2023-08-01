@@ -19,11 +19,14 @@ public class Row
 
     public Boolean addTo(Object item)
     {
-        if (row.size() == maxSize)
-            return false;
+        System.out.println("WDASD");
+        System.out.println(row.size());
+        // if (row.size() >= maxSize)
+        //     return false;
 
         size++;
-        return row.add(item);
+        row.add(item);
+        return true;
     }
 
     public Object getColumn(Integer colNum)

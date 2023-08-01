@@ -13,7 +13,7 @@ public class User
 {
     private String username;
     private UserType userType;
-    private String SIN;
+    private Integer SIN;
     private String occupation;
     private LocalDate birthday;
     private String firstName;
@@ -21,7 +21,7 @@ public class User
     // Maybe change type
     private String hashedPass;
 
-    public User(String username, UserType userType, String SIN, String occupation,
+    public User(String username, UserType userType, Integer SIN, String occupation,
         String birthday, String firstName, String lastName, String hashedPass)
     {
         this(username, userType, SIN, occupation, LocalDate.parse(birthday), firstName, lastName, hashedPass);
