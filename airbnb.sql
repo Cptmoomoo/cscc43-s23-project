@@ -1,3 +1,6 @@
+
+/* Entities */
+
 CREATE TABLE Listings (
     Listing_id int UNIQUE PRIMARY KEY,
     Listing_type varchar(10),
@@ -31,8 +34,8 @@ CREATE TABLE Locations (
     PRIMARY KEY (Longitude, Latitude)
 );
 
-CREATE TABLE Payment_Info (
-    Card_number int UNIQUE PRIMARY KEY,
+CREATE TABLE Payment_info (
+    Card_number int(16) UNIQUE PRIMARY KEY,
     Security_Code int,
     Expiration_date DATE, 
     First_name varchar(100),
@@ -42,7 +45,7 @@ CREATE TABLE Payment_Info (
 
 CREATE TABLE Comments (
     Comment_id int UNIQUE PRIMARY KEY,
-    Content varchar(225),
+    Content varchar(255),
     Timestamp TIME 
 );
 
@@ -51,4 +54,87 @@ CREATE TABLE Dates (
     Start_date DATE,
     End_date DATE,
     PRIMARY KEY (Start_date, End_date)
+);
+
+
+
+/* Relations */
+
+CREATE TABLE Has_amenity (
+    FOREIGN KEY (Name) REFERENCES Amenities(Name),
+    Name varchar(100),
+    FOREIGN KEY (Listing_id) REFERENCES Listing(Listing_id),
+    Listing_id int
+);
+
+CREATE TABLE Stayed_at (
+    FOREIGN KEY (Username) REFERENCES Users(Username),
+    Username varchar(100),
+    FOREIGN KEY (Listing_id) REFERENCES Listing(Listing_id),
+    Listing_id int,
+    Total_price float,
+    Card_number int
+);
+
+CREATE TABLE Host_of (
+    FOREIGN KEY (Username) REFERENCES Users(Username),
+    Username varchar(100),
+    FOREIGN KEY (Listing_id) REFERENCES Listing(Listing_id),
+    Listing_id int
+);
+
+CREATE TABLE Rate_listing (
+    FOREIGN KEY (Username) REFERENCES Users(Username),
+    Username varchar(100),
+    FOREIGN KEY (Listing_id) REFERENCES Listing(Listing_id),
+    Listing_id int,
+    Rating float
+);
+
+CREATE TABLE Rate_user (
+    FOREIGN KEY (Host) REFERENCES Users(Username),
+    Host varchar(100),
+    FOREIGN KEY (Renter) REFERENCES Users(Username),
+    Renter varchar(100)
+);
+
+CREATE TABLE Comment_listing (
+    FOREIGN KEY (Comment_id) REFERENCES Comments(Comment_id),
+    Comment_id int,
+    FOREIGN KEY (Username) REFERENCES Users(Username),
+    Username varchar(100),
+    FOREIGN KEY (Listing_id) REFERENCES Listing(Listing_id),
+    Listing_id int
+);
+
+CREATE TABLE Comment_user (
+    FOREIGN KEY (Comment_id) REFERENCES Comments(Comment_id),
+    Comment_id int,
+    FOREIGN KEY (Host) REFERENCES Users(Username),
+    Host varchar(100),
+    FOREIGN KEY (Renter) REFERENCES Users(Username),
+    Renter varchar(100)
+);
+
+CREATE TABLE Avaliable_on (
+    FOREIGN KEY (Start_Date) REFERENCES Dates(Start_date),
+    Start_date DATES, 
+    FOREIGN KEY (Listing_id) REFERENCES Listing(Listing_id),
+    Listing_id int
+);
+
+CREATE TABLE Belongs_to (
+    FOREIGN KEY (Listing_id) REFERENCES Listing(Listing_id),
+    Listing_id int,
+    FOREIGN KEY (Longitude) REFERENCES Locations(Longitude),
+    Longitude float,
+    FOREIGN KEY (Latitude) REFERENCES Locations(Latitude),
+    Latitude float
+);
+
+CREATE TABLE Paid_with (
+    FOREIGN KEY (Host) REFERENCES Users(Username),
+    Host varchar(100),
+    FOREIGN KEY (Card_number) REFERENCES Payment_info(Card_number),
+    Card_number int(16)
 );
