@@ -63,6 +63,7 @@ public final class DBConnectionService
         }
         catch (Exception e)
         {
+            e.printStackTrace();
             return false;
         }
     }
@@ -85,7 +86,21 @@ public final class DBConnectionService
     {
         try
         {
-            _pStmt.setInt(idx, idx);
+            _pStmt.setInt(idx, i);
+        }
+        catch (SQLException e)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    public Boolean setPStatementDate(Integer idx, Date date)
+    {
+        try
+        {
+            _pStmt.setDate(idx, date);
         }
         catch (SQLException e)
         {
@@ -126,6 +141,19 @@ public final class DBConnectionService
     public ResultSet executeSetQuery() throws SQLException
     {
         return _pStmt.executeQuery();
+    }
+
+    public Boolean executeUpdateSetQuery()
+    {
+        try
+        {
+            _pStmt.executeUpdate();
+            return true;
+        }
+        catch (SQLException e)
+        {
+            return false;
+        }
     }
 
     public ResultSet executeQuery(String query) throws SQLException
