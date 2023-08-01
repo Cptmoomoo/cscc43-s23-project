@@ -75,6 +75,7 @@ public class UserDAO
 
     public User getUser(String username)
     {
+        User user;
         db.setPStatement("SELECT * FROM users WHERE Username=?");
         db.setPStatementString(1, username);
 
@@ -89,7 +90,7 @@ public class UserDAO
             return null;
         }
 
-        return new User((String) table.extractValueFromRowByName(0, "username"),
+        user = new User((String) table.extractValueFromRowByName(0, "username"),
                         UserType.valueOf((String) table.extractValueFromRowByName(0, "userType")),
                         (Integer) table.extractValueFromRowByName(0, "SIN"),
                         (String) table.extractValueFromRowByName(0, "occupation"),
@@ -97,6 +98,10 @@ public class UserDAO
                         (String) table.extractValueFromRowByName(0, "firstName"),
                         (String) table.extractValueFromRowByName(0, "lastName"),
                         (String) table.extractValueFromRowByName(0, "password"));
+
+        table.clearTable();
+
+        return user;
     }
 
     
