@@ -17,7 +17,7 @@ public class Row
         this.maxSize = numCols;
     }
 
-    public boolean addTo(Object item)
+    public Boolean addTo(Object item)
     {
         if (row.size() == maxSize)
             return false;

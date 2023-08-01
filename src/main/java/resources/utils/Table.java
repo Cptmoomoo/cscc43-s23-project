@@ -1,34 +1,26 @@
 package resources.utils;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-
-import org.javatuples.Pair;
-
+import org.javatuples.Triplet;
 import lombok.Getter;
 
 @Getter
 public class Table
 {
-    private ArrayList<Pair<String, Class>> columnMetaData;
+    private ArrayList<Triplet<String, Integer, Class<?>>> columnMetaData;
     private ArrayList<Row> table;
     private Integer numCols;
     private Integer numRows;
 
-    public Table(Integer numCols, Integer numRows, ArrayList<String> colNames, ArrayList<Class> classes)
+    public Table(Integer numCols, Integer numRows, ArrayList<Triplet<String, Integer, Class<?>>> columnMetaData)
     {
-        columnMetaData = new ArrayList<Pair<String, Class>>(numCols);
+        this.columnMetaData = columnMetaData;
         table = new ArrayList<Row>(numRows);
         this.numCols = numCols;
         this.numRows = numRows;
-
-        for (int i = 0; i < numCols; i++)
-        {
-            columnMetaData.add(new Pair<String, Class>(colNames.get(i), classes.get(i)));
-        }
     }
 
-    public boolean addRow(Row row)
+    public Boolean addRow(Row row)
     {
         if (row.getSize() != numCols)
             return false;
@@ -36,11 +28,21 @@ public class Table
         for (int i = 0; i < numCols; i++)
         {
 
-            if (!row.getColumn(i).getClass().equals(columnMetaData.get(i).getValue1()))
+            if (!row.getColumn(i).getClass().equals(getTripletByIdx(i).getValue2()))
                 return false;
         }
 
         return table.add(row);
+    }
+
+    public Integer size()
+    {
+        return table.size();
+    }
+
+    public void clearTable()
+    {
+        table.clear();
     }
 
     public Row getRow(Integer rowNum)
@@ -48,5 +50,32 @@ public class Table
         return table.get(rowNum);
     }
 
+    public Boolean isEmpty()
+    {
+        return table.isEmpty();
+    }
 
+    public Object extractValueFromRowByName(Integer rowNum, String name)
+    {
+        Row row = getRow(rowNum);
+
+        for (Triplet<String, Integer, Class<?>> t : columnMetaData)
+        {
+            if (t.getValue0().equals(name))
+                return row.getColumn(t.getValue1());
+        }
+
+        return null;
+    }
+
+    private Triplet<String, Integer, Class<?>> getTripletByIdx(Integer idx)
+    {
+        for (Triplet<String, Integer, Class<?>> t : columnMetaData)
+        {
+            if (t.getValue1() == idx)
+                return t;
+        }
+
+        return null;
+    }
 }

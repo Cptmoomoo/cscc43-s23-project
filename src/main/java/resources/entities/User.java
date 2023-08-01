@@ -18,17 +18,20 @@ public class User
     private LocalDate birthday;
     private String firstName;
     private String lastName;
+    private String userName;
+    // Maybe change type
+    private String hashedPass;
 
     public User(String UID, UserType userType, String SIN, String occupation,
-        String birthday, String firstName, String lastName)
+        String birthday, String firstName, String lastName, String userName, String hashedPass)
     {
-        this(UID, userType, SIN, occupation, LocalDate.parse(birthday), firstName, lastName);
+        this(UID, userType, SIN, occupation, LocalDate.parse(birthday), firstName, lastName, userName, hashedPass);
     }
 
     public User(UserType userType, String SIN, String occupation,
-        String birthday, String firstName, String lastName)
+        String birthday, String firstName, String lastName, String userName, String hashedPass)
     {
-        this("NULL", userType, SIN, occupation, LocalDate.parse(birthday), firstName, lastName);
+        this("NULL", userType, SIN, occupation, LocalDate.parse(birthday), firstName, lastName, userName, hashedPass);
     }
 
     @Override

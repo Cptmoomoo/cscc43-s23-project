@@ -11,15 +11,15 @@ public class Listing
     private String listingID;
     private ListingType listingType;
     private String suiteNum;
-    private boolean isActive;
-    private float pricePerDay;
+    private Boolean isActive;
+    private Float pricePerDay;
 
-    public Listing(ListingType listingType, float pricePerDay)
+    public Listing(ListingType listingType, Float pricePerDay)
     {
         this("NULL", listingType, "", true, pricePerDay);
     }
 
-    public Listing(ListingType listingType, String suiteNum, float pricePerDay)
+    public Listing(ListingType listingType, String suiteNum, Float pricePerDay)
     {
         this("NULL", listingType, suiteNum, true, pricePerDay);
     }

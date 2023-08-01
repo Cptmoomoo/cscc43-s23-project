@@ -7,7 +7,6 @@ import java.sql.*;
 import io.github.cdimascio.dotenv.Dotenv;
 import resources.utils.Row;
 import resources.utils.Table;
-
 import com.ibatis.common.jdbc.ScriptRunner;
 
 public final class DBConnectionService
@@ -82,6 +81,48 @@ public final class DBConnectionService
         return true;
     }
 
+    public Boolean setPStatementInt(Integer idx, Integer i)
+    {
+        try
+        {
+            _pStmt.setInt(idx, idx);
+        }
+        catch (SQLException e)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    public Boolean setPStatementString(Integer idx, String str)
+    {
+        try
+        {
+            _pStmt.setString(idx, str);
+        }
+        catch (SQLException e)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    public Boolean setPStatementFloat(Integer idx, Float f)
+    {
+        try
+        {
+            _pStmt.setFloat(idx, f);
+        }
+        catch (SQLException e)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
     public ResultSet executeSetQuery() throws SQLException
     {
         return _pStmt.executeQuery();
@@ -94,18 +135,32 @@ public final class DBConnectionService
         return pStmt.executeQuery();
     }
 
-    public boolean executeSetReturnN(Integer n, Table table) throws SQLException
+    public Boolean executeQueryReturnN(String query, Integer n, Table table) throws SQLException
+    {
+        PreparedStatement pStmt = _conn.prepareStatement(query);
+        ResultSet res = pStmt.executeQuery();
+
+        return getNRows(n, table, res);
+    }
+
+    public Boolean executeSetQueryReturnN(Integer n, Table table) throws SQLException
     {
         ResultSet res = _pStmt.executeQuery();
+
+        return getNRows(n, table, res);
+    }
+
+    private Boolean getNRows(Integer n, Table table, ResultSet res) throws SQLException
+    {
         ResultSetMetaData rsmd = res.getMetaData();
-        Integer i = 0;
         Integer numCols;
+        Integer i = 0;
 
         if (rsmd.getColumnCount() != table.getNumCols())
             return false;
 
         numCols = rsmd.getColumnCount();
-
+        
         while (res.next() && i < n)
         {
             Row row = new Row(numCols);

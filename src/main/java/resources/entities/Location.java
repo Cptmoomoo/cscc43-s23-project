@@ -14,7 +14,7 @@ public class Location
     private String country;
     private String province;
 
-    public Location(float longitude, float latitude,
+    public Location(Float longitude, Float latitude,
         String postalCode, String country, String province, String city)
     {
         this(new Coordinate(latitude, longitude), postalCode, city, country, province);
