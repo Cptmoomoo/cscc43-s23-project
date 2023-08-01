@@ -5,6 +5,9 @@ import java.io.FileReader;
 import java.io.Reader;
 import java.sql.*;
 import io.github.cdimascio.dotenv.Dotenv;
+import resources.utils.Row;
+import resources.utils.Table;
+
 import com.ibatis.common.jdbc.ScriptRunner;
 
 public final class DBConnectionService
@@ -89,5 +92,36 @@ public final class DBConnectionService
         PreparedStatement pStmt = _conn.prepareStatement(query);
 
         return pStmt.executeQuery();
+    }
+
+    public boolean executeSetReturnN(Integer n, Table table) throws SQLException
+    {
+        ResultSet res = _pStmt.executeQuery();
+        ResultSetMetaData rsmd = res.getMetaData();
+        Integer i = 0;
+        Integer numCols;
+
+        if (rsmd.getColumnCount() != table.getNumCols())
+            return false;
+
+        numCols = rsmd.getColumnCount();
+
+        while (res.next() && i < n)
+        {
+            Row row = new Row(numCols);
+
+            for (int j = 0; j < numCols; j++)
+            {
+                if (!row.addTo(res.getObject(j)))
+                    return false;
+
+            }
+            
+            if (!table.addRow(row))
+                return false;
+            i++;
+        }
+
+        return true;
     }
 }
