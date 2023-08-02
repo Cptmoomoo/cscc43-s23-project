@@ -147,7 +147,7 @@ public final class DBConnectionService
         }
         catch (SQLIntegrityConstraintViolationException e)
         {
-            System.out.println("The username or SIN already exists!");
+            System.out.println("Some key already exists!");
             return false;
         }
         catch (SQLException e)
