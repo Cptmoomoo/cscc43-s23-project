@@ -5,9 +5,12 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
 import java.sql.*;
+
 import io.github.cdimascio.dotenv.Dotenv;
+
 import resources.utils.Row;
 import resources.utils.Table;
+
 import com.ibatis.common.jdbc.ScriptRunner;
 
 public final class DBConnectionService

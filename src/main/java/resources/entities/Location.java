@@ -3,6 +3,7 @@ package resources.entities;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
+
 import resources.utils.Coordinate;
 
 @Getter @Setter @AllArgsConstructor
