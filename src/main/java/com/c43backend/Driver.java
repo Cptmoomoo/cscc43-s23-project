@@ -32,14 +32,12 @@ public class Driver
 
     public void run() throws IOException
     {
-        String cmd;
         ArrayList<String> cmds;
 
         while (true)
         {
             System.out.print(Globals.TERMINAL_MARKER);
-            cmd = r.readLine();
-            cmds = parseCmd(cmd);
+            cmds = parseCmd(r.readLine());
 
             if (cmds.isEmpty())
                 System.out.println("No command!");
