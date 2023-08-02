@@ -36,8 +36,6 @@ public class UserDAO
     {
         this.db = db;
         this.userNumCols = columnMetaData.size();
-        System.out.println("WHAT? " + this.userNumCols);
-        System.out.println("WHAT? " + columnMetaData);
         this.table = new Table(userNumCols, Globals.TABLE_SIZE, columnMetaData);
     }
     
@@ -89,6 +87,9 @@ public class UserDAO
             e.printStackTrace();
             return null;
         }
+
+        if (table.isEmpty())
+            return null;
 
         user = new User((String) table.extractValueFromRowByName(0, "username"),
                         UserType.valueOf((String) table.extractValueFromRowByName(0, "userType")),

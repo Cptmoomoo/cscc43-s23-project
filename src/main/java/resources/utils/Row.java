@@ -19,10 +19,8 @@ public class Row
 
     public Boolean addTo(Object item)
     {
-        System.out.println("WDASD");
-        System.out.println(row.size());
-        // if (row.size() >= maxSize)
-        //     return false;
+        if (row.size() >= maxSize)
+            return false;
 
         size++;
         row.add(item);

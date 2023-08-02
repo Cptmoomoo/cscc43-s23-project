@@ -1,59 +1,88 @@
 package com.c43backend;
 
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintStream;
+import java.sql.SQLException;
+
 import com.c43backend.daos.UserDAO;
 import com.c43backend.dbconnectionservice.DBConnectionService;
 
-import resources.entities.User;
-import resources.enums.UserType;
+import resources.utils.Globals;
+import resources.utils.PasswordHasher;
 
 /**
- * Hello world!
+ * Main app, initialized db and DAOs, then runs the main driver.
  *
  */
 public class App 
 {
+    private static PrintStream orig = System.out;
+    private static PrintStream dummyStream = new PrintStream(
+                                                new OutputStream()
+                                                {
+                                                    public void write(int b){}
+                                                });
+
     public static void main( String[] args )
     {
         DBConnectionService db;
         UserDAO udao;
-        User user;
+        Driver driver;
+
         try
         {
             db = DBConnectionService.getInstance();
-            if (!db.createTables("airbnb.sql"));
-                 System.out.println("TABLE CREATE FAILED!!");
 
-            udao = new UserDAO(db);
-            user = new User("myUsername",
-                             UserType.RENTER,
-                             1234567890,
-                             "myOccupation",
-                             "1990-02-23",
-                             "Vincent",
-                             "Li",
-                             "password");
-
-            if (!udao.insertUser(user))
-                System.out.println("INSERT FAILED!!");
-
-            user = udao.getUser("myUsername");
-
-            if (user == null)
-                System.out.println("GET FAILED!!");
-
-            System.out.println(user);
+            try
+            {
+                PrintStream org = System.out;
+                
+                turnOffConsoleOut();
+                db.createTables(Globals.TABLE_CREATE_FILE);
+                turnOnConsoleOut();
+            }
+            catch (SQLException e)
+            {
+                Globals.exitWithError("Problem creating tables!", e);
+            }
+            catch (IOException e)
+            {
+                Globals.exitWithError("Problems reading sql files!", e);
+            }
             
-            System.out.println("HI!!");
+            udao = new UserDAO(db);
+            PasswordHasher.init();
+            
+            driver = new Driver(db, udao);
+
+            driver.run();
+
+            db.closeAll();
         }
-        catch (Exception e)
+        catch (SQLException e)
         {
-            System.out.println("FAILED!!");
-            e.printStackTrace();
-            System.exit(-1);
+            Globals.exitWithError("Problem setting up DB!", e);
+        }
+        catch (ClassNotFoundException e)
+        {
+            Globals.exitWithError("Problem setting up DB!", e);
+        }
+        catch (IOException e)
+        {
+            Globals.exitWithError("Problem running driver!", e);
         }
 
-        DBConnectionService.closeAll();
-        System.out.println("HI2!!");
         System.exit(0);
+    }
+
+    private static void turnOffConsoleOut()
+    {
+        System.setOut(dummyStream);
+    }
+
+    private static void turnOnConsoleOut()
+    {
+        System.setOut(orig);
     }
 }
