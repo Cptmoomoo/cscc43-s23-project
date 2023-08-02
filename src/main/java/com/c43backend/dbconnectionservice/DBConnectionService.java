@@ -2,6 +2,7 @@ package com.c43backend.dbconnectionservice;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
+import java.io.IOException;
 import java.io.Reader;
 import java.sql.*;
 import io.github.cdimascio.dotenv.Dotenv;
@@ -39,7 +40,7 @@ public final class DBConnectionService
         return _instance == null ? new DBConnectionService() : _instance;
     }
 
-    public static void closeAll()
+    public void closeAll()
     {
         try
         {
@@ -49,23 +50,14 @@ public final class DBConnectionService
         catch (Exception e){}
     }
 
-    public Boolean createTables(String scriptPath)
+    public void createTables(String scriptPath) throws SQLException, IOException
     {
         ScriptRunner sr = new ScriptRunner(_conn, false, true);
         Reader r;
 
-        try
-        {
-            r = new BufferedReader(new FileReader(scriptPath));
-            sr.runScript(r);
-            r.close();
-            return true;
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace();
-            return false;
-        }
+        r = new BufferedReader(new FileReader(scriptPath));
+        sr.runScript(r);
+        r.close();
     }
 
     public Boolean setPStatement(String pQuery)
@@ -164,8 +156,14 @@ public final class DBConnectionService
             _pStmt.executeUpdate();
             return true;
         }
+        catch (SQLIntegrityConstraintViolationException e)
+        {
+            System.out.println("The username or SIN already exists!");
+            return false;
+        }
         catch (SQLException e)
         {
+            e.printStackTrace();
             return false;
         }
     }
@@ -198,34 +196,23 @@ public final class DBConnectionService
         Integer numCols = rsmd.getColumnCount();
         Integer i = 0;
 
-        System.out.println("IN!");
-        System.out.println(rsmd.getColumnCount() );
-        System.out.println(table.getNumCols());
-
 
         if (numCols != table.getNumCols())
             return false;
         
         while (res.next() && i < n)
         {
-            System.out.println("RAN!");
             Row row = new Row(numCols);
-            System.out.println("RAN! 2");
 
             for (int j = 1; j <= numCols; j++)
             {
-                System.out.println("RAN! 2.5");
                 if (!row.addTo(res.getObject(j)))
-                    System.out.println("RAN! 2.75");
-                    //return false;
-                System.out.println("RAN! 3");
+                    return false;
             }
             
             if (!table.addRow(row))
                 return false;
             i++;
-
-            System.out.println("RAN END!");
         }
 
         return true;

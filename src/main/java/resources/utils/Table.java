@@ -22,13 +22,11 @@ public class Table
 
     public Boolean addRow(Row row)
     {
-        System.out.println("RAN! 5");
         if (row.getSize() != numCols)
             return false;
         
         for (int i = 0; i < numCols; i++)
         {
-            System.out.println("RAN! 6");
             if (!row.getColumn(i).getClass().equals(getTripletByIdx(i).getValue2()))
             {
                 System.out.println(row.getColumn(i).getClass());
