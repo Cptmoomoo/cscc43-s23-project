@@ -20,7 +20,7 @@
 
 /* Entities */
 CREATE TABLE IF NOT EXISTS Listings (
-    Listing_id int UNIQUE PRIMARY KEY,
+    Listing_id varchar(100) UNIQUE PRIMARY KEY,
     Listing_type varchar(10),
     Suite_number int, 
     Is_active boolean,
@@ -34,7 +34,7 @@ CREATE TABLE IF NOT EXISTS Amenities (
 CREATE TABLE IF NOT EXISTS Users (
     Username varchar(100) UNIQUE PRIMARY KEY,
     Password varchar(100),
-    SIN int UNIQUE,
+    SIN int(9) UNIQUE,
     Occupation varchar(100),
     Date_of_birth DATE,
     First_name varchar(100),

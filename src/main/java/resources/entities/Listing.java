@@ -16,12 +16,12 @@ public class Listing
 
     public Listing(ListingType listingType, Float pricePerDay)
     {
-        this("NULL", listingType, null, true, pricePerDay);
+        this("1234", listingType, null, true, pricePerDay);
     }
 
     public Listing(ListingType listingType, Integer suiteNum, Float pricePerDay)
     {
-        this("NULL", listingType, suiteNum, true, pricePerDay);
+        this("1234", listingType, suiteNum, true, pricePerDay);
     }
 
     @Override
