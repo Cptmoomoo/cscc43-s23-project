@@ -36,8 +36,6 @@ public class App
 
             try
             {
-                PrintStream org = System.out;
-                
                 turnOffConsoleOut();
                 db.createTables(Globals.TABLE_CREATE_FILE);
                 turnOnConsoleOut();
