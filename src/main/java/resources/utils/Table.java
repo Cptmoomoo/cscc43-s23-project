@@ -28,15 +28,8 @@ public class Table
             return false;
         
         for (int i = 0; i < numCols; i++)
-        {
             if (!row.getColumn(i).getClass().equals(getTripletByIdx(i).getValue2()))
-            {
-                System.out.println(row.getColumn(i).getClass());
-                System.out.println(getTripletByIdx(i).getValue2());
                 return false;
-            }
-                
-        }
 
         return table.add(row);
     }
