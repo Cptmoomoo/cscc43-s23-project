@@ -18,7 +18,6 @@ public class User
     private LocalDate birthday;
     private String firstName;
     private String lastName;
-    // Maybe change type
     private String hashedPass;
 
     public User(String username, UserType userType, Integer SIN, String occupation,
