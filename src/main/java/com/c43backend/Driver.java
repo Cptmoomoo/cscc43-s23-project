@@ -39,44 +39,38 @@ public class Driver
             System.out.print(Globals.TERMINAL_MARKER);
             cmds = parseCmd(r.readLine());
 
-            if (cmds.isEmpty())
-                System.out.println("No command!");
-
-            else
+            switch (cmds.get(0))
             {
-                switch (cmds.get(0))
-                {
-                    case "quit":
-                    case "q":
-                        exit(0);
+                case "quit":
+                case "q":
+                    exit(0);
+                break;
+
+                case "help":
+                case "h":
+                    help();
+                    break;
+                
+                case "register":
+                case "r":
+                    if (checkCmdArgs(cmds, 0, 0))
+                        executeRegistration();
+                    else
+                        printInvalid("register");
                     break;
 
-                    case "help":
-                    case "h":
-                        help();
-                        break;
-                    
-                    case "register":
-                    case "r":
-                        if (checkCmdArgs(cmds, 0, 0))
-                            executeRegistration();
-                        else
-                            printInvalid("register");
-                        break;
-
-                    case "login":
-                    case "l":
-                        if (executeLogin(cmds))
-                            loggedInRoutine();
-                        break;
+                case "login":
+                case "l":
+                    if (executeLogin(cmds))
+                        loggedInRoutine();
+                    break;
 
 
-                    default:
-                        System.out.println("Invalid command!");
-                        System.out.println("Type h or help to see a list of commands.");
-                        break;
+                default:
+                    System.out.println("Invalid command!");
+                    System.out.println("Type h or help to see a list of commands.");
+                    break;
 
-                }
             }
         }
     }
