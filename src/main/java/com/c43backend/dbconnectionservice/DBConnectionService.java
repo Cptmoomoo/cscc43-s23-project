@@ -138,6 +138,20 @@ public final class DBConnectionService
         return true;
     }
 
+    public Boolean setPStatementBoolean(Integer idx, Boolean bool)
+    {
+        try
+        {
+            _pStmt.setBoolean(idx, bool);
+        }
+        catch (SQLException e)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
     public ResultSet executeSetQuery() throws SQLException
     {
         return _pStmt.executeQuery();

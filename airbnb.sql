@@ -23,7 +23,7 @@ DROP TABLE IF EXISTS Paid_with;
 CREATE TABLE Listings (
     Listing_id int UNIQUE PRIMARY KEY,
     Listing_type varchar(10),
-    Room_number int, 
+    Suite_number int, 
     Is_active boolean,
     Price_per_day float
 );
