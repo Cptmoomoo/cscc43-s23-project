@@ -11,18 +11,18 @@ public class Listing
 {
     private String listingID;
     private ListingType listingType;
-    private String suiteNum;
+    private Integer suiteNum;
     private Boolean isActive;
     private Float pricePerDay;
 
     public Listing(ListingType listingType, Float pricePerDay)
     {
-        this("NULL", listingType, "", true, pricePerDay);
+        this("1234", listingType, null, true, pricePerDay);
     }
 
-    public Listing(ListingType listingType, String suiteNum, Float pricePerDay)
+    public Listing(ListingType listingType, Integer suiteNum, Float pricePerDay)
     {
-        this("NULL", listingType, suiteNum, true, pricePerDay);
+        this("1234", listingType, suiteNum, true, pricePerDay);
     }
 
     @Override
@@ -37,7 +37,7 @@ public class Listing
     @Override
     public String toString()
     {
-        if (suiteNum.isEmpty())
+        if (suiteNum != null)
             return String.format("%s (%s)", listingType, listingID);
         
         return String.format("%s %s (%s)", suiteNum, listingType, listingID);

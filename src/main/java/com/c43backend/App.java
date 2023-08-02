@@ -6,10 +6,14 @@ import java.io.PrintStream;
 import java.sql.SQLException;
 
 import com.c43backend.daos.UserDAO;
+import com.c43backend.daos.ListingDAO;
 import com.c43backend.dbconnectionservice.DBConnectionService;
 
 import resources.utils.Globals;
 import resources.utils.PasswordHasher;
+
+import resources.entities.Listing;
+import resources.enums.ListingType;
 
 /**
  * Main app, initialized db and DAOs, then runs the main driver.
@@ -28,6 +32,7 @@ public class App
     {
         DBConnectionService db;
         UserDAO udao;
+        ListingDAO ldao;
         Driver driver;
 
         try
@@ -53,6 +58,18 @@ public class App
             PasswordHasher.init();
             
             driver = new Driver(db, udao);
+
+            ldao = new ListingDAO(db);
+            // Listing listing = new Listing(ListingType.APARTMENT, 5, (float) 100);
+
+            // if (!ldao.insertListing(listing))
+            //     System.out.println("INSERT FAILED!!");
+
+            Listing listing = ldao.getListing("1234");
+
+            if (listing == null)
+                System.out.println("GET FAILED!!");
+
 
             driver.run();
 
