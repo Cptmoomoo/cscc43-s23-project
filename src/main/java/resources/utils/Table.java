@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import org.javatuples.Triplet;
 
 import lombok.Getter;
+import resources.exceptions.RowShapeMismatchException;
 
 @Getter
 public class Table
@@ -29,7 +30,7 @@ public class Table
         
         for (int i = 0; i < numCols; i++)
             if (!row.getColumn(i).getClass().equals(getTripletByIdx(i).getValue2()))
-                return false;
+                throw new RowShapeMismatchException(row.getColumn(i).getClass(), getTripletByIdx(i).getValue2());
 
         return table.add(row);
     }
