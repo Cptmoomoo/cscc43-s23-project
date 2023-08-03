@@ -15,7 +15,12 @@ public class Comment
 
     public Comment(String text)
     {
-        this("NULL", text, LocalDateTime.now());
+        this(null, text, LocalDateTime.now());
+    }
+
+    public Comment(String commentID, String text, LocalDateTime timestamp)
+    {
+        this(commentID, text, timestamp);
     }
 
     @Override
