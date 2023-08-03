@@ -39,7 +39,7 @@ public class CommentDAO {
 
     public Boolean insertComment(Comment comment)
     {
-        db.setPStatement("INSERT INTO users VALUES (UUID(), ?, ?)");
+        db.setPStatement("INSERT INTO comments VALUES (UUID(), ?, ?)");
 
         if (!db.setPStatementString(1, comment.getText()))
             return false;

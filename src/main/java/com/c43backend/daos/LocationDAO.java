@@ -38,7 +38,7 @@ public class LocationDAO {
 
     public Boolean insertLocation(Location location)
     {
-        db.setPStatement("INSERT INTO listings VALUES (?, ?, ?, ?, ?, ?)");
+        db.setPStatement("INSERT INTO locations VALUES (?, ?, ?, ?, ?, ?)");
 
         if (!db.setPStatementFloat(1, location.getCoordinate().getLongitude()))
             return false;

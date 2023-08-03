@@ -36,7 +36,7 @@ public class AvailableDateRangeDAO {
 
     public Boolean insertAvailableDateRange(AvailableDateRange range)
     {
-        db.setPStatement("INSERT INTO users VALUES (?, ?)");
+        db.setPStatement("INSERT INTO dates VALUES (?, ?)");
 
         if (!db.setPStatementDate(1, new Date(range.getStartDate().toEpochDay())))
             return false;
