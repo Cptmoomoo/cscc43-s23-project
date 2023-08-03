@@ -8,19 +8,20 @@
 -- DROP TABLE IF EXISTS Avaliable_on;
 -- DROP TABLE IF EXISTS Belongs_to;
 -- DROP TABLE IF EXISTS Paid_with;
+-- DROP TABLE IF EXISTS Dates;
 -- DROP TABLE IF EXISTS Listings;
 -- DROP TABLE IF EXISTS Amenities;
 -- DROP TABLE IF EXISTS Users;
 -- DROP TABLE IF EXISTS Locations;
 -- DROP TABLE IF EXISTS Payment_info;
 -- DROP TABLE IF EXISTS Comments;
--- DROP TABLE IF EXISTS Dates;
+
 
 
 
 /* Entities */
 CREATE TABLE IF NOT EXISTS Listings (
-    Listing_id varchar(100) UNIQUE PRIMARY KEY,
+    Listing_id char(36) UNIQUE PRIMARY KEY,
     Listing_type varchar(10),
     Suite_number varchar(5), 
     Is_active boolean,
@@ -53,8 +54,8 @@ CREATE TABLE IF NOT EXISTS Locations (
 );
 
 CREATE TABLE IF NOT EXISTS Payment_info (
-    Card_number int(16) UNIQUE PRIMARY KEY,
-    Security_Code int,
+    Card_number char(16) UNIQUE PRIMARY KEY,
+    Security_Code char(3),
     Expiration_date DATE, 
     First_name varchar(100),
     Last_name varchar(100),
@@ -62,16 +63,17 @@ CREATE TABLE IF NOT EXISTS Payment_info (
 );
 
 CREATE TABLE IF NOT EXISTS Comments (
-    Comment_id int UNIQUE PRIMARY KEY,
+    Comment_id char(36) UNIQUE PRIMARY KEY,
     Content varchar(255),
     Timestamp TIME 
 );
 
 CREATE TABLE IF NOT EXISTS Dates (
-    Listing_id int UNIQUE,
+    FOREIGN KEY (Listing_id) REFERENCES Listings(Listing_id),
+    Listing_id char(36),
     Start_date DATE,
     End_date DATE,
-    PRIMARY KEY (Start_date, End_date)
+    PRIMARY KEY (Start_date, Listing_id)
 );
 
 

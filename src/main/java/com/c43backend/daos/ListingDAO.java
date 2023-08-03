@@ -43,21 +43,21 @@ public class ListingDAO
 
     public Boolean insertListing(Listing listing)
     {
-        db.setPStatement("INSERT INTO listings VALUES (?, ?, ?, ?, ?)");
+        db.setPStatement("INSERT INTO listings VALUES (UUID(), ?, ?, ?, ?)");
 
-        if (!db.setPStatementString(1, listing.getListingID()))
-            return false;
+        // if (!db.setPStatementString(1, listing.getListingID()))
+        //     return false;
     
-        if (!db.setPStatementString(2, listing.getListingType().toString()))
+        if (!db.setPStatementString(1, listing.getListingType().toString()))
             return false;
 
-        if (!db.setPStatementString(3, listing.getSuiteNum()))
+        if (!db.setPStatementString(2, listing.getSuiteNum()))
             return false;
         
-        if (!db.setPStatementBoolean(4, listing.getIsActive()))
+        if (!db.setPStatementBoolean(3, listing.getIsActive()))
             return false;
         
-        if (!db.setPStatementFloat(5, listing.getPricePerDay()))
+        if (!db.setPStatementFloat(4, listing.getPricePerDay()))
             return false;
 
         return db.executeUpdateSetQuery();
@@ -79,6 +79,9 @@ public class ListingDAO
             e.printStackTrace();
             return null;
         }
+
+        if (table.isEmpty())
+            return null;
 
         listing = new Listing((String) table.extractValueFromRowByName(0, "listingID"),
                               ListingType.valueOf((String) table.extractValueFromRowByName(0, "listingType")),

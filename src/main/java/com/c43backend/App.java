@@ -65,7 +65,9 @@ public class App
             if (!ldao.insertListing(listing))
                 System.out.println("INSERT FAILED!!");
 
-            listing = ldao.getListing("1234");
+            listing = ldao.getListing("226eb3a4-31b4-11ee-9cb6-7085c29762e8");
+            
+            System.out.println(listing);
 
             if (listing == null)
                 System.out.println("GET FAILED!!");
