@@ -38,7 +38,7 @@ public class LocationDAO {
     }
 
 
-    public Boolean insertListing(Location location)
+    public Boolean insertLocation(Location location)
     {
         db.setPStatement("INSERT INTO listings VALUES (?, ?, ?, ?, ?, ?)");
 

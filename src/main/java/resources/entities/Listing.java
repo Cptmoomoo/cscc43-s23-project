@@ -18,13 +18,12 @@ public class Listing
 
     public Listing(ListingType listingType, Float pricePerDay)
     {
-        // UUIDlisting_id = new randomUUID();
-        this("1234", listingType, "", true, pricePerDay);
+        this(null, listingType, "", true, pricePerDay);
     }
 
     public Listing(ListingType listingType, String suiteNum, Float pricePerDay)
     {
-        this("1234", listingType, suiteNum, true, pricePerDay);
+        this(null, listingType, suiteNum, true, pricePerDay);
     }
 
     @Override
