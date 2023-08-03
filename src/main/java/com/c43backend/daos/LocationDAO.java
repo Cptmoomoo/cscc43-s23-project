@@ -8,8 +8,6 @@ import org.javatuples.Triplet;
 import com.c43backend.dbconnectionservice.DBConnectionService;
 
 import resources.entities.Location;
-import resources.entities.User;
-import resources.enums.UserType;
 import resources.utils.Globals;
 import resources.utils.Table;
 

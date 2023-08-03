@@ -9,9 +9,7 @@ import org.javatuples.Triplet;
 import com.c43backend.dbconnectionservice.DBConnectionService;
 
 import resources.entities.Listing;
-import resources.entities.User;
 import resources.enums.ListingType;
-import resources.enums.UserType;
 import resources.enums.AmenityType;
 import resources.utils.Globals;
 import resources.utils.Table;

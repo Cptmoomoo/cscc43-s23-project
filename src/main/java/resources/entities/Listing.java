@@ -26,6 +26,16 @@ public class Listing
         this(null, listingType, suiteNum, true, pricePerDay);
     }
 
+    public Listing(String listingID, ListingType listingType, Float pricePerDay)
+    {
+        this(listingID, listingType, "", true, pricePerDay);
+    }
+
+    public Listing(String listingID, ListingType listingType, String suiteNum, Float pricePerDay)
+    {
+        this(listingID, listingType, suiteNum, true, pricePerDay);
+    }
+
     @Override
     public boolean equals(Object right)
     {

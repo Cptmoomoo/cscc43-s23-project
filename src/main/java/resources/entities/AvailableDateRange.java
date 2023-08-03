@@ -7,7 +7,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 @Getter @Setter @AllArgsConstructor
-public class AvailibleDateRage
+public class AvailableDateRange
 {
     private LocalDate startDate;
     private LocalDate endDate;
@@ -15,10 +15,10 @@ public class AvailibleDateRage
     @Override
     public boolean equals(Object right)
     {
-        if (!(right instanceof AvailibleDateRage))
+        if (!(right instanceof AvailableDateRange))
             return false;
 
-        AvailibleDateRage right2 = (AvailibleDateRage) right;
+        AvailableDateRange right2 = (AvailableDateRange) right;
 
         return startDate == right2.getStartDate() && endDate == right2.getEndDate();
     }
