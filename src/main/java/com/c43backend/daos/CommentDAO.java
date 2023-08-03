@@ -22,8 +22,8 @@ public class CommentDAO {
         {
             {
                 add(new Triplet<String, Integer, Class<?>>("commentID", 0, String.class));
-                add(new Triplet<String, Integer, Class<?>>("text", 0, String.class));
-                add(new Triplet<String, Integer, Class<?>>("timestamp", 0, LocalDateTime.class));
+                add(new Triplet<String, Integer, Class<?>>("text", 1, String.class));
+                add(new Triplet<String, Integer, Class<?>>("timestamp", 2, LocalDateTime.class));
             }
         };
 

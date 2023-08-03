@@ -21,7 +21,7 @@ public class LocationDAO {
                 add(new Triplet<String, Integer, Class<?>>("postalCode", 2, String.class));
                 add(new Triplet<String, Integer, Class<?>>("city", 3, String.class));
                 add(new Triplet<String, Integer, Class<?>>("country", 4, String.class));
-                add(new Triplet<String, Integer, Class<?>>("province", 4, String.class));
+                add(new Triplet<String, Integer, Class<?>>("province", 5, String.class));
             }
         };
 

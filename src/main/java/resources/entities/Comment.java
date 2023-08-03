@@ -18,10 +18,10 @@ public class Comment
         this(null, text, LocalDateTime.now());
     }
 
-    public Comment(String commentID, String text, LocalDateTime timestamp)
-    {
-        this(commentID, text, timestamp);
-    }
+    // public Comment(String commentID, String text, LocalDateTime timestamp)
+    // {
+    //     this(commentID, text, timestamp);
+    // }
 
     @Override
     public boolean equals(Object right)
