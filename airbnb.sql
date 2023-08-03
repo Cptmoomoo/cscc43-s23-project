@@ -77,80 +77,80 @@ CREATE TABLE IF NOT EXISTS Dates (
 
 /* Relations */
 
-CREATE TABLE IF NOT EXISTS Has_amenity (
-    FOREIGN KEY (Name) REFERENCES Amenities(Name),
-    Name varchar(100),
-    FOREIGN KEY (Listing_id) REFERENCES Listings(Listing_id),
-    Listing_id int
-);
+-- CREATE TABLE IF NOT EXISTS Has_amenity (
+--     FOREIGN KEY (Name) REFERENCES Amenities(Name),
+--     Name varchar(100),
+--     FOREIGN KEY (Listing_id) REFERENCES Listings(Listing_id),
+--     Listing_id int
+-- );
 
-CREATE TABLE IF NOT EXISTS Stayed_at (
-    FOREIGN KEY (Username) REFERENCES Users(Username),
-    Username varchar(100),
-    FOREIGN KEY (Listing_id) REFERENCES Listings(Listing_id),
-    Listing_id int,
-    Total_price float,
-    Card_number int
-);
+-- CREATE TABLE IF NOT EXISTS Stayed_at (
+--     FOREIGN KEY (Username) REFERENCES Users(Username),
+--     Username varchar(100),
+--     FOREIGN KEY (Listing_id) REFERENCES Listings(Listing_id),
+--     Listing_id int,
+--     Total_price float,
+--     Card_number int
+-- );
 
-CREATE TABLE IF NOT EXISTS Host_of (
-    FOREIGN KEY (Username) REFERENCES Users(Username),
-    Username varchar(100),
-    FOREIGN KEY (Listing_id) REFERENCES Listings(Listing_id),
-    Listing_id int
-);
+-- CREATE TABLE IF NOT EXISTS Host_of (
+--     FOREIGN KEY (Username) REFERENCES Users(Username),
+--     Username varchar(100),
+--     FOREIGN KEY (Listing_id) REFERENCES Listings(Listing_id),
+--     Listing_id int
+-- );
 
-CREATE TABLE IF NOT EXISTS Rate_listing (
-    FOREIGN KEY (Username) REFERENCES Users(Username),
-    Username varchar(100),
-    FOREIGN KEY (Listing_id) REFERENCES Listings(Listing_id),
-    Listing_id int,
-    Rating float
-);
+-- CREATE TABLE IF NOT EXISTS Rate_listing (
+--     FOREIGN KEY (Username) REFERENCES Users(Username),
+--     Username varchar(100),
+--     FOREIGN KEY (Listing_id) REFERENCES Listings(Listing_id),
+--     Listing_id int,
+--     Rating float
+-- );
 
-CREATE TABLE IF NOT EXISTS Rate_user (
-    FOREIGN KEY (Host) REFERENCES Users(Username),
-    Host varchar(100),
-    FOREIGN KEY (Renter) REFERENCES Users(Username),
-    Renter varchar(100)
-);
+-- CREATE TABLE IF NOT EXISTS Rate_user (
+--     FOREIGN KEY (Host) REFERENCES Users(Username),
+--     Host varchar(100),
+--     FOREIGN KEY (Renter) REFERENCES Users(Username),
+--     Renter varchar(100)
+-- );
 
-CREATE TABLE IF NOT EXISTS Comment_listing (
-    FOREIGN KEY (Comment_id) REFERENCES Comments(Comment_id),
-    Comment_id int,
-    FOREIGN KEY (Username) REFERENCES Users(Username),
-    Username varchar(100),
-    FOREIGN KEY (Listing_id) REFERENCES Listings(Listing_id),
-    Listing_id int
-);
+-- CREATE TABLE IF NOT EXISTS Comment_listing (
+--     FOREIGN KEY (Comment_id) REFERENCES Comments(Comment_id),
+--     Comment_id int,
+--     FOREIGN KEY (Username) REFERENCES Users(Username),
+--     Username varchar(100),
+--     FOREIGN KEY (Listing_id) REFERENCES Listings(Listing_id),
+--     Listing_id int
+-- );
 
-CREATE TABLE IF NOT EXISTS Comment_user (
-    FOREIGN KEY (Comment_id) REFERENCES Comments(Comment_id),
-    Comment_id int,
-    FOREIGN KEY (Host) REFERENCES Users(Username),
-    Host varchar(100),
-    FOREIGN KEY (Renter) REFERENCES Users(Username),
-    Renter varchar(100)
-);
+-- CREATE TABLE IF NOT EXISTS Comment_user (
+--     FOREIGN KEY (Comment_id) REFERENCES Comments(Comment_id),
+--     Comment_id int,
+--     FOREIGN KEY (Host) REFERENCES Users(Username),
+--     Host varchar(100),
+--     FOREIGN KEY (Renter) REFERENCES Users(Username),
+--     Renter varchar(100)
+-- );
 
-CREATE TABLE IF NOT EXISTS Avaliable_on (
-    FOREIGN KEY (Start_Date) REFERENCES Dates(Start_date),
-    Start_date DATE, 
-    FOREIGN KEY (Listing_id) REFERENCES Listings(Listing_id),
-    Listing_id int
-);
+-- CREATE TABLE IF NOT EXISTS Avaliable_on (
+--     FOREIGN KEY (Start_Date) REFERENCES Dates(Start_date),
+--     Start_date DATE, 
+--     FOREIGN KEY (Listing_id) REFERENCES Listings(Listing_id),
+--     Listing_id int
+-- );
 
-CREATE TABLE IF NOT EXISTS Belongs_to (
-    FOREIGN KEY (Listing_id) REFERENCES Listings(Listing_id),
-    Listing_id int,
-    Longitude float,
-    Latitude float,
-    CONSTRAINT FK_Belongs_to FOREIGN KEY (Longitude, Latitude) REFERENCES Locations(Longitude, Latitude)
-);
+-- CREATE TABLE IF NOT EXISTS Belongs_to (
+--     FOREIGN KEY (Listing_id) REFERENCES Listings(Listing_id),
+--     Listing_id int,
+--     Longitude float,
+--     Latitude float,
+--     CONSTRAINT FK_Belongs_to FOREIGN KEY (Longitude, Latitude) REFERENCES Locations(Longitude, Latitude)
+-- );
 
-CREATE TABLE IF NOT EXISTS Paid_with (
-    FOREIGN KEY (Host) REFERENCES Users(Username),
-    Host varchar(100),
-    FOREIGN KEY (Card_number) REFERENCES Payment_info(Card_number),
-    Card_number int(16)
-);
+-- CREATE TABLE IF NOT EXISTS Paid_with (
+--     FOREIGN KEY (Host) REFERENCES Users(Username),
+--     Host varchar(100),
+--     FOREIGN KEY (Card_number) REFERENCES Payment_info(Card_number),
+--     Card_number int(16)
+-- );
