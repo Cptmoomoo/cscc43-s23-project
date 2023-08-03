@@ -24,7 +24,7 @@ public class ListingDAO
             {
                 add(new Triplet<String, Integer, Class<?>>("listingID", 0, String.class));
                 add(new Triplet<String, Integer, Class<?>>("listingType", 1, String.class));
-                add(new Triplet<String, Integer, Class<?>>("suiteNum", 2, Integer.class));
+                add(new Triplet<String, Integer, Class<?>>("suiteNum", 2, String.class));
                 add(new Triplet<String, Integer, Class<?>>("isActive", 3, Boolean.class));
                 add(new Triplet<String, Integer, Class<?>>("pricePerDay", 4, Float.class));
             }
@@ -51,7 +51,7 @@ public class ListingDAO
         if (!db.setPStatementString(2, listing.getListingType().toString()))
             return false;
 
-        if (!db.setPStatementInt(3, listing.getSuiteNum()))
+        if (!db.setPStatementString(3, listing.getSuiteNum()))
             return false;
         
         if (!db.setPStatementBoolean(4, listing.getIsActive()))
@@ -82,7 +82,7 @@ public class ListingDAO
 
         listing = new Listing((String) table.extractValueFromRowByName(0, "listingID"),
                               ListingType.valueOf((String) table.extractValueFromRowByName(0, "listingType")),
-                              (Integer) table.extractValueFromRowByName(0, "suiteNum"),
+                              (String) table.extractValueFromRowByName(0, "suiteNum"),
                               (Boolean) table.extractValueFromRowByName(0, "isActive"),
                               (Float) table.extractValueFromRowByName(0, "pricePerDay"));
 

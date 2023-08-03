@@ -199,7 +199,6 @@ public final class DBConnectionService
         Integer numCols = rsmd.getColumnCount();
         Integer i = 0;
 
-
         if (numCols != table.getNumCols())
             return false;
         

@@ -3,6 +3,7 @@ package resources.entities;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
+import java.util.UUID;
 
 import resources.enums.ListingType;
 
@@ -11,16 +12,17 @@ public class Listing
 {
     private String listingID;
     private ListingType listingType;
-    private Integer suiteNum;
+    private String suiteNum;
     private Boolean isActive;
     private Float pricePerDay;
 
     public Listing(ListingType listingType, Float pricePerDay)
     {
-        this("1234", listingType, null, true, pricePerDay);
+        // UUIDlisting_id = new randomUUID();
+        this("1234", listingType, "", true, pricePerDay);
     }
 
-    public Listing(ListingType listingType, Integer suiteNum, Float pricePerDay)
+    public Listing(ListingType listingType, String suiteNum, Float pricePerDay)
     {
         this("1234", listingType, suiteNum, true, pricePerDay);
     }

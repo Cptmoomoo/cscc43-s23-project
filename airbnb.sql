@@ -22,7 +22,7 @@
 CREATE TABLE IF NOT EXISTS Listings (
     Listing_id varchar(100) UNIQUE PRIMARY KEY,
     Listing_type varchar(10),
-    Suite_number int, 
+    Suite_number varchar(5), 
     Is_active boolean,
     Price_per_day float
 );

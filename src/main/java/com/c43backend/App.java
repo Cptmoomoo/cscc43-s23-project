@@ -60,12 +60,12 @@ public class App
             driver = new Driver(db, udao);
 
             ldao = new ListingDAO(db);
-            // Listing listing = new Listing(ListingType.APARTMENT, 5, (float) 100);
+            Listing listing = new Listing(ListingType.APARTMENT, "5", (float) 100);
 
-            // if (!ldao.insertListing(listing))
-            //     System.out.println("INSERT FAILED!!");
+            if (!ldao.insertListing(listing))
+                System.out.println("INSERT FAILED!!");
 
-            Listing listing = ldao.getListing("1234");
+            listing = ldao.getListing("1234");
 
             if (listing == null)
                 System.out.println("GET FAILED!!");
