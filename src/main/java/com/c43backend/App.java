@@ -66,6 +66,8 @@ public class App
                 System.out.println("INSERT FAILED!!");
 
             listing = ldao.getListing("1234");
+            
+            System.out.println(listing);
 
             if (listing == null)
                 System.out.println("GET FAILED!!");
