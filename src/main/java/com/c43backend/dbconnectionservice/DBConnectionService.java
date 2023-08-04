@@ -105,11 +105,11 @@ public final class DBConnectionService
         return true;
     }
 
-    public Boolean setPStatementDateTime(Integer idx, LocalDateTime dateTime)
+    public Boolean setPStatementTimestamp(Integer idx, Timestamp timestamp)
     {
         try
         {
-            _pStmt.setDate(idx, dateTime);
+            _pStmt.setTimestamp(idx, timestamp);
         }
         catch (SQLException e)
         {

@@ -1,6 +1,7 @@
 package resources.entities;
 
 import java.time.LocalDateTime;
+import java.sql.Timestamp;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -11,11 +12,11 @@ public class Comment
 {
     private String commentID;
     private String text;
-    private LocalDateTime timestamp;
+    private Timestamp timestamp;
 
     public Comment(String text)
     {
-        this(null, text, LocalDateTime.now());
+        this(null, text, Timestamp.valueOf(LocalDateTime.now()));
     }
 
     // public Comment(String commentID, String text, LocalDateTime timestamp)

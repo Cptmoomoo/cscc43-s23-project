@@ -2,6 +2,7 @@ package com.c43backend.daos;
 
 import java.time.LocalDateTime;
 
+import java.sql.Timestamp;
 import java.sql.Date;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -11,8 +12,6 @@ import org.javatuples.Triplet;
 import com.c43backend.dbconnectionservice.DBConnectionService;
 
 import resources.entities.Comment;
-import resources.entities.User;
-import resources.enums.UserType;
 import resources.utils.Globals;
 import resources.utils.Table;
 
@@ -23,7 +22,7 @@ public class CommentDAO {
             {
                 add(new Triplet<String, Integer, Class<?>>("commentID", 0, String.class));
                 add(new Triplet<String, Integer, Class<?>>("text", 1, String.class));
-                add(new Triplet<String, Integer, Class<?>>("timestamp", 2, LocalDateTime.class));
+                add(new Triplet<String, Integer, Class<?>>("timestamp", 2, Timestamp.class));
             }
         };
 
@@ -44,7 +43,7 @@ public class CommentDAO {
         if (!db.setPStatementString(1, comment.getText()))
             return false;
     
-        if (!db.setPStatementDateTime(2, comment.getTimestamp()))
+        if (!db.setPStatementTimestamp(2, comment.getTimestamp()))
             return false;
 
         return db.executeUpdateSetQuery();
@@ -72,7 +71,7 @@ public class CommentDAO {
 
         comment = new Comment((String) table.extractValueFromRowByName(0, "commentID"),
                               (String) table.extractValueFromRowByName(0, "text"),
-                              (LocalDateTime) table.extractValueFromRowByName(0, "timestamp"));
+                              (Timestamp) table.extractValueFromRowByName(0, "timestamp"));
 
         table.clearTable();
 

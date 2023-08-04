@@ -1,23 +1,3 @@
--- DROP TABLE IF EXISTS Has_amenity;
--- DROP TABLE IF EXISTS Stayed_at;
--- DROP TABLE IF EXISTS Host_of;
--- DROP TABLE IF EXISTS Rate_listing;
--- DROP TABLE IF EXISTS Rate_user;
--- DROP TABLE IF EXISTS Comment_listing;
--- DROP TABLE IF EXISTS Comment_user;
--- DROP TABLE IF EXISTS Avaliable_on;
--- DROP TABLE IF EXISTS Belongs_to;
--- DROP TABLE IF EXISTS Paid_with;
--- DROP TABLE IF EXISTS Dates;
--- DROP TABLE IF EXISTS Listings;
--- DROP TABLE IF EXISTS Amenities;
--- DROP TABLE IF EXISTS Users;
--- DROP TABLE IF EXISTS Locations;
--- DROP TABLE IF EXISTS Payment_info;
--- DROP TABLE IF EXISTS Comments;
-
-
-
 
 /* Entities */
 CREATE TABLE IF NOT EXISTS Listings (
@@ -65,7 +45,7 @@ CREATE TABLE IF NOT EXISTS Payment_info (
 CREATE TABLE IF NOT EXISTS Comments (
     Comment_id char(36) UNIQUE PRIMARY KEY,
     Content varchar(255),
-    Timestamp TIME 
+    Timestamp Timestamp
 );
 
 CREATE TABLE IF NOT EXISTS Dates (

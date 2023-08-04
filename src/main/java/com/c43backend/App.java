@@ -7,7 +7,10 @@ import java.sql.SQLException;
 
 import com.c43backend.daos.UserDAO;
 import com.c43backend.daos.ListingDAO;
+import com.c43backend.daos.CommentDAO;
 import com.c43backend.dbconnectionservice.DBConnectionService;
+
+import resources.entities.Comment;
 
 import resources.utils.Globals;
 import resources.utils.PasswordHasher;
@@ -33,6 +36,7 @@ public class App
         DBConnectionService db;
         UserDAO udao;
         ListingDAO ldao;
+        CommentDAO comment_dao;
         Driver driver;
 
         try
@@ -55,22 +59,24 @@ public class App
             }
             
             udao = new UserDAO(db);
+            ldao = new ListingDAO(db);
+            comment_dao = new CommentDAO(db);
+
             PasswordHasher.init();
             
             driver = new Driver(db, udao);
 
-            ldao = new ListingDAO(db);
-            // Listing listing = new Listing(ListingType.APARTMENT, "5", (float) 100);
+            // LocalDateTime now = LocalDateTime.now();
+            // System.out.println(LocalDateTime.now());
+            // System.out.println(Timestamp.valueOf(now));
 
-            // if (!ldao.insertListing(listing))
-            //     System.out.println("INSERT FAILED!!");
+            Comment comment = new Comment("hello");
+            Listing listing = new Listing();
 
-            // listing = ldao.getListing("226eb3a4-31b4-11ee-9cb6-7085c29762e8");
             
-            // System.out.println(listing);
 
-            // if (listing == null)
-            //     System.out.println("GET FAILED!!");
+            if (!comment_dao.insertComment(comment))
+                System.out.println("INSERT FAILED !!");
 
 
             driver.run();
