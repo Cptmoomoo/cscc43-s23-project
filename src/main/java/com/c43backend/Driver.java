@@ -11,10 +11,12 @@ import java.util.Arrays;
 
 import com.c43backend.daos.ListingDAO;
 import com.c43backend.daos.UserDAO;
+import com.c43backend.daos.LocationDAO;
 import com.c43backend.dbconnectionservice.DBConnectionService;
 
 import resources.entities.Listing;
 import resources.entities.User;
+import resources.entities.Location;
 import resources.enums.AmenityType;
 import resources.enums.ListingType;
 import resources.enums.UserType;
@@ -27,18 +29,19 @@ public class Driver
     private final DBConnectionService db;
     private final BufferedReader r;
 
-    private final UserDAO uDAO;
-    private final ListingDAO lDAO;
-
+    private final UserDAO userDAO;
+    private final ListingDAO listingDAO;
+    private final LocationDAO locationDAO;
 
 
     private User loggedUser = null;
 
-    public Driver(DBConnectionService db, UserDAO uDAO, ListingDAO lDAO)
+    public Driver(DBConnectionService db, UserDAO userDAO, ListingDAO listingDAO, LocationDAO locationDAO)
     {
         this.db = db;
-        this.uDAO = uDAO;
-        this.lDAO = lDAO;
+        this.userDAO = userDAO;
+        this.listingDAO = listingDAO;
+        this.locationDAO = locationDAO;
         r = new BufferedReader(new InputStreamReader(System.in));
     }
 
@@ -196,7 +199,7 @@ public class Driver
     {
         User user;
 
-        user = uDAO.getUser(username);
+        user = userDAO.getUser(username);
 
         if (user == null)
         {
@@ -253,7 +256,7 @@ public class Driver
 
         try
         {
-            if (uDAO.insertUser(user))
+            if (userDAO.insertUser(user))
                 System.out.println("You have successfully created an account!");
             else
                 System.out.println("There was an error creating the account!");
@@ -344,7 +347,7 @@ public class Driver
                     break;
 
                 default:
-                    System.out.println("Invalid user type!");
+                    System.out.println("Invalid user type, try again!");
                     break;
             }
         }
@@ -367,13 +370,13 @@ public class Driver
                 SIN = parseSIN(cmd);
 
                 if (SIN.length() != 9)
-                    System.out.println("SIN is not valid!");
+                    System.out.println("SIN is not valid, try again!");
                 else
                     cond = true;
             }
             catch (ParseException e)
             {
-                System.out.println("SIN is not valid!");
+                System.out.println("SIN is not valid, try again!");
             }
         }
 
@@ -394,7 +397,7 @@ public class Driver
             }
             catch (DateTimeParseException e)
             {
-                System.out.println("Not a valid date format!");
+                System.out.println("Not a valid date format, try again!");
          
             }
         }
@@ -413,7 +416,7 @@ public class Driver
         Listing listing;
 
         System.out.println("Create new listing!!!");
-        System.out.println("What kind of listing is it?");
+        System.out.println("What kind of listing is it? List of valid listings: house, apartment, condo, cottage.");
 
         while (!cond)
         {
@@ -445,7 +448,7 @@ public class Driver
                     break;
 
                 default:
-                    System.out.println("Not a valid listing type!");
+                    System.out.println("Not a valid listing type, try again!");
                     cond = false;
                     break;
             }
@@ -471,7 +474,7 @@ public class Driver
             }
             catch (NumberFormatException e)
             {
-                System.out.println("Not a valid price!");
+                System.out.println("Not a valid price, try again!");
             }
         }
 
@@ -482,16 +485,79 @@ public class Driver
         // Probably: ask for location info, if exists attach this listing to it
         // If not create a new location for it
 
-        try
+        Float longitude = (float) 0.0;
+        Float latitude = (float) 0.0;
+
+        System.out.println("What is the longitude of your listing? Enter a decimal number between -180 to 180.");
+
+        cond = false;
+
+        while (!cond)
         {
-            if (!lDAO.insertListing(listing, loggedUser.getUsername()))
-                System.out.println("There was a problem creating this listing!");
-            else
-                System.out.println("Successfully created listing!");
+            try 
+            {
+                longitude = Float.parseFloat(r.readLine().trim());
+
+                if (longitude >= -180 && longitude <= 180) 
+                    cond = true;
+                else
+                    System.out.println("Longitude has to be between -180 to 180, try again!");
+            }
+            catch (NumberFormatException e)
+            {
+                System.out.println("Not a valid valid longitude, try again!");
+            }
         }
-        catch (DuplicateKeyException e)
+
+        System.out.println("What is the latitude of your listing? Enter a decimal number between -90 to 90.");
+
+        cond = false;
+
+        while (!cond)
         {
-            System.out.println("Duplicate listing!");
+            try 
+            {
+                latitude = Float.parseFloat(r.readLine().trim());
+
+                if (latitude >= -90 && latitude <= 90) 
+                    cond = true;
+                else
+                    System.out.println("Latitude has to be between -90 to 90, try again!");
+            }
+            catch (NumberFormatException e)
+            {
+                System.out.println("Not a valid valid latitude, try again!");
+            }
+        }
+
+        Location location;
+        location = locationDAO.getLocation(longitude, latitude);
+        
+        if (location != null) {
+            System.out.println("There already exists a location with the coordinates you entered, assign the location to your listing? (y/n)");
+            System.out.println("Coordinate: " + location.getCoordinate() + 
+                               ", City: "  + location.getCity() + 
+                               ", Province: " + location.getProvince() + 
+                               ", Country: " + location.getCountry() +  
+                               ", Postal Code: " + location.getPostalCode());
+        }
+
+        // INCOMPLETE 
+        
+        else {
+            // creat address
+
+            try
+            {
+                if (!listingDAO.insertListing(listing, loggedUser.getUsername()))
+                    System.out.println("There was a problem creating this listing!");
+                else
+                    System.out.println("Successfully created listing!");
+            }
+            catch (DuplicateKeyException e)
+            {
+                System.out.println("Duplicate listing!");
+            }
         }
     }
 
@@ -508,7 +574,7 @@ public class Driver
 
 
         // Set 10 for now...
-        listings = lDAO.getNListingsByHost(10, username);
+        listings = listingDAO.getNListingsByHost(10, username);
 
         for (Listing l : listings)
         {

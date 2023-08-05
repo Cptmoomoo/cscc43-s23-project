@@ -9,9 +9,8 @@ import java.util.ArrayList;
 import com.c43backend.daos.UserDAO;
 import com.c43backend.daos.ListingDAO;
 import com.c43backend.daos.CommentDAO;
+import com.c43backend.daos.LocationDAO;
 import com.c43backend.dbconnectionservice.DBConnectionService;
-
-import resources.entities.Comment;
 
 import resources.utils.Globals;
 import resources.utils.PasswordHasher;
@@ -36,8 +35,9 @@ public class App
     public static void main( String[] args )
     {
         DBConnectionService db;
-        UserDAO udao;
-        ListingDAO ldao;
+        UserDAO userDAO;
+        ListingDAO listingDAO;
+        LocationDAO locationDAO;
         CommentDAO comment_dao;
         Driver driver;
 
@@ -60,9 +60,9 @@ public class App
                 Globals.exitWithError("Problems reading sql files!", e);
             }
             
-            udao = new UserDAO(db);
-            ldao = new ListingDAO(db);
-            comment_dao = new CommentDAO(db);
+            userDAO = new UserDAO(db);
+            listingDAO = new ListingDAO(db);
+            locationDAO = new LocationDAO(db);
 
             PasswordHasher.init();
 
@@ -76,7 +76,7 @@ public class App
             // if (!ldao.insertListing(l))
             //     System.out.println("FAILED!");
             
-            driver = new Driver(db, udao, ldao);
+            driver = new Driver(db, userDAO, listingDAO, locationDAO);
 
 
             driver.run();
