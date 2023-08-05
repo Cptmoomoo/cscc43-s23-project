@@ -1,21 +1,42 @@
+-- DROP TABLE IF EXISTS Has_amenity;
+-- DROP TABLE IF EXISTS Stayed_at;
+-- DROP TABLE IF EXISTS Host_of;
+-- DROP TABLE IF EXISTS Rate_listing;
+-- DROP TABLE IF EXISTS Rate_user;
+-- DROP TABLE IF EXISTS Comment_listing;
+-- DROP TABLE IF EXISTS Comment_user;
+-- DROP TABLE IF EXISTS Avaliable_on;
+-- DROP TABLE IF EXISTS Belongs_to;
+-- DROP TABLE IF EXISTS Paid_with;
+-- DROP TABLE IF EXISTS Dates;
+-- DROP TABLE IF EXISTS Amenities;
+-- DROP TABLE IF EXISTS Listings;
+-- DROP TABLE IF EXISTS Users;
+-- DROP TABLE IF EXISTS Locations;
+-- DROP TABLE IF EXISTS Payment_info;
+-- DROP TABLE IF EXISTS Comments;
 
 /* Entities */
 CREATE TABLE IF NOT EXISTS Listings (
-    Listing_id char(36) UNIQUE PRIMARY KEY,
+    Listing_id char(36) UNIQUE PRIMARY KEY ,
     Listing_type varchar(10),
     Suite_number varchar(5), 
     Is_active boolean,
-    Price_per_day float
+    Price_per_day float,
+    Time_listed Timestamp
 );
 
 CREATE TABLE IF NOT EXISTS Amenities (
-    Name varchar(100) NOT NULL UNIQUE PRIMARY KEY 
+    Name varchar(100),
+    FOREIGN KEY (Listing_id) REFERENCES Listings(Listing_id),
+    Listing_id char(36),
+    CONSTRAINT PK_Amenities PRIMARY KEY (Name, Listing_id)
 );
 
 CREATE TABLE IF NOT EXISTS Users (
     Username varchar(100) UNIQUE PRIMARY KEY,
     Password varchar(100),
-    SIN int(9) UNIQUE,
+    SIN char(9) UNIQUE,
     Occupation varchar(100),
     Date_of_birth DATE,
     First_name varchar(100),
@@ -59,13 +80,6 @@ CREATE TABLE IF NOT EXISTS Dates (
 
 /* Relations */
 
-CREATE TABLE IF NOT EXISTS Has_amenity (
-    FOREIGN KEY (Name) REFERENCES Amenities(Name),
-    Name varchar(100),
-    FOREIGN KEY (Listing_id) REFERENCES Listings(Listing_id),
-    Listing_id char(36)
-);
-
 CREATE TABLE IF NOT EXISTS Stayed_at (
     FOREIGN KEY (Username) REFERENCES Users(Username),
     Username varchar(100),
@@ -79,7 +93,8 @@ CREATE TABLE IF NOT EXISTS Host_of (
     FOREIGN KEY (Username) REFERENCES Users(Username),
     Username varchar(100),
     FOREIGN KEY (Listing_id) REFERENCES Listings(Listing_id),
-    Listing_id char(36)
+    Listing_id char(36),
+    CONSTRAINT PK_Host_of PRIMARY KEY (Username, Listing_id)
 );
 
 CREATE TABLE IF NOT EXISTS Rate_listing (
@@ -87,14 +102,19 @@ CREATE TABLE IF NOT EXISTS Rate_listing (
     Username varchar(100),
     FOREIGN KEY (Listing_id) REFERENCES Listings(Listing_id),
     Listing_id char(36),
-    Rating float
+    Timestamp Timestamp,
+    Rating float,
+    CONSTRAINT PK_Rate_listing PRIMARY KEY (Username, Listing_id, Timestamp)
 );
 
 CREATE TABLE IF NOT EXISTS Rate_user (
     FOREIGN KEY (Host) REFERENCES Users(Username),
     Host varchar(100),
     FOREIGN KEY (Renter) REFERENCES Users(Username),
-    Renter varchar(100)
+    Renter varchar(100),
+    Timestamp Timestamp,
+    Rating float,
+    CONSTRAINT PK_Rate_User PRIMARY KEY (Host, Renter, Timestamp)
 );
 
 CREATE TABLE IF NOT EXISTS Comment_listing (
@@ -103,7 +123,8 @@ CREATE TABLE IF NOT EXISTS Comment_listing (
     FOREIGN KEY (Username) REFERENCES Users(Username),
     Username varchar(100),
     FOREIGN KEY (Listing_id) REFERENCES Listings(Listing_id),
-    Listing_id char(36)
+    Listing_id char(36),
+    CONSTRAINT PK_Comment_listing PRIMARY KEY (Comment_id)
 );
 
 CREATE TABLE IF NOT EXISTS Comment_user (
@@ -112,14 +133,16 @@ CREATE TABLE IF NOT EXISTS Comment_user (
     FOREIGN KEY (Host) REFERENCES Users(Username),
     Host varchar(100),
     FOREIGN KEY (Renter) REFERENCES Users(Username),
-    Renter varchar(100)
+    Renter varchar(100),
+    CONSTRAINT PK_Comment_user PRIMARY KEY (Comment_id)
 );
 
 CREATE TABLE IF NOT EXISTS Avaliable_on (
     FOREIGN KEY (Start_Date) REFERENCES Dates(Start_date),
     Start_date DATE, 
     FOREIGN KEY (Listing_id) REFERENCES Listings(Listing_id),
-    Listing_id char(36)
+    Listing_id char(36),
+    CONSTRAINT PK_Available_on PRIMARY KEY (Start_Date, Listing_id)
 );
 
 CREATE TABLE IF NOT EXISTS Belongs_to (
@@ -131,8 +154,9 @@ CREATE TABLE IF NOT EXISTS Belongs_to (
 );
 
 CREATE TABLE IF NOT EXISTS Paid_with (
-    FOREIGN KEY (Host) REFERENCES Users(Username),
-    Host varchar(100),
+    FOREIGN KEY (Username) REFERENCES Users(Username),
+    Username varchar(100),
     FOREIGN KEY (Card_number) REFERENCES Payment_info(Card_number),
-    Card_number char(16)
+    Card_number char(16),
+    CONSTRAINT PK_Paid_with PRIMARY KEY (Username, Card_number)
 );

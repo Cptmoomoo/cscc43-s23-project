@@ -13,14 +13,14 @@ public class User
 {
     private String username;
     private UserType userType;
-    private Integer SIN;
+    private String SIN;
     private String occupation;
     private LocalDate birthday;
     private String firstName;
     private String lastName;
     private String hashedPass;
 
-    public User(String username, UserType userType, Integer SIN, String occupation,
+    public User(String username, UserType userType, String SIN, String occupation,
         String birthday, String firstName, String lastName, String hashedPass)
     {
         this(username, userType, SIN, occupation, LocalDate.parse(birthday), firstName, lastName, hashedPass);
@@ -38,6 +38,13 @@ public class User
     @Override
     public String toString()
     {
-        return String.format("%s %s (%s)", firstName, lastName, username);
+        return String.format("%s %s (%s)\nAccount type: %s\nSIN:%s\nOccupation: %s\nBirthday: %s",
+                                    firstName,
+                                    lastName,
+                                    username,
+                                    userType.toString(),
+                                    SIN,
+                                    occupation,
+                                    birthday.toString());
     }
 }

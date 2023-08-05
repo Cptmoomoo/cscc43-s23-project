@@ -1,7 +1,7 @@
 package com.c43backend.daos;
 
-import java.sql.Date;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 
 import org.javatuples.Triplet;
@@ -10,14 +10,15 @@ import com.c43backend.dbconnectionservice.DBConnectionService;
 
 import resources.entities.Listing;
 import resources.enums.ListingType;
+import resources.exceptions.DuplicateKeyException;
+import resources.exceptions.RunQueryException;
 import resources.enums.AmenityType;
 import resources.utils.Globals;
 import resources.utils.Table;
 
-public class ListingDAO 
+public class ListingDAO extends DAO
 {
-    private final Integer listingNumCols;
-    private static final ArrayList<Triplet<String, Integer, Class<?>>> columnMetaData = new ArrayList<Triplet<String, Integer, Class<?>>>()
+    private static final ArrayList<Triplet<String, Integer, Class<?>>> listingColumnMetaData = new ArrayList<Triplet<String, Integer, Class<?>>>()
         {
             {
                 add(new Triplet<String, Integer, Class<?>>("listingID", 0, String.class));
@@ -25,70 +26,165 @@ public class ListingDAO
                 add(new Triplet<String, Integer, Class<?>>("suiteNum", 2, String.class));
                 add(new Triplet<String, Integer, Class<?>>("isActive", 3, Boolean.class));
                 add(new Triplet<String, Integer, Class<?>>("pricePerDay", 4, Float.class));
+                add(new Triplet<String, Integer, Class<?>>("timeListed", 5, Timestamp.class));
             }
         };
+    
+    private static final ArrayList<Triplet<String, Integer, Class<?>>> amenityColumnMetaData = new ArrayList<Triplet<String, Integer, Class<?>>>()
+        {
+            {
+                add(new Triplet<String, Integer, Class<?>>("amenityName", 0, String.class));
+            }
+        };    
 
-    private final DBConnectionService db;
-    private Table table;
+    private final Integer listingNumCols;
+    private final Integer amenityNumCols;
+    private Table listingTable;
+    private Table amenityTable;
 
     public ListingDAO(DBConnectionService db) throws ClassNotFoundException, SQLException
     {
-        this.db = db;
-        this.listingNumCols = columnMetaData.size();
-        this.table = new Table(listingNumCols, Globals.TABLE_SIZE, columnMetaData);
+        super(db);
+        this.listingNumCols = listingColumnMetaData.size();
+        this.amenityNumCols = amenityColumnMetaData.size();
+
+        this.listingTable = new Table(listingNumCols, listingColumnMetaData);
+        this.amenityTable = new Table(amenityNumCols, amenityColumnMetaData);
     }
     
 
-    public Boolean insertListing(Listing listing)
+    public Boolean insertListing(Listing listing, String hostUsername) throws DuplicateKeyException
     {
-        db.setPStatement("INSERT INTO listings VALUES (UUID(), ?, ?, ?, ?)");
-
-        // if (!db.setPStatementString(1, listing.getListingID()))
-        //     return false;
+        String listingID = listing.getListingID();
     
-        if (!db.setPStatementString(1, listing.getListingType().toString()))
+        db.setPStatement("INSERT INTO listings VALUES (?, ?, ?, ?, ?, ?)");
+    
+        if (!db.setPStatementString(1, listingID))
+            return false;
+    
+        if (!db.setPStatementString(2, listing.getListingType().toString()))
             return false;
 
-        if (!db.setPStatementString(2, listing.getSuiteNum()))
+        if (!db.setPStatementString(3, listing.getSuiteNum()))
             return false;
         
-        if (!db.setPStatementBoolean(3, listing.getIsActive()))
+        if (!db.setPStatementBoolean(4, listing.getIsActive()))
             return false;
         
-        if (!db.setPStatementFloat(4, listing.getPricePerDay()))
+        if (!db.setPStatementFloat(5, listing.getPricePerDay()))
             return false;
 
-        return db.executeUpdateSetQuery();
+        if (!db.setPStatementTimestamp(6, Timestamp.valueOf(listing.getTimeListed())))
+            return false;
+
+        if (!executeSetQueryWithDupeCheck("listing ID"))
+            return false;
+
+        for (AmenityType t : listing.getAmenities())
+        {
+            db.setPStatement("INSERT INTO amenities VALUES (?, ?)");
+
+            if (!db.setPStatementString(1, t.toString()))
+                return false;
+            
+            if (!db.setPStatementString(2, listingID))
+                return false;
+
+            if (!executeSetQueryWithDupeCheck("amenity for ID"))
+                return false;
+        }
+
+        // need to attach user
+        db.setPStatement("INSERT INTO host_of VALUES (?, ?)");
+
+        if (!db.setPStatementString(1, hostUsername))
+            return false;
+
+        if (!db.setPStatementString(2, listingID))
+            return false;
+
+        return executeSetQueryWithDupeCheck("listing ID");
     }
 
-    public Listing getListing(String listing_id)
+    public Listing getListing(String listingID)
     {
         Listing listing;
+        ArrayList<AmenityType> amenities = new ArrayList<AmenityType>();
+
         db.setPStatement("SELECT * FROM listings WHERE Listing_id=?");
-        db.setPStatementString(1, listing_id);
+        db.setPStatementString(1, listingID);
 
-        try
-        {
-            if (!db.executeSetQueryReturnN(1, table))
-                return null;    
-        }
-        catch (SQLException e)
-        {
-            e.printStackTrace();
+
+        if (!db.executeSetQueryReturnN(1, listingTable))
+            throw new RunQueryException();  
+
+        if (listingTable.isEmpty())
             return null;
-        }
+        
+        amenities = getAmenitiesFromListing(listingID);
 
-        if (table.isEmpty())
-            return null;
+        listing = getListingFromTable(0, amenities);
 
-        listing = new Listing((String) table.extractValueFromRowByName(0, "listingID"),
-                              ListingType.valueOf((String) table.extractValueFromRowByName(0, "listingType")),
-                              (String) table.extractValueFromRowByName(0, "suiteNum"),
-                              (Boolean) table.extractValueFromRowByName(0, "isActive"),
-                              (Float) table.extractValueFromRowByName(0, "pricePerDay"));
-
-        table.clearTable();
+        listingTable.clearTable();
 
         return listing;
+    }
+
+    public ArrayList<AmenityType> getAmenitiesFromListing(String listingID)
+    {
+        ArrayList<AmenityType> amenities = new ArrayList<AmenityType>();
+
+        db.setPStatement("SELECT name FROM amenities WHERE Listing_id=?");
+        db.setPStatementString(1, listingID);
+
+        if (!db.executeSetQueryReturnN(Globals.NUM_AMENITIES, amenityTable))
+            throw new RunQueryException();
+
+        if (amenityTable.isEmpty())
+            return amenities;
+
+        for (int i = 0; i < amenityTable.size(); i++)
+            amenities.add(AmenityType.valueOf((String) amenityTable.extractValueFromRowByName(i, "amenityName")));
+
+        amenityTable.clearTable();
+
+        return amenities;
+    }
+
+    public ArrayList<Listing> getNListingsByHost(Integer n, String hostUsername)
+    {
+        String listingID;
+        ArrayList<AmenityType> amenities;
+        ArrayList<Listing> listings = new ArrayList<Listing>();
+
+        db.setPStatement("SELECT listings.Listing_id, listings.Listing_type, listings.Suite_number, listings.Is_active, listings.Price_per_day, listings.Time_listed FROM listings NATURAL JOIN host_of WHERE host_of.Username=?");
+        db.setPStatementString(1, hostUsername);
+
+        if (!db.executeSetQueryReturnN(n, listingTable))
+            throw new RunQueryException();
+
+        for (int i = 0; i < listingTable.size(); i++)
+        {
+            listingID = (String) listingTable.extractValueFromRowByName(i, "listingID");
+            amenities = getAmenitiesFromListing(listingID);
+
+            listings.add(getListingFromTable(i, amenities));
+        }
+
+        listingTable.clearTable();
+
+        return listings;
+    }
+
+    private Listing getListingFromTable(Integer rowNum, ArrayList<AmenityType> amenities)
+    {
+        return new Listing((String) listingTable.extractValueFromRowByName(rowNum, "listingID"),
+                            ListingType.valueOf((String) listingTable.extractValueFromRowByName(rowNum, "listingType")),
+                            (String) listingTable.extractValueFromRowByName(rowNum, "suiteNum"),
+                            (Boolean) listingTable.extractValueFromRowByName(rowNum, "isActive"),
+                            (Float) listingTable.extractValueFromRowByName(rowNum, "pricePerDay"),
+                            ((Timestamp) listingTable.extractValueFromRowByName(rowNum, "timeListed")).toLocalDateTime(),
+                            amenities,
+                            null);
     }
 }

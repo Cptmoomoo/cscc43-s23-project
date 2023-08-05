@@ -2,7 +2,6 @@ package com.c43backend.daos;
 
 import java.sql.SQLException;
 import java.sql.Date;
-import java.time.LocalDate;
 
 import java.util.ArrayList;
 
@@ -11,10 +10,11 @@ import org.javatuples.Triplet;
 import com.c43backend.dbconnectionservice.DBConnectionService;
 
 import resources.entities.AvailableDateRange;
-import resources.utils.Globals;
+import resources.exceptions.DuplicateKeyException;
 import resources.utils.Table;
 
-public class AvailableDateRangeDAO {
+public class AvailableDateRangeDAO extends DAO
+{
     private final Integer listingNumCols;
     private static final ArrayList<Triplet<String, Integer, Class<?>>> columnMetaData = new ArrayList<Triplet<String, Integer, Class<?>>>()
         {
@@ -24,17 +24,16 @@ public class AvailableDateRangeDAO {
             }
         };
 
-    private final DBConnectionService db;
     private Table table;
 
     public AvailableDateRangeDAO(DBConnectionService db) throws ClassNotFoundException, SQLException
     {
-        this.db = db;
+        super(db);
         this.listingNumCols = columnMetaData.size();
-        this.table = new Table(listingNumCols, Globals.TABLE_SIZE, columnMetaData);
+        this.table = new Table(listingNumCols, columnMetaData);
     }
 
-    public Boolean insertAvailableDateRange(AvailableDateRange range)
+    public Boolean insertAvailableDateRange(AvailableDateRange range) throws DuplicateKeyException
     {
         db.setPStatement("INSERT INTO dates VALUES (?, ?)");
 
@@ -44,6 +43,6 @@ public class AvailableDateRangeDAO {
         if (!db.setPStatementDate(2, new Date(range.getEndDate().toEpochDay())))
             return false;
 
-        return db.executeUpdateSetQuery();
+        return executeSetQueryWithDupeCheck("date range");
     }
 }

@@ -1,8 +1,14 @@
 package resources.utils;
 
+import resources.enums.AmenityType;
+
 public class Globals
 {
+    // Number constants
     public static final Integer TABLE_SIZE = 50;
+    public static final Integer NUM_AMENITIES = AmenityType.values().length;
+
+    // Driver constants
     public static final String APP_NAME = "skyBnB";
     public static final String TERMINAL_DIVIDER = "-".repeat(30);
     public static final String TERMINAL_MARKER = APP_NAME + "> ";

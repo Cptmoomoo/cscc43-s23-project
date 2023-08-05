@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.sql.SQLException;
+import java.util.ArrayList;
 
 import com.c43backend.daos.UserDAO;
 import com.c43backend.daos.ListingDAO;
@@ -16,6 +17,7 @@ import resources.utils.Globals;
 import resources.utils.PasswordHasher;
 
 import resources.entities.Listing;
+import resources.enums.AmenityType;
 import resources.enums.ListingType;
 
 /**
@@ -63,20 +65,18 @@ public class App
             comment_dao = new CommentDAO(db);
 
             PasswordHasher.init();
+
+            ArrayList<AmenityType> a = new ArrayList<AmenityType>();
+            a.add(AmenityType.AIR_CONDITIONING);
+            a.add(AmenityType.KITCHEN);
+            a.add(AmenityType.HEATER);
+
+            Listing l = new Listing(ListingType.APARTMENT, (float) 50.00, a);
+
+            // if (!ldao.insertListing(l))
+            //     System.out.println("FAILED!");
             
-            driver = new Driver(db, udao);
-
-            // LocalDateTime now = LocalDateTime.now();
-            // System.out.println(LocalDateTime.now());
-            // System.out.println(Timestamp.valueOf(now));
-
-            Comment comment = new Comment("hello");
-            Listing listing = new Listing();
-
-            
-
-            if (!comment_dao.insertComment(comment))
-                System.out.println("INSERT FAILED !!");
+            driver = new Driver(db, udao, ldao);
 
 
             driver.run();

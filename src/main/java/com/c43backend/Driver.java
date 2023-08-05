@@ -3,16 +3,22 @@ package com.c43backend;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.text.ParseException;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 
+import com.c43backend.daos.ListingDAO;
 import com.c43backend.daos.UserDAO;
 import com.c43backend.dbconnectionservice.DBConnectionService;
 
+import resources.entities.Listing;
 import resources.entities.User;
+import resources.enums.AmenityType;
+import resources.enums.ListingType;
 import resources.enums.UserType;
+import resources.exceptions.DuplicateKeyException;
 import resources.utils.Globals;
 import resources.utils.PasswordHasher;
 
@@ -20,13 +26,19 @@ public class Driver
 {
     private final DBConnectionService db;
     private final BufferedReader r;
+
     private final UserDAO uDAO;
+    private final ListingDAO lDAO;
+
+
+
     private User loggedUser = null;
 
-    public Driver(DBConnectionService db, UserDAO uDAO)
+    public Driver(DBConnectionService db, UserDAO uDAO, ListingDAO lDAO)
     {
         this.db = db;
         this.uDAO = uDAO;
+        this.lDAO = lDAO;
         r = new BufferedReader(new InputStreamReader(System.in));
     }
 
@@ -63,6 +75,33 @@ public class Driver
                 case "l":
                     if (executeLogin(cmds))
                         loggedInRoutine();
+                    break;
+
+                case "logout":
+                case "lo":
+                    if (isLoggedIn())
+                    {
+                        System.out.println(String.format("Goodbye %s!", loggedUser.getFirstName()));
+                        loggedUser = null;
+                    }
+                    else
+                        System.out.println("You are not logged in!");
+                    break;
+
+                case "create-listing":
+                    if (isLoggedIn())
+                        createListing();
+                    else
+                        System.out.println("You are not logged in!");
+                    break;
+
+                case "search-host":
+                    if (checkCmdArgs(cmds, 1, 1))
+                        searchByHost(cmds.get(1));
+                    else if (checkCmdArgs(cmds, 0, 0))
+                        searchByHost("");
+                    else
+                        printInvalid("search-host");
                     break;
 
 
@@ -174,6 +213,7 @@ public class Driver
         loggedUser = user;
 
         System.out.println("Login successful!");
+        System.out.println(String.format("Hello %s!", loggedUser.getFirstName()));
 
         return true;
            
@@ -198,7 +238,7 @@ public class Driver
             
             System.out.println("Please review the following information:");
             System.out.println(Globals.TERMINAL_DIVIDER);
-            System.out.println(printUserInfo(user));
+            System.out.println(user.toString());
             System.out.println(Globals.TERMINAL_DIVIDER);
             System.out.println("In this information correct? (y/n)");
 
@@ -211,11 +251,19 @@ public class Driver
             }
         }
 
+        try
+        {
+            if (uDAO.insertUser(user))
+                System.out.println("You have successfully created an account!");
+            else
+                System.out.println("There was an error creating the account!");
+        }
+        catch (DuplicateKeyException e)
+        {
+            System.out.println("Username or SIN already exists!");
+        }
 
-        if (uDAO.insertUser(user))
-            System.out.println("You have successfully created an account!");
-        else
-            System.out.println("There was an error creating the account!");
+        
     }
 
     private Boolean getYesNo() throws IOException
@@ -239,20 +287,6 @@ public class Driver
         }
     }
 
-    private String printUserInfo(User user)
-    {
-        String out = String.format("%s %s (%s)\nAccount type: %s\nSIN:%d\nOccupation: %s\nBirthday: %s",
-                                    user.getFirstName(),
-                                    user.getLastName(),
-                                    user.getUsername(),
-                                    user.getUserType().toString(),
-                                    user.getSIN(),
-                                    user.getOccupation(),
-                                    user.getBirthday().toString());
-        
-        return out;
-    }
-
     private User createUser() throws IOException
     {
         String cmd;
@@ -261,7 +295,7 @@ public class Driver
         String username;
         String password = "";
         UserType userType = UserType.RENTER;
-        Integer SIN = 0;
+        String SIN = "";
         String occupation;
         LocalDate birthday = LocalDate.now();
         String firstName;
@@ -269,6 +303,9 @@ public class Driver
         
         System.out.println("Input preferred username:");
         username = r.readLine().trim().toLowerCase();
+
+        // check username duplicate here!
+        // Check for empty username!
 
         while (!cond)
         {
@@ -327,12 +364,16 @@ public class Driver
 
             try
             {
-                SIN = Integer.parseInt(cmd);
-                cond = true;
+                SIN = parseSIN(cmd);
+
+                if (SIN.length() != 9)
+                    System.out.println("SIN is not valid!");
+                else
+                    cond = true;
             }
-            catch (NumberFormatException e)
+            catch (ParseException e)
             {
-                System.out.println("SIN is not a number!");
+                System.out.println("SIN is not valid!");
             }
         }
 
@@ -362,6 +403,119 @@ public class Driver
 
     }
 
+    private void createListing() throws IOException
+    {
+        Boolean cond = false;
+    
+        ListingType listingType = ListingType.HOUSE;
+        String suiteNum = "";
+        Float pricePerDay = (float) 0.0;
+        Listing listing;
+
+        System.out.println("Create new listing!!!");
+        System.out.println("What kind of listing is it?");
+
+        while (!cond)
+        {
+            switch (r.readLine().trim().toLowerCase())
+            {
+                case "house":
+                case "h":
+                    listingType = ListingType.HOUSE;
+                    cond = true;
+                    break;
+                
+                case "apartment":
+                case "apt":
+                case "a":
+                    listingType = ListingType.APARTMENT;
+                    cond = true;
+                    break;
+
+                case "condo":
+                case "cn":
+                    listingType = ListingType.CONDO;
+                    cond = true;
+                    break;
+
+                case "cottage":
+                case "ct":
+                    listingType = ListingType.COTTAGE;
+                    cond = true;
+                    break;
+
+                default:
+                    System.out.println("Not a valid listing type!");
+                    cond = false;
+                    break;
+            }
+        }
+
+        System.out.println("Is there a suite number?");
+        System.out.println("Leave blank for none.");
+
+        suiteNum = r.readLine().trim();
+
+        System.out.println("Whats the price you want to set per day?");
+
+        // Suggest price here!
+
+        cond = false;
+
+        while (!cond)
+        {
+            try 
+            {
+                pricePerDay = Float.parseFloat(r.readLine().trim());
+                cond = true;
+            }
+            catch (NumberFormatException e)
+            {
+                System.out.println("Not a valid price!");
+            }
+        }
+
+
+        listing = new Listing(listingType, suiteNum, pricePerDay, getAmenities());
+
+        // Need to incorporate location as well when adding listing!
+        // Probably: ask for location info, if exists attach this listing to it
+        // If not create a new location for it
+
+        try
+        {
+            if (!lDAO.insertListing(listing, loggedUser.getUsername()))
+                System.out.println("There was a problem creating this listing!");
+            else
+                System.out.println("Successfully created listing!");
+        }
+        catch (DuplicateKeyException e)
+        {
+            System.out.println("Duplicate listing!");
+        }
+    }
+
+    private void searchByHost(String username) throws IOException
+    {
+
+        ArrayList<Listing> listings;
+
+        if (username.isEmpty())
+        {
+            System.out.println("Input host username");
+            username = r.readLine().trim().toLowerCase();
+        }
+
+
+        // Set 10 for now...
+        listings = lDAO.getNListingsByHost(10, username);
+
+        for (Listing l : listings)
+        {
+            System.out.println(l.toString());
+        }
+    }
+
     private Boolean checkCmdArgs(ArrayList<String> cmds, Integer min, Integer max)
     {
         Integer argc = cmds.size() - 1;
@@ -374,6 +528,68 @@ public class Driver
         cmd = cmd.trim().toLowerCase();
 
         return new ArrayList<String>(Arrays.asList(cmd.split("\\s+")));
+    }
+
+    private String parseSIN(String str) throws ParseException
+    {
+        return str.replace("-", "");
+    }
+
+    private Boolean isLoggedIn()
+    {
+        return loggedUser != null;
+    }
+
+    private ArrayList<AmenityType> getAmenities() throws IOException
+    {
+        Boolean cond = false;
+        ArrayList<AmenityType> amenities = new ArrayList<AmenityType>();
+    
+        while (!cond)
+        {
+            System.out.println("What kind of amenities would you like?");
+            printListOfAmenities();
+            System.out.println("type q to stop adding amenities.");
+
+            switch (r.readLine().trim().toLowerCase())
+            {
+                case "pool":
+                case "p":
+                    amenities.add(AmenityType.POOL);
+                    System.out.println("POOL added!");
+                    break;
+
+                case "kitchen":
+                case "k":
+                    amenities.add(AmenityType.KITCHEN);
+                    System.out.println("KITCHEN added!");
+                    break;
+
+                case "parking":
+                case "park":
+                    amenities.add(AmenityType.PARKING);
+                    System.out.println("PARKING added!");
+                    break;
+
+                // Add rest of amenities
+                
+                case "quit":
+                case "q":
+                    cond = true;
+                    break;
+
+                default:
+                    System.out.println("not a valid option");
+                    break;
+            }
+        }
+
+        return amenities;
+    }
+
+    private void printListOfAmenities()
+    {
+
     }
 
 }

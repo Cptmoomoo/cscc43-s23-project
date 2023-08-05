@@ -9,10 +9,12 @@ import org.javatuples.Triplet;
 import com.c43backend.dbconnectionservice.DBConnectionService;
 
 import resources.entities.PaymentInfo;
-import resources.utils.Globals;
+import resources.exceptions.DuplicateKeyException;
+import resources.exceptions.RunQueryException;
 import resources.utils.Table;
 
-public class PaymentInfoDAO {
+public class PaymentInfoDAO extends DAO
+{
     private final Integer listingNumCols;
     private static final ArrayList<Triplet<String, Integer, Class<?>>> columnMetaData = new ArrayList<Triplet<String, Integer, Class<?>>>()
         {
@@ -26,17 +28,16 @@ public class PaymentInfoDAO {
             }
         };
 
-    private final DBConnectionService db;
     private Table table;
 
     public PaymentInfoDAO(DBConnectionService db) throws ClassNotFoundException, SQLException
     {
-        this.db = db;
+        super(db);
         this.listingNumCols = columnMetaData.size();
-        this.table = new Table(listingNumCols, Globals.TABLE_SIZE, columnMetaData);
+        this.table = new Table(listingNumCols, columnMetaData);
     }
 
-    public Boolean insertPaymentInfo(PaymentInfo paymentInfo)
+    public Boolean insertPaymentInfo(PaymentInfo paymentInfo) throws DuplicateKeyException
     {
         db.setPStatement("INSERT INTO payment_info VALUES (?, ?, ?, ?, ?, ?)");
 
@@ -58,7 +59,7 @@ public class PaymentInfoDAO {
         if (!db.setPStatementString(6, paymentInfo.getPostalCode()))
             return false;
 
-        return db.executeUpdateSetQuery();
+        return executeSetQueryWithDupeCheck("card number");
     }
 
     public PaymentInfo getPaymentInfo(String cardNum)
@@ -67,16 +68,9 @@ public class PaymentInfoDAO {
         db.setPStatement("SELECT * FROM Payment_info WHERE Card_number=?");
         db.setPStatementString(1, cardNum);
 
-        try
-        {
-            if (!db.executeSetQueryReturnN(1, table))
-                return null;    
-        }
-        catch (SQLException e)
-        {
-            e.printStackTrace();
-            return null;
-        }
+
+        if (!db.executeSetQueryReturnN(1, table))
+            throw new RunQueryException();
 
         if (table.isEmpty())
             return null;

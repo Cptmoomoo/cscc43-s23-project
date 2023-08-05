@@ -7,7 +7,8 @@ import java.io.Reader;
 import java.sql.*;
 
 import io.github.cdimascio.dotenv.Dotenv;
-
+import resources.enums.UpdateErrorCodes;
+import resources.exceptions.DuplicateKeyException;
 import resources.utils.Row;
 import resources.utils.Table;
 
@@ -166,22 +167,21 @@ public final class DBConnectionService
         return _pStmt.executeQuery();
     }
 
-    public Boolean executeUpdateSetQuery()
+    public UpdateErrorCodes executeUpdateSetQuery() throws DuplicateKeyException
     {
         try
         {
             _pStmt.executeUpdate();
-            return true;
+            return UpdateErrorCodes.SUCCESS;
         }
         catch (SQLIntegrityConstraintViolationException e)
         {
-            System.out.println("Some key already exists!");
-            return false;
+            return UpdateErrorCodes.DUPLICATE_KEY;
         }
         catch (SQLException e)
         {
             e.printStackTrace();
-            return false;
+            return UpdateErrorCodes.QUERY_ERROR;
         }
     }
 
@@ -192,19 +192,36 @@ public final class DBConnectionService
         return pStmt.executeQuery();
     }
 
-    public Boolean executeQueryReturnN(String query, Integer n, Table table) throws SQLException
+    public Boolean executeQueryReturnN(String query, Integer n, Table table)
     {
-        PreparedStatement pStmt = _conn.prepareStatement(query);
-        ResultSet res = pStmt.executeQuery();
+        try
+        {
+            PreparedStatement pStmt = _conn.prepareStatement(query);
+            ResultSet res = pStmt.executeQuery();
 
-        return getNRows(n, table, res);
+            return getNRows(n, table, res);
+        }
+        catch (SQLException e)
+        {
+            e.printStackTrace();
+            return false;
+        }
     }
 
-    public Boolean executeSetQueryReturnN(Integer n, Table table) throws SQLException
+    public Boolean executeSetQueryReturnN(Integer n, Table table)
     {
-        ResultSet res = _pStmt.executeQuery();
+        try
+        {
+            ResultSet res = _pStmt.executeQuery();
 
-        return getNRows(n, table, res);
+            return getNRows(n, table, res);
+        }
+        catch (SQLException e)
+        {
+            e.printStackTrace();
+            return false;
+        }
+        
     }
 
     private Boolean getNRows(Integer n, Table table, ResultSet res) throws SQLException

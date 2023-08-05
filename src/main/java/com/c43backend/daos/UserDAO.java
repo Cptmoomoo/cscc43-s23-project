@@ -8,12 +8,13 @@ import org.javatuples.Triplet;
 
 import com.c43backend.dbconnectionservice.DBConnectionService;
 
-import resources.utils.Globals;
 import resources.entities.User;
 import resources.enums.UserType;
+import resources.exceptions.DuplicateKeyException;
+import resources.exceptions.RunQueryException;
 import resources.utils.Table;
 
-public class UserDAO
+public class UserDAO extends DAO
 {
     private final Integer userNumCols;
     private static final ArrayList<Triplet<String, Integer, Class<?>>> columnMetaData = new ArrayList<Triplet<String, Integer, Class<?>>>()
@@ -21,7 +22,7 @@ public class UserDAO
             {
                 add(new Triplet<String, Integer, Class<?>>("username", 0, String.class));
                 add(new Triplet<String, Integer, Class<?>>("password", 1, String.class));
-                add(new Triplet<String, Integer, Class<?>>("SIN", 2, Integer.class));
+                add(new Triplet<String, Integer, Class<?>>("SIN", 2, String.class));
                 add(new Triplet<String, Integer, Class<?>>("occupation", 3, String.class));
                 add(new Triplet<String, Integer, Class<?>>("birthday", 4, Date.class));
                 add(new Triplet<String, Integer, Class<?>>("firstName", 5, String.class));
@@ -30,18 +31,17 @@ public class UserDAO
             }
         };
 
-    private final DBConnectionService db;
     private Table table;
 
     public UserDAO(DBConnectionService db) throws ClassNotFoundException, SQLException
     {
-        this.db = db;
+        super(db);
         this.userNumCols = columnMetaData.size();
-        this.table = new Table(userNumCols, Globals.TABLE_SIZE, columnMetaData);
+        this.table = new Table(userNumCols, columnMetaData);
     }
     
 
-    public Boolean insertUser(User user)
+    public Boolean insertUser(User user) throws DuplicateKeyException
     {
         db.setPStatement("INSERT INTO users VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
 
@@ -51,7 +51,7 @@ public class UserDAO
         if (!db.setPStatementString(2, user.getHashedPass()))
             return false;
 
-        if (!db.setPStatementInt(3, user.getSIN()))
+        if (!db.setPStatementString(3, user.getSIN()))
             return false;
         
         if (!db.setPStatementString(4, user.getOccupation()))
@@ -69,7 +69,7 @@ public class UserDAO
         if (!db.setPStatementString(8, user.getUserType().toString()))
             return false;
 
-        return db.executeUpdateSetQuery();
+        return executeSetQueryWithDupeCheck("username or SIN");
     }
 
     public User getUser(String username)
@@ -78,32 +78,29 @@ public class UserDAO
         db.setPStatement("SELECT * FROM users WHERE Username=?");
         db.setPStatementString(1, username);
 
-        try
-        {
-            if (!db.executeSetQueryReturnN(1, table))
-                return null;    
-        }
-        catch (SQLException e)
-        {
-            e.printStackTrace();
-            return null;
-        }
+        if (!db.executeSetQueryReturnN(1, table))
+            throw new RunQueryException();    
 
         if (table.isEmpty())
             return null;
 
-        user = new User((String) table.extractValueFromRowByName(0, "username"),
-                        UserType.valueOf((String) table.extractValueFromRowByName(0, "userType")),
-                        (Integer) table.extractValueFromRowByName(0, "SIN"),
-                        (String) table.extractValueFromRowByName(0, "occupation"),
-                        ((Date) table.extractValueFromRowByName(0, "birthday")).toLocalDate(),
-                        (String) table.extractValueFromRowByName(0, "firstName"),
-                        (String) table.extractValueFromRowByName(0, "lastName"),
-                        (String) table.extractValueFromRowByName(0, "password"));
+        user = getUserFromTable(0);
 
         table.clearTable();
 
         return user;
+    }
+
+    private User getUserFromTable(Integer rowNum)
+    {
+        return new User((String) table.extractValueFromRowByName(rowNum, "username"),
+                        UserType.valueOf((String) table.extractValueFromRowByName(0, "userType")),
+                        (String) table.extractValueFromRowByName(rowNum, "SIN"),
+                        (String) table.extractValueFromRowByName(rowNum, "occupation"),
+                        ((Date) table.extractValueFromRowByName(rowNum, "birthday")).toLocalDate(),
+                        (String) table.extractValueFromRowByName(rowNum, "firstName"),
+                        (String) table.extractValueFromRowByName(rowNum, "lastName"),
+                        (String) table.extractValueFromRowByName(rowNum, "password"));
     }
 
     

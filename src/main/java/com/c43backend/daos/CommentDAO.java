@@ -1,9 +1,6 @@
 package com.c43backend.daos;
 
-import java.time.LocalDateTime;
-
 import java.sql.Timestamp;
-import java.sql.Date;
 import java.sql.SQLException;
 import java.util.ArrayList;
 
@@ -12,10 +9,12 @@ import org.javatuples.Triplet;
 import com.c43backend.dbconnectionservice.DBConnectionService;
 
 import resources.entities.Comment;
-import resources.utils.Globals;
+import resources.exceptions.DuplicateKeyException;
+import resources.exceptions.RunQueryException;
 import resources.utils.Table;
 
-public class CommentDAO {
+public class CommentDAO extends DAO
+{
     private final Integer listingNumCols;
     private static final ArrayList<Triplet<String, Integer, Class<?>>> columnMetaData = new ArrayList<Triplet<String, Integer, Class<?>>>()
         {
@@ -26,27 +25,29 @@ public class CommentDAO {
             }
         };
 
-    private final DBConnectionService db;
     private Table table;
 
     public CommentDAO(DBConnectionService db) throws ClassNotFoundException, SQLException
     {
-        this.db = db;
+        super(db);
         this.listingNumCols = columnMetaData.size();
-        this.table = new Table(listingNumCols, Globals.TABLE_SIZE, columnMetaData);
+        this.table = new Table(listingNumCols, columnMetaData);
     }
 
-    public Boolean insertComment(Comment comment)
+    public Boolean insertComment(Comment comment) throws DuplicateKeyException
     {
-        db.setPStatement("INSERT INTO comments VALUES (UUID(), ?, ?)");
+        db.setPStatement("INSERT INTO comments VALUES (?, ?, ?)");
 
-        if (!db.setPStatementString(1, comment.getText()))
+        if (!db.setPStatementString(1, comment.getCommentID()))
+            return false;
+
+        if (!db.setPStatementString(2, comment.getText()))
             return false;
     
-        if (!db.setPStatementTimestamp(2, comment.getTimestamp()))
+        if (!db.setPStatementTimestamp(3, Timestamp.valueOf(comment.getTimestamp())))
             return false;
 
-        return db.executeUpdateSetQuery();
+        return executeSetQueryWithDupeCheck("comment ID");
     }
 
     public Comment getComment(String comment_id)
@@ -55,23 +56,15 @@ public class CommentDAO {
         db.setPStatement("SELECT * FROM comments WHERE Comment_id=?");
         db.setPStatementString(1, comment_id);
 
-        try
-        {
-            if (!db.executeSetQueryReturnN(1, table))
-                return null;    
-        }
-        catch (SQLException e)
-        {
-            e.printStackTrace();
-            return null;
-        }
+        if (!db.executeSetQueryReturnN(1, table))
+            throw new RunQueryException();    
 
         if (table.isEmpty())
             return null;
 
         comment = new Comment((String) table.extractValueFromRowByName(0, "commentID"),
                               (String) table.extractValueFromRowByName(0, "text"),
-                              (Timestamp) table.extractValueFromRowByName(0, "timestamp"));
+                              ((Timestamp) table.extractValueFromRowByName(0, "timestamp")).toLocalDateTime());
 
         table.clearTable();
 

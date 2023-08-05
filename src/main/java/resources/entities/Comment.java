@@ -1,7 +1,7 @@
 package resources.entities;
 
 import java.time.LocalDateTime;
-import java.sql.Timestamp;
+import java.util.UUID;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -12,17 +12,12 @@ public class Comment
 {
     private String commentID;
     private String text;
-    private Timestamp timestamp;
+    private LocalDateTime timestamp;
 
     public Comment(String text)
     {
-        this(null, text, Timestamp.valueOf(LocalDateTime.now()));
+        this(UUID.randomUUID().toString(), text, LocalDateTime.now());
     }
-
-    // public Comment(String commentID, String text, LocalDateTime timestamp)
-    // {
-    //     this(commentID, text, timestamp);
-    // }
 
     @Override
     public boolean equals(Object right)

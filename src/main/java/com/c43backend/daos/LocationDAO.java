@@ -8,10 +8,12 @@ import org.javatuples.Triplet;
 import com.c43backend.dbconnectionservice.DBConnectionService;
 
 import resources.entities.Location;
-import resources.utils.Globals;
+import resources.exceptions.DuplicateKeyException;
+import resources.exceptions.RunQueryException;
 import resources.utils.Table;
 
-public class LocationDAO {
+public class LocationDAO extends DAO
+{
     private final Integer listingNumCols;
     private static final ArrayList<Triplet<String, Integer, Class<?>>> columnMetaData = new ArrayList<Triplet<String, Integer, Class<?>>>()
         {
@@ -25,18 +27,17 @@ public class LocationDAO {
             }
         };
 
-    private final DBConnectionService db;
     private Table table;
 
     public LocationDAO(DBConnectionService db) throws ClassNotFoundException, SQLException
     {
-        this.db = db;
+        super(db);
         this.listingNumCols = columnMetaData.size();
-        this.table = new Table(listingNumCols, Globals.TABLE_SIZE, columnMetaData);
+        this.table = new Table(listingNumCols, columnMetaData);
     }
 
 
-    public Boolean insertLocation(Location location)
+    public Boolean insertLocation(Location location) throws DuplicateKeyException
     {
         db.setPStatement("INSERT INTO locations VALUES (?, ?, ?, ?, ?, ?)");
 
@@ -58,7 +59,7 @@ public class LocationDAO {
         if (!db.setPStatementString(6, location.getProvince()))
             return false;
 
-        return db.executeUpdateSetQuery();
+        return executeSetQueryWithDupeCheck("coordinates");
     }
 
     public Location getLocation(Float longitude, Float latitude)
@@ -68,31 +69,28 @@ public class LocationDAO {
         db.setPStatementFloat(1, longitude);
         db.setPStatementFloat(2, latitude);
 
-        try
-        {
-            if (!db.executeSetQueryReturnN(1, table))
-                return null;    
-        }
-        catch (SQLException e)
-        {
-            e.printStackTrace();
-            return null;
-        }
+        if (!db.executeSetQueryReturnN(1, table))
+            throw new RunQueryException();    
 
         if (table.isEmpty())
             return null;
 
-        location = new Location((Float) table.extractValueFromRowByName(0, "longitude"),
-                                (Float) table.extractValueFromRowByName(0, "latitude"),
-                                (String) table.extractValueFromRowByName(0, "postalCode"),
-                                (String) table.extractValueFromRowByName(0, "city"),
-                                (String) table.extractValueFromRowByName(0, "country"),
-                                (String) table.extractValueFromRowByName(0, "province"));
+        location = getLocationFromTable(0);
 
 
         table.clearTable();
 
         return location;
+    }
+
+    private Location getLocationFromTable(Integer rowNum)
+    {
+        return new Location((Float) table.extractValueFromRowByName(rowNum, "longitude"),
+                                (Float) table.extractValueFromRowByName(rowNum, "latitude"),
+                                (String) table.extractValueFromRowByName(rowNum, "postalCode"),
+                                (String) table.extractValueFromRowByName(rowNum, "city"),
+                                (String) table.extractValueFromRowByName(rowNum, "country"),
+                                (String) table.extractValueFromRowByName(rowNum, "province"));
     }
     
 }

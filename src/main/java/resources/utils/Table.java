@@ -1,6 +1,7 @@
 package resources.utils;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 
 import org.javatuples.Triplet;
 
@@ -8,19 +9,17 @@ import lombok.Getter;
 import resources.exceptions.RowShapeMismatchException;
 
 @Getter
-public class Table
+public class Table implements Iterable<Row>
 {
     private ArrayList<Triplet<String, Integer, Class<?>>> columnMetaData;
     private ArrayList<Row> table;
     private Integer numCols;
-    private Integer numRows;
 
-    public Table(Integer numCols, Integer numRows, ArrayList<Triplet<String, Integer, Class<?>>> columnMetaData)
+    public Table(Integer numCols, ArrayList<Triplet<String, Integer, Class<?>>> columnMetaData)
     {
         this.columnMetaData = columnMetaData;
-        table = new ArrayList<Row>(numRows);
+        table = new ArrayList<Row>();
         this.numCols = numCols;
-        this.numRows = numRows;
     }
 
     public Boolean addRow(Row row)
@@ -66,6 +65,12 @@ public class Table
         }
 
         return null;
+    }
+
+    @Override
+    public Iterator<Row> iterator()
+    {
+        return table.iterator();
     }
 
     private Triplet<String, Integer, Class<?>> getTripletByIdx(Integer idx)
