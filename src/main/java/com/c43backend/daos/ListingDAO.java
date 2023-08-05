@@ -176,6 +176,36 @@ public class ListingDAO extends DAO
         return listings;
     }
 
+    public ArrayList<Listing> getListingByAddress(Integer n, String city, String province, String country, String postalCode)
+    {
+        String listingID;
+        ArrayList<Listing> listings = new ArrayList<Listing>();
+        ArrayList<AmenityType> amenities;
+
+        db.setPStatement("SELECT listings.Listing_id, listings.Listing_type, listings.Suite_number, listings.Is_active, listings.Price_per_day, listings.Time_listed " +
+                         "FROM (belongs_to NATURAL JOIN locations ON locations.city=? AND locations.province=? AND locations.country=? AND locations.postalCode=?) " +
+                         "NATURAL JOIN listings");
+        db.setPStatementString(1, city);
+        db.setPStatementString(2, province);
+        db.setPStatementString(3, country);
+        db.setPStatementString(4, postalCode);
+
+        if (!db.executeSetQueryReturnN(n, listingTable))
+            throw new RunQueryException();
+
+        for (int i = 0; i < listingTable.size(); i++)
+        {
+            listingID = (String) listingTable.extractValueFromRowByName(i, "listingID");
+            amenities = getAmenitiesFromListing(listingID);
+
+            listings.add(getListingFromTable(i, amenities));
+        }
+
+        listingTable.clearTable();
+
+        return listings;
+    }
+
     private Listing getListingFromTable(Integer rowNum, ArrayList<AmenityType> amenities)
     {
         return new Listing((String) listingTable.extractValueFromRowByName(rowNum, "listingID"),
