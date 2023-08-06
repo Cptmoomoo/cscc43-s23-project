@@ -96,10 +96,7 @@ public class UserDAO extends DAO
         db.setPStatement("DELETE FROM users WHERE Username=?");
         db.setPStatementString(1, username);
 
-        if (!db.executeSetQueryReturnN(1, table))
-            throw new RunQueryException();    
-
-        return true;
+        return db.executeUpdateSetQueryBool();
     }
 
     private User getUserFromTable(Integer rowNum)

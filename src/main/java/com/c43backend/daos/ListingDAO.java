@@ -13,6 +13,7 @@ import resources.enums.ListingType;
 import resources.exceptions.DuplicateKeyException;
 import resources.exceptions.RunQueryException;
 import resources.enums.AmenityType;
+import resources.enums.UpdateErrorCodes;
 import resources.utils.Globals;
 import resources.utils.Table;
 
@@ -130,6 +131,14 @@ public class ListingDAO extends DAO
         return listing;
     }
 
+    public Boolean deleteListing(String listingID) 
+    {
+        db.setPStatement("DELETE FROM listings WHERE Listing_id=?");
+        db.setPStatementString(1, listingID);
+
+        return db.executeUpdateSetQueryBool();
+    }
+
     public ArrayList<AmenityType> getAmenitiesFromListing(String listingID)
     {
         ArrayList<AmenityType> amenities = new ArrayList<AmenityType>();
@@ -213,7 +222,7 @@ public class ListingDAO extends DAO
         ArrayList<AmenityType> amenities;
 
         db.setPStatement("SELECT listings.Listing_id, listings.Listing_type, listings.Suite_number, listings.Is_active, listings.Price_per_day, listings.Time_listed " +
-                         "FROM (belongs_to NATURAL JOIN locations WHERE SQRT(POWER(belongs_to.longitude - ?, 2) + POWER(belongs_to.latitude - ?, 2)) <= ?");
+                         "FROM belongs_to NATURAL JOIN locations WHERE SQRT(POWER(belongs_to.longitude - ?, 2) + POWER(belongs_to.latitude - ?, 2)) <= ?");
         db.setPStatementFloat(1, longitude);
         db.setPStatementFloat(2, latitude);
         db.setPStatementFloat(3, distance);

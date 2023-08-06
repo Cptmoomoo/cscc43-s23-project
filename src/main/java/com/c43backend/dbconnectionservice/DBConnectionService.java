@@ -185,6 +185,24 @@ public final class DBConnectionService
         }
     }
 
+    public Boolean executeUpdateSetQueryBool() 
+    {
+        try
+        {
+            _pStmt.executeUpdate();
+            return true;
+        }
+        catch (SQLIntegrityConstraintViolationException e)
+        {
+            return false;
+        }
+        catch (SQLException e)
+        {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
     public ResultSet executeQuery(String query) throws SQLException
     {
         PreparedStatement pStmt = _conn.prepareStatement(query);
