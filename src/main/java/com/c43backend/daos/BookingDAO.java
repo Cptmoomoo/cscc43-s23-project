@@ -60,7 +60,7 @@ public class BookingDAO extends DAO
 
         if (!db.setPStatementDate(2, new Date(availability.getStartDate().toEpochDay())))
             return false;
-        
+
         if (!db.setPStatementString(3, renter_id))
             return false;
 
