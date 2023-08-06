@@ -56,14 +56,15 @@ CREATE TABLE IF NOT EXISTS Availability (
 /* Relations */
 
 CREATE TABLE IF NOT EXISTS Bookings (
-    FOREIGN KEY (Listing_id) REFERENCES Availability(Listing_id),
+    FOREIGN KEY (Listing_id) REFERENCES Listings(Listing_id),
     Listing_id char(36),
     FOREIGN KEY (Start_date) REFERENCES Availability(Start_date),
     Start_date DATE,
     FOREIGN KEY (Renter_id) REFERENCES Users(Username),
     Renter_id char(36),
     Total_price float,
-    Card_number int,
+    FOREIGN KEY (Card_number) REFERENCES Payment_info(Card_number),
+    Card_number char(16),
     Cancelled_by char(36) DEFAULT "",
     CONSTRAINT PK_Bookings PRIMARY KEY (Listing_id, Start_date, Renter_id)
 );
