@@ -191,7 +191,7 @@ public class ListingDAO extends DAO
         ArrayList<AmenityType> amenities;
 
         db.setPStatement("SELECT listings.Listing_id, listings.Listing_type, listings.Suite_number, listings.Is_active, listings.Price_per_day, listings.Time_listed " +
-                         "FROM (belongs_to NATURAL JOIN locations ON locations.city=? AND locations.province=? AND locations.country=? AND locations.postalCode=?) " +
+                         "FROM (belongs_to NATURAL JOIN locations ON locations.City=? AND locations.Province=? AND locations.Country=? AND locations.Postal_code=?) " +
                          "NATURAL JOIN listings");
         db.setPStatementString(1, city);
         db.setPStatementString(2, province);
@@ -221,12 +221,12 @@ public class ListingDAO extends DAO
         ArrayList<AmenityType> amenities;
 
         db.setPStatement("SELECT listings.Listing_id, listings.Listing_type, listings.Suite_number, listings.Is_active, listings.Price_per_day, listings.Time_listed " +
-                         "FROM belongs_to NATURAL JOIN locations WHERE SQRT(POWER(belongs_to.longitude - ?, 2) + POWER(belongs_to.latitude - ?, 2)) <= ? " +
+                         "FROM belongs_to NATURAL JOIN locations WHERE SQRT(POWER(belongs_to.Longitude - ?, 2) + POWER(belongs_to.Latitude - ?, 2)) <= ? " +
                          "ORDER BY ? ?");
         db.setPStatementFloat(1, longitude);
         db.setPStatementFloat(2, latitude);
         db.setPStatementFloat(3, distance);
-        db.setPStatementString(4, sort_by == "distance"? "SQRT(POWER(belongs_to.longitude - ?, 2) + POWER(belongs_to.latitude - ?, 2))" : "listings.Price_per_day");
+        db.setPStatementString(4, sort_by == "distance"? "SQRT(POWER(belongs_to.Longitude - ?, 2) + POWER(belongs_to.Latitude - ?, 2))" : "Listings.Price_per_day");
         db.setPStatementString(5, order == "ascending" ? "ASC" : "DESC");
 
         if (!db.executeSetQueryReturnN(n, listingTable))
@@ -255,7 +255,7 @@ public class ListingDAO extends DAO
                          "FROM belongs_to NATURAL JOIN locations WHERE SUBSTRING(locations.Postal_code, 1, 3) = ?" +
                          "ORDER BY ? ?");
         db.setPStatementString(1, postal_code.substring(0, 4));
-        db.setPStatementString(2, sort_by == "distance" ? "SQRT(POWER(belongs_to.longitude - ?, 2) + POWER(belongs_to.latitude - ?, 2))" : "listings.Price_per_day");
+        db.setPStatementString(2, sort_by == "distance" ? "SQRT(POWER(belongs_to.Longitude - ?, 2) + POWER(belongs_to.Latitude - ?, 2))" : "listings.Price_per_day");
         db.setPStatementString(3, order == "ascending" ? "ASC" : "DESC");
 
         if (!db.executeSetQueryReturnN(n, listingTable))
