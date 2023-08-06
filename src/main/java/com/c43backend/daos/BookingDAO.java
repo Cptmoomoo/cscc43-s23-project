@@ -6,6 +6,7 @@ import java.sql.Date;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 
 import org.javatuples.Triplet;
 
@@ -64,7 +65,7 @@ public class BookingDAO extends DAO
         if (!db.setPStatementString(3, renter_id))
             return false;
 
-        if (!db.setPStatementFloat(4, availability.getPricePerDay()))
+        if (!db.setPStatementFloat(4, availability.getPricePerDay() * ChronoUnit.DAYS.between(availability.getStartDate(), availability.getEndDate())))
             return false;
 
         if (!db.setPStatementString(5, payment.getCardNum()))

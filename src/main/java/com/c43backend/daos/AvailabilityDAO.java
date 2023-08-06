@@ -80,6 +80,17 @@ public class AvailabilityDAO extends DAO
         return availability;
     }
 
+    public Boolean updatePriceForAvailability(Availability availability, Float new_price)
+    {
+        db.setPStatement("UPDATE availability SET Price_per_day=? WHERE Start_date=? AND Listing_id=?");
+
+        db.setPStatementFloat(1, new_price);
+        db.setPStatementDate(2, new Date(availability.getStartDate().toEpochDay()));
+        db.setPStatementString(3, availability.getListingID());
+
+        return db.executeUpdateSetQueryBool();
+    }
+
     public Boolean deleteAvailability(Availability availability)
     {
         db.setPStatement("DELETE FROM availability WHERE Start_date=? AND Listing_id=?");
