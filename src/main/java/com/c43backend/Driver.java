@@ -432,7 +432,6 @@ public class Driver
     
         ListingType listingType = ListingType.HOUSE;
         String suiteNum = "";
-        Float pricePerDay = (float) 0.0;
         Listing listing;
 
         System.out.println("Create new listing!!!");
@@ -479,27 +478,27 @@ public class Driver
 
         suiteNum = r.readLine().trim();
 
-        System.out.println("Whats the price you want to set per day?");
+        // System.out.println("Whats the price you want to set per day?");
 
-        // Suggest price here!
+        // // Suggest price here!
 
-        cond = false;
+        // cond = false;
 
-        while (!cond)
-        {
-            try 
-            {
-                pricePerDay = Float.parseFloat(r.readLine().trim());
-                cond = true;
-            }
-            catch (NumberFormatException e)
-            {
-                System.out.println("Not a valid price, try again!");
-            }
-        }
+        // while (!cond)
+        // {
+        //     try 
+        //     {
+        //         pricePerDay = Float.parseFloat(r.readLine().trim());
+        //         cond = true;
+        //     }
+        //     catch (NumberFormatException e)
+        //     {
+        //         System.out.println("Not a valid price, try again!");
+        //     }
+        // }
 
 
-        listing = new Listing(listingType, suiteNum, pricePerDay, getAmenities());
+        listing = new Listing(listingType, suiteNum, getAmenities());
 
         // Need to incorporate location as well when adding listing!
         // Probably: ask for location info, if exists attach this listing to it

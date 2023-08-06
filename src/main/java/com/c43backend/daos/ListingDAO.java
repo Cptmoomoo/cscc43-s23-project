@@ -25,7 +25,6 @@ public class ListingDAO extends DAO
                 add(new Triplet<String, Integer, Class<?>>("listingType", 1, String.class));
                 add(new Triplet<String, Integer, Class<?>>("suiteNum", 2, String.class));
                 add(new Triplet<String, Integer, Class<?>>("isActive", 3, Boolean.class));
-                add(new Triplet<String, Integer, Class<?>>("pricePerDay", 4, Float.class));
                 add(new Triplet<String, Integer, Class<?>>("timeListed", 5, Timestamp.class));
             }
         };
@@ -57,7 +56,7 @@ public class ListingDAO extends DAO
     {
         String listingID = listing.getListingID();
     
-        db.setPStatement("INSERT INTO listings VALUES (?, ?, ?, ?, ?, ?)");
+        db.setPStatement("INSERT INTO listings VALUES (?, ?, ?, ?, ?)");
     
         if (!db.setPStatementString(1, listingID))
             return false;
@@ -70,11 +69,8 @@ public class ListingDAO extends DAO
         
         if (!db.setPStatementBoolean(4, listing.getIsActive()))
             return false;
-        
-        if (!db.setPStatementFloat(5, listing.getPricePerDay()))
-            return false;
 
-        if (!db.setPStatementTimestamp(6, Timestamp.valueOf(listing.getTimeListed())))
+        if (!db.setPStatementTimestamp(5, Timestamp.valueOf(listing.getTimeListed())))
             return false;
 
         if (!executeSetQueryWithDupeCheck("listing ID"))
@@ -165,7 +161,7 @@ public class ListingDAO extends DAO
         ArrayList<AmenityType> amenities;
         ArrayList<Listing> listings = new ArrayList<Listing>();
 
-        db.setPStatement("SELECT listings.Listing_id, listings.Listing_type, listings.Suite_number, listings.Is_active, listings.Price_per_day, listings.Time_listed " +
+        db.setPStatement("SELECT listings.Listing_id, listings.Listing_type, listings.Suite_number, listings.Is_active, listings.Time_listed " +
                          "FROM listings NATURAL JOIN host_of WHERE host_of.Username=?");
         db.setPStatementString(1, hostUsername);
 
@@ -191,7 +187,7 @@ public class ListingDAO extends DAO
         ArrayList<Listing> listings = new ArrayList<Listing>();
         ArrayList<AmenityType> amenities;
 
-        db.setPStatement("SELECT listings.Listing_id, listings.Listing_type, listings.Suite_number, listings.Is_active, listings.Price_per_day, listings.Time_listed " +
+        db.setPStatement("SELECT listings.Listing_id, listings.Listing_type, listings.Suite_number, listings.Is_active, listings.Time_listed " +
                          "FROM (belongs_to NATURAL JOIN locations ON locations.City=? AND locations.Province=? AND locations.Country=? AND locations.Postal_code=?) " +
                          "NATURAL JOIN listings");
         db.setPStatementString(1, city);
@@ -222,13 +218,13 @@ public class ListingDAO extends DAO
         ArrayList<AmenityType> amenities;
 
         db.setPStatement("SELECT listings.Listing_id, listings.Listing_type, listings.Suite_number, listings.Is_active, listings.Price_per_day, listings.Time_listed " +
-                         "FROM belongs_to NATURAL JOIN locations WHERE SQRT(POWER(belongs_to.Longitude - ?, 2) + POWER(belongs_to.Latitude - ?, 2)) <= ? " +
-                         "ORDER BY ? ?");
+                         "FROM belongs_to NATURAL JOIN locations WHERE SQRT(POWER(belongs_to.Longitude - ?, 2) + POWER(belongs_to.Latitude - ?, 2)) <= ? ");
+                        //  + "ORDER BY ? ?");
         db.setPStatementFloat(1, longitude);
         db.setPStatementFloat(2, latitude);
         db.setPStatementFloat(3, distance);
-        db.setPStatementString(4, sort_by == "distance"? "SQRT(POWER(belongs_to.Longitude - ?, 2) + POWER(belongs_to.Latitude - ?, 2))" : "Listings.Price_per_day");
-        db.setPStatementString(5, order == "ascending" ? "ASC" : "DESC");
+        // db.setPStatementString(4, sort_by == "distance"? "SQRT(POWER(belongs_to.Longitude - ?, 2) + POWER(belongs_to.Latitude - ?, 2))" : "Listings.Price_per_day");
+        // db.setPStatementString(5, order == "ascending" ? "ASC" : "DESC");
 
         if (!db.executeSetQueryReturnN(n, listingTable))
             throw new RunQueryException();
@@ -253,11 +249,11 @@ public class ListingDAO extends DAO
         ArrayList<AmenityType> amenities;
 
         db.setPStatement("SELECT listings.Listing_id, listings.Listing_type, listings.Suite_number, listings.Is_active, listings.Price_per_day, listings.Time_listed " +
-                         "FROM belongs_to NATURAL JOIN locations WHERE SUBSTRING(locations.Postal_code, 1, 3) = ?" +
-                         "ORDER BY ? ?");
+                         "FROM belongs_to NATURAL JOIN locations WHERE SUBSTRING(locations.Postal_code, 1, 3) = ?");
+                        //  + "ORDER BY ? ?");
         db.setPStatementString(1, postal_code.substring(0, 4));
-        db.setPStatementString(2, sort_by == "distance" ? "SQRT(POWER(belongs_to.Longitude - ?, 2) + POWER(belongs_to.Latitude - ?, 2))" : "listings.Price_per_day");
-        db.setPStatementString(3, order == "ascending" ? "ASC" : "DESC");
+        // db.setPStatementString(2, sort_by == "distance" ? "SQRT(POWER(belongs_to.Longitude - ?, 2) + POWER(belongs_to.Latitude - ?, 2))" : "listings.Price_per_day");
+        // db.setPStatementString(3, order == "ascending" ? "ASC" : "DESC");
 
         if (!db.executeSetQueryReturnN(n, listingTable))
             throw new RunQueryException();
@@ -281,7 +277,6 @@ public class ListingDAO extends DAO
                             ListingType.valueOf((String) listingTable.extractValueFromRowByName(rowNum, "listingType")),
                             (String) listingTable.extractValueFromRowByName(rowNum, "suiteNum"),
                             (Boolean) listingTable.extractValueFromRowByName(rowNum, "isActive"),
-                            (Float) listingTable.extractValueFromRowByName(rowNum, "pricePerDay"),
                             ((Timestamp) listingTable.extractValueFromRowByName(rowNum, "timeListed")).toLocalDateTime(),
                             amenities,
                             null);

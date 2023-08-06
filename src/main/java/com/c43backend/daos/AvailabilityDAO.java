@@ -14,7 +14,6 @@ import com.c43backend.dbconnectionservice.DBConnectionService;
 import resources.entities.Availability;
 import resources.exceptions.DuplicateKeyException;
 import resources.exceptions.RunQueryException;
-import resources.relations.Comment;
 import resources.utils.Table;
 
 public class AvailabilityDAO extends DAO
@@ -25,7 +24,8 @@ public class AvailabilityDAO extends DAO
             {
                 add(new Triplet<String, Integer, Class<?>>("startDate", 0, Date.class));
                 add(new Triplet<String, Integer, Class<?>>("endDate", 1, Date.class));
-                add(new Triplet<String, Integer, Class<?>>("listingID", 1, Date.class));
+                add(new Triplet<String, Integer, Class<?>>("listingID", 1, String.class));
+                add(new Triplet<String, Integer, Class<?>>("pricePerDay", 1, Float.class));
             }
         };
 
@@ -38,9 +38,9 @@ public class AvailabilityDAO extends DAO
         this.table = new Table(listingNumCols, columnMetaData);
     }
 
-    public Boolean insertAvailability(Availability availability, String listing_id) throws DuplicateKeyException
+    public Boolean insertAvailability(Availability availability, String listing_id, Float price_per_day) throws DuplicateKeyException
     {
-        db.setPStatement("INSERT INTO availability VALUES (?, ?, ?)");
+        db.setPStatement("INSERT INTO availability VALUES (?, ?, ?, ?)");
 
         if (!db.setPStatementDate(1, new Date(availability.getStartDate().toEpochDay())))
             return false;
@@ -49,6 +49,9 @@ public class AvailabilityDAO extends DAO
             return false;
 
         if (!db.setPStatementString(3, listing_id))
+            return false;
+        
+        if (!db.setPStatementFloat(4, price_per_day))
             return false;
 
         return executeSetQueryWithDupeCheck("date range");
@@ -69,7 +72,8 @@ public class AvailabilityDAO extends DAO
 
         availability = new Availability(((Date) table.extractValueFromRowByName(0, "startDate")).toLocalDate(),
                                         ((Date) table.extractValueFromRowByName(0, "endDate")).toLocalDate(),
-                                        (String) table.extractValueFromRowByName(0, "listingID"));
+                                        (String) table.extractValueFromRowByName(0, "listingID"),
+                                        (Float) table.extractValueFromRowByName(0, "pricePerDay"));
 
         table.clearTable();
 

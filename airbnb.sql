@@ -4,7 +4,6 @@ CREATE TABLE IF NOT EXISTS Listings (
     Listing_type varchar(10),
     Suite_number varchar(5), 
     Is_active boolean,
-    Price_per_day float,
     Time_listed Timestamp
 );
 
@@ -50,7 +49,8 @@ CREATE TABLE IF NOT EXISTS Availability (
     End_date DATE,
     FOREIGN KEY (Listing_id) REFERENCES Listings(Listing_id),
     Listing_id char(36),
-    PRIMARY KEY (Start_date, Listing_id)
+    Price_per_day float,
+    CONSTRAINT PK_Availability PRIMARY KEY (Start_date, Listing_id)
 );
 
 

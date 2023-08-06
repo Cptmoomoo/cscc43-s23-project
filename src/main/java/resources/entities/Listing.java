@@ -18,30 +18,29 @@ public class Listing
     private ListingType listingType;
     private String suiteNum;
     private Boolean isActive;
-    private Float pricePerDay;
     private LocalDateTime timeListed;
 
     private ArrayList<AmenityType> amenities;
     private Location location;
 
-    public Listing(ListingType listingType, Float pricePerDay, ArrayList<AmenityType> amenities)
+    public Listing(ListingType listingType, ArrayList<AmenityType> amenities)
     {
-        this(UUID.randomUUID().toString(), listingType, "", true, pricePerDay, LocalDateTime.now(), amenities, null);
+        this(UUID.randomUUID().toString(), listingType, "", true, LocalDateTime.now(), amenities, null);
     }
 
-    public Listing(ListingType listingType, String suiteNum, Float pricePerDay, ArrayList<AmenityType> amenities)
+    public Listing(ListingType listingType, String suiteNum, ArrayList<AmenityType> amenities)
     {
-        this(UUID.randomUUID().toString(), listingType, suiteNum, true, pricePerDay, LocalDateTime.now(), amenities, null);
+        this(UUID.randomUUID().toString(), listingType, suiteNum, true, LocalDateTime.now(), amenities, null);
     }
 
-    public Listing(ListingType listingType, Float pricePerDay)
+    public Listing(ListingType listingType)
     {
-        this(UUID.randomUUID().toString(), listingType, "", true, pricePerDay, LocalDateTime.now(), new ArrayList<AmenityType>(), null);
+        this(UUID.randomUUID().toString(), listingType, "", true, LocalDateTime.now(), new ArrayList<AmenityType>(), null);
     }
 
-    public Listing(ListingType listingType, String suiteNum, Float pricePerDay)
+    public Listing(ListingType listingType, String suiteNum)
     {
-        this(UUID.randomUUID().toString(), listingType, suiteNum, true, pricePerDay, LocalDateTime.now(), new ArrayList<AmenityType>(), null);
+        this(UUID.randomUUID().toString(), listingType, suiteNum, true, LocalDateTime.now(), new ArrayList<AmenityType>(), null);
     }
 
     @Override

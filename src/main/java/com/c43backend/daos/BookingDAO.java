@@ -42,7 +42,7 @@ public class BookingDAO extends DAO
         this.table = new Table(listingNumCols, columnMetaData);
     }
 
-    public Boolean insertBooking(Availability availability, String renter_id, Float total_price, PaymentInfo payment) throws DuplicateKeyException
+    public Boolean insertBooking(Availability availability, String renter_id, PaymentInfo payment) throws DuplicateKeyException
     {
         
         // if (start_date.isBefore(availability.getStartDate())) {
@@ -64,7 +64,7 @@ public class BookingDAO extends DAO
         if (!db.setPStatementString(3, renter_id))
             return false;
 
-        if (!db.setPStatementFloat(4, total_price))
+        if (!db.setPStatementFloat(4, availability.getPricePerDay()))
             return false;
 
         if (!db.setPStatementString(5, payment.getCardNum()))

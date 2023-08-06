@@ -12,6 +12,7 @@ public class Availability
     private LocalDate startDate;
     private LocalDate endDate;
     private String listingID;
+    private Float pricePerDay;
 
     @Override
     public boolean equals(Object right)
