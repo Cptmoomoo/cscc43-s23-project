@@ -7,18 +7,19 @@ import lombok.Getter;
 import lombok.Setter;
 
 @Getter @Setter @AllArgsConstructor
-public class AvailableDateRange
+public class Availability
 {
     private LocalDate startDate;
     private LocalDate endDate;
+    private String listingID;
 
     @Override
     public boolean equals(Object right)
     {
-        if (!(right instanceof AvailableDateRange))
+        if (!(right instanceof Availability))
             return false;
 
-        AvailableDateRange right2 = (AvailableDateRange) right;
+        Availability right2 = (Availability) right;
 
         return startDate == right2.getStartDate() && endDate == right2.getEndDate();
     }

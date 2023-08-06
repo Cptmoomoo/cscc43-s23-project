@@ -10,6 +10,8 @@ import com.c43backend.daos.UserDAO;
 import com.c43backend.daos.ListingDAO;
 import com.c43backend.daos.CommentDAO;
 import com.c43backend.daos.LocationDAO;
+import com.c43backend.daos.AvailabilityDAO;
+import com.c43backend.daos.BookingDAO;
 import com.c43backend.dbconnectionservice.DBConnectionService;
 
 import resources.utils.Globals;
@@ -38,7 +40,9 @@ public class App
         UserDAO userDAO;
         ListingDAO listingDAO;
         LocationDAO locationDAO;
-        CommentDAO comment_dao;
+        CommentDAO comment_DAO;
+        AvailabilityDAO availabilityDAO;
+        BookingDAO bookingDAO;
         Driver driver;
 
         try
@@ -63,6 +67,8 @@ public class App
             userDAO = new UserDAO(db);
             listingDAO = new ListingDAO(db);
             locationDAO = new LocationDAO(db);
+            availabilityDAO = new AvailabilityDAO(db);
+            bookingDAO = new BookingDAO(db);
 
             PasswordHasher.init();
 
@@ -71,12 +77,12 @@ public class App
             a.add(AmenityType.KITCHEN);
             a.add(AmenityType.HEATER);
 
-            Listing l = new Listing(ListingType.APARTMENT, (float) 50.00, a);
+            // Listing l = new Listing(ListingType.APARTMENT, (float) 50.00, a);
 
             // if (!ldao.insertListing(l))
             //     System.out.println("FAILED!");
             
-            driver = new Driver(db, userDAO, listingDAO, locationDAO);
+            driver = new Driver(db, userDAO, listingDAO, locationDAO, bookingDAO);
 
 
             driver.run();
