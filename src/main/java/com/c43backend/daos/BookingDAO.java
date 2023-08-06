@@ -100,9 +100,4 @@ public class BookingDAO extends DAO
 
         return db.executeSetQuery();
     }
-
-    // public getBookingsUnderHost()
-    // {
-
-    // }
 }

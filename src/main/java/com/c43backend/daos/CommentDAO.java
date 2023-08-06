@@ -3,14 +3,15 @@ package com.c43backend.daos;
 import java.sql.Timestamp;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.UUID;
 
 import org.javatuples.Triplet;
 
 import com.c43backend.dbconnectionservice.DBConnectionService;
 
-import resources.entities.Comment;
 import resources.exceptions.DuplicateKeyException;
 import resources.exceptions.RunQueryException;
+import resources.relations.Comment;
 import resources.utils.Table;
 
 public class CommentDAO extends DAO
@@ -34,17 +35,45 @@ public class CommentDAO extends DAO
         this.table = new Table(listingNumCols, columnMetaData);
     }
 
-    public Boolean insertComment(Comment comment) throws DuplicateKeyException
+    public Boolean insertCommentForListing(String username, String listing_id, String text) throws DuplicateKeyException
     {
-        db.setPStatement("INSERT INTO comments VALUES (?, ?, ?)");
+        db.setPStatement("INSERT INTO comments VALUES (?, ?, ?, ?, ?)");
 
-        if (!db.setPStatementString(1, comment.getCommentID()))
+        if (!db.setPStatementString(1, UUID.randomUUID().toString()))
             return false;
 
-        if (!db.setPStatementString(2, comment.getText()))
+        if (!db.setPStatementString(2, username))
+            return false;
+
+        if (!db.setPStatementString(3, listing_id))
+            return false;
+
+        if (!db.setPStatementString(4, text))
             return false;
     
-        if (!db.setPStatementTimestamp(3, Timestamp.valueOf(comment.getTimestamp())))
+        if (!db.setPStatementTimestamp(5, new Timestamp(System.currentTimeMillis())))
+            return false;
+
+        return executeSetQueryWithDupeCheck("comment ID");
+    }
+
+    public Boolean insertCommentForUser(String reviewer_id, String reviewee_id, String text) throws DuplicateKeyException
+    {
+        db.setPStatement("INSERT INTO comments VALUES (?, ?, ?, ?, ?)");
+
+        if (!db.setPStatementString(1, UUID.randomUUID().toString()))
+            return false;
+
+        if (!db.setPStatementString(2, reviewer_id))
+            return false;
+
+        if (!db.setPStatementString(3, reviewee_id))
+            return false;
+
+        if (!db.setPStatementString(4, text))
+            return false;
+    
+        if (!db.setPStatementTimestamp(5, new Timestamp(System.currentTimeMillis())))
             return false;
 
         return executeSetQueryWithDupeCheck("comment ID");

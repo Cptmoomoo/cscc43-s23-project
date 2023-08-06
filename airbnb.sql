@@ -45,12 +45,6 @@ CREATE TABLE IF NOT EXISTS Payment_info (
     Postal_code char(6)
 );
 
-CREATE TABLE IF NOT EXISTS Comments (
-    Comment_id char(36) UNIQUE PRIMARY KEY,
-    Content varchar(255),
-    Timestamp Timestamp
-);
-
 CREATE TABLE IF NOT EXISTS Availability (
     Start_date DATE,
     End_date DATE,
@@ -95,18 +89,18 @@ CREATE TABLE IF NOT EXISTS Rate_listing (
     Username varchar(100),
     FOREIGN KEY (Listing_id) REFERENCES Listings(Listing_id),
     Listing_id char(36),
-    Timestamp Timestamp,
     Rating float,
+    Timestamp Timestamp,
     CONSTRAINT PK_Rate_listing PRIMARY KEY (Username, Listing_id, Timestamp)
 );
 
 CREATE TABLE IF NOT EXISTS Rate_user (
     FOREIGN KEY (Host) REFERENCES Users(Username),
-    Host varchar(100),
+    Reviewer varchar(100),
     FOREIGN KEY (Renter) REFERENCES Users(Username),
-    Renter varchar(100),
-    Timestamp Timestamp,
+    Reviewee varchar(100),
     Rating float,
+    Timestamp Timestamp,
     CONSTRAINT PK_Rate_User PRIMARY KEY (Host, Renter, Timestamp)
 );
 
@@ -117,6 +111,8 @@ CREATE TABLE IF NOT EXISTS Comment_listing (
     Username varchar(100),
     FOREIGN KEY (Listing_id) REFERENCES Listings(Listing_id),
     Listing_id char(36),
+    Text varchar(255),
+    Timestamp Timestamp,
     CONSTRAINT PK_Comment_listing PRIMARY KEY (Comment_id)
 );
 
@@ -124,9 +120,11 @@ CREATE TABLE IF NOT EXISTS Comment_user (
     FOREIGN KEY (Comment_id) REFERENCES Comments(Comment_id),
     Comment_id char(36),
     FOREIGN KEY (Host) REFERENCES Users(Username),
-    Host varchar(100),
+    Reviewer varchar(100),
     FOREIGN KEY (Renter) REFERENCES Users(Username),
-    Renter varchar(100),
+    Reviewee varchar(100),
+    Text varchar(255),
+    Timestamp Timestamp,
     CONSTRAINT PK_Comment_user PRIMARY KEY (Comment_id)
 );
 

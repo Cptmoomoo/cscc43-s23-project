@@ -12,7 +12,11 @@ import java.util.Arrays;
 import com.c43backend.daos.ListingDAO;
 import com.c43backend.daos.UserDAO;
 import com.c43backend.daos.LocationDAO;
+import com.c43backend.daos.AvailabilityDAO;
 import com.c43backend.daos.BookingDAO;
+import com.c43backend.daos.RateDAO;
+import com.c43backend.daos.CommentDAO;
+
 import com.c43backend.dbconnectionservice.DBConnectionService;
 
 import resources.entities.Listing;
@@ -33,18 +37,31 @@ public class Driver
     private final UserDAO userDAO;
     private final ListingDAO listingDAO;
     private final LocationDAO locationDAO;
+    private final AvailabilityDAO availabilityDAO;
     private final BookingDAO bookingDAO;
+    private final RateDAO rateDAO;
+    private final CommentDAO commentDAO;
 
 
     private User loggedUser = null;
 
-    public Driver(DBConnectionService db, UserDAO userDAO, ListingDAO listingDAO, LocationDAO locationDAO, BookingDAO bookingDAO)
+    public Driver(DBConnectionService db, 
+                  UserDAO userDAO, 
+                  ListingDAO listingDAO, 
+                  LocationDAO locationDAO, 
+                  AvailabilityDAO availabilityDAO,
+                  BookingDAO bookingDAO, 
+                  RateDAO rateDAO, 
+                  CommentDAO commentDAO)
     {
         this.db = db;
         this.userDAO = userDAO;
         this.listingDAO = listingDAO;
         this.locationDAO = locationDAO;
+        this.availabilityDAO = availabilityDAO;
         this.bookingDAO = bookingDAO;
+        this.rateDAO = rateDAO;
+        this.commentDAO = commentDAO;
         r = new BufferedReader(new InputStreamReader(System.in));
     }
 
