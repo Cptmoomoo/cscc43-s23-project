@@ -12,9 +12,9 @@ import org.javatuples.Triplet;
 import com.c43backend.dbconnectionservice.DBConnectionService;
 
 import resources.entities.Availability;
-import resources.entities.Comment;
 import resources.exceptions.DuplicateKeyException;
 import resources.exceptions.RunQueryException;
+import resources.relations.Comment;
 import resources.utils.Table;
 
 public class AvailabilityDAO extends DAO
@@ -81,6 +81,14 @@ public class AvailabilityDAO extends DAO
         db.setPStatement("DELETE FROM availability WHERE Start_date=? AND Listing_id=?");
         db.setPStatementDate(1, new Date(availability.getStartDate().toEpochDay()));
         db.setPStatementString(1, availability.getListingID());
+
+        return db.executeUpdateSetQueryBool();
+    }
+
+    public Boolean deleteAllAvailabilityOfListing(String listing_id)
+    {
+        db.setPStatement("DELETE FROM availability WHERE Listing_id=?");
+        db.setPStatementString(1, listing_id);
 
         return db.executeUpdateSetQueryBool();
     }

@@ -165,7 +165,8 @@ public class ListingDAO extends DAO
         ArrayList<AmenityType> amenities;
         ArrayList<Listing> listings = new ArrayList<Listing>();
 
-        db.setPStatement("SELECT listings.Listing_id, listings.Listing_type, listings.Suite_number, listings.Is_active, listings.Price_per_day, listings.Time_listed FROM listings NATURAL JOIN host_of WHERE host_of.Username=?");
+        db.setPStatement("SELECT listings.Listing_id, listings.Listing_type, listings.Suite_number, listings.Is_active, listings.Price_per_day, listings.Time_listed " +
+                         "FROM listings NATURAL JOIN host_of WHERE host_of.Username=?");
         db.setPStatementString(1, hostUsername);
 
         if (!db.executeSetQueryReturnN(n, listingTable))

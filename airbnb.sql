@@ -76,11 +76,9 @@ CREATE TABLE IF NOT EXISTS Bookings (
     Listing_id char(36),
     FOREIGN KEY (Start_date) REFERENCES Availability(Start_date),
     Start_date DATE,
-    FOREIGN KEY (Renter_id) REFERENCES Users(Username),
-    Renter_id varchar(100),
     Total_price float,
     Card_number int,
-    cancelled_by char(36) DEFAULT "",
+    Cancelled_by char(36) DEFAULT "",
     CONSTRAINT PK_Bookings PRIMARY KEY (Listing_id, Start_date, Renter_id)
 );
 

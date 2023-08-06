@@ -3,6 +3,7 @@ package com.c43backend.daos;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.sql.Date;
+import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.time.LocalDate;
 
@@ -12,10 +13,12 @@ import com.c43backend.dbconnectionservice.DBConnectionService;
 
 import resources.entities.Availability;
 import resources.entities.PaymentInfo;
-import resources.entities.Booking;
-import resources.entities.Comment;
+import resources.enums.AmenityType;
+import resources.entities.Listing;
 import resources.exceptions.DuplicateKeyException;
 import resources.exceptions.RunQueryException;
+import resources.relations.Booking;
+import resources.relations.Comment;
 import resources.utils.Table;
 
 public class BookingDAO extends DAO
@@ -72,11 +75,34 @@ public class BookingDAO extends DAO
 
     public Boolean cancelBooking(String start_date, String listing_id, String user_id) 
     {
-        db.setPStatement("UPDATE bookings SET cancelled_by=? WHERE Start_date=? AND Listing_id=?");
+        db.setPStatement("UPDATE bookings SET Cancelled_by=? WHERE Start_date=? AND Listing_id=?");
         db.setPStatementString(1, user_id);
         db.setPStatementString(2, start_date);
         db.setPStatementString(3, listing_id);
 
         return db.executeUpdateSetQueryBool();
     }
+
+    public ResultSet getBookingsUnderRenter(String renter_id) throws SQLException 
+    {
+        db.setPStatement("SELECT * FROM bookings WHERE Renter_id = ?");
+        db.setPStatementString(1, renter_id);
+        
+        // Columns: Listing_id, Start_date, Renter_id, Total_price, Card_Number, Cancelled_by
+        // Compare with the current date by using isBefore and isAfter to determine whether it is a past booking or upcoming booking.
+        return db.executeSetQuery();
+    }
+
+    public ResultSet getBookingsUnderHost(String host_id) throws SQLException 
+    {
+        db.setPStatement("SELECT * FROM bookings NATURAL JOIN host_of WHERE host_of.Username = ?");
+        db.setPStatementString(1, host_id);
+
+        return db.executeSetQuery();
+    }
+
+    // public getBookingsUnderHost()
+    // {
+
+    // }
 }

@@ -1,6 +1,7 @@
 package com.c43backend.daos;
 
 import java.sql.SQLException;
+import java.time.Year;
 import java.sql.Date;
 import java.util.ArrayList;
 
@@ -99,6 +100,25 @@ public class UserDAO extends DAO
         return db.executeUpdateSetQueryBool();
     }
 
+    public ArrayList<User> rankUsersByMostCancellationsByYear(Integer n, Integer year) {
+        ArrayList<User> users = new ArrayList<User>();
+
+        db.setPStatement("SELECT bookings.Cancelled_by, COUNT(*) as count FROM bookings LEFT JOIN users ON bookings.Cancelled_by = users.Username GROUP BY bookings.Cancelled_by");
+        db.setPStatementInt(1, year);
+
+        if (!db.executeSetQueryReturnN(n, table))
+            throw new RunQueryException();
+
+        for (int i = 0; i < table.size(); i++)
+        {
+            users.add(getUserFromTable(i));
+        }
+
+        table.clearTable();
+
+        return users;
+    }
+
     private User getUserFromTable(Integer rowNum)
     {
         return new User((String) table.extractValueFromRowByName(rowNum, "username"),
@@ -110,11 +130,4 @@ public class UserDAO extends DAO
                         (String) table.extractValueFromRowByName(rowNum, "lastName"),
                         (String) table.extractValueFromRowByName(rowNum, "password"));
     }
-
-    
-
-
-
-    
-
 }
