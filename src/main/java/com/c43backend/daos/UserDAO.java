@@ -91,6 +91,17 @@ public class UserDAO extends DAO
         return user;
     }
 
+    public Boolean deleteUser(String username)
+    {
+        db.setPStatement("DELETE FROM users WHERE Username=?");
+        db.setPStatementString(1, username);
+
+        if (!db.executeSetQueryReturnN(1, table))
+            throw new RunQueryException();    
+
+        return true;
+    }
+
     private User getUserFromTable(Integer rowNum)
     {
         return new User((String) table.extractValueFromRowByName(rowNum, "username"),
