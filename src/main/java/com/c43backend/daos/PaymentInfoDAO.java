@@ -37,7 +37,7 @@ public class PaymentInfoDAO extends DAO
         this.table = new Table(listingNumCols, columnMetaData);
     }
 
-    public Boolean insertPaymentInfo(PaymentInfo paymentInfo) throws DuplicateKeyException
+    public Boolean insertPaymentInfo(PaymentInfo paymentInfo, String renter) throws DuplicateKeyException
     {
         db.setPStatement("INSERT INTO payment_info VALUES (?, ?, ?, ?, ?, ?)");
 
@@ -59,7 +59,19 @@ public class PaymentInfoDAO extends DAO
         if (!db.setPStatementString(6, paymentInfo.getPostalCode()))
             return false;
 
-        return executeSetQueryWithDupeCheck("card number");
+        if (!executeSetQueryWithDupeCheck("card number")) 
+            return false;
+
+        // attach paymentInfo to renter
+        db.setPStatement("INSERT INTO Paid_with VALUES (?, ?)");
+
+        if (!db.setPStatementString(1, paymentInfo.getCardNum()))
+            return false;
+
+        if (!db.setPStatementString(2, renter))
+            return false;
+
+        return executeSetQueryWithDupeCheck("listing ID");
     }
 
     public PaymentInfo getPaymentInfo(String cardNum)
