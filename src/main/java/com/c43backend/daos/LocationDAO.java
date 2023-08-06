@@ -86,11 +86,10 @@ public class LocationDAO extends DAO
     private Location getLocationFromTable(Integer rowNum)
     {
         return new Location((Float) table.extractValueFromRowByName(rowNum, "longitude"),
-                                (Float) table.extractValueFromRowByName(rowNum, "latitude"),
-                                (String) table.extractValueFromRowByName(rowNum, "postalCode"),
-                                (String) table.extractValueFromRowByName(rowNum, "city"),
-                                (String) table.extractValueFromRowByName(rowNum, "country"),
-                                (String) table.extractValueFromRowByName(rowNum, "province"));
+                            (Float) table.extractValueFromRowByName(rowNum, "latitude"),
+                            (String) table.extractValueFromRowByName(rowNum, "postalCode"),
+                            (String) table.extractValueFromRowByName(rowNum, "city"),
+                            (String) table.extractValueFromRowByName(rowNum, "country"),
+                            (String) table.extractValueFromRowByName(rowNum, "province"));
     }
-    
 }

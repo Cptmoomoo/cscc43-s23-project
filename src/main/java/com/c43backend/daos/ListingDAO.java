@@ -13,7 +13,6 @@ import resources.enums.ListingType;
 import resources.exceptions.DuplicateKeyException;
 import resources.exceptions.RunQueryException;
 import resources.enums.AmenityType;
-import resources.enums.UpdateErrorCodes;
 import resources.utils.Globals;
 import resources.utils.Table;
 
@@ -215,17 +214,49 @@ public class ListingDAO extends DAO
         return listings;
     }
 
-    public ArrayList<Listing> getNListingsInVicinity(Integer n, Float longitude, Float latitude, Float distance)
+    public ArrayList<Listing> getNListingsInVicinity(Integer n, Float longitude, Float latitude, Float distance, String sort_by, String order)
     {
         String listingID;
         ArrayList<Listing> listings = new ArrayList<Listing>();
         ArrayList<AmenityType> amenities;
 
         db.setPStatement("SELECT listings.Listing_id, listings.Listing_type, listings.Suite_number, listings.Is_active, listings.Price_per_day, listings.Time_listed " +
-                         "FROM belongs_to NATURAL JOIN locations WHERE SQRT(POWER(belongs_to.longitude - ?, 2) + POWER(belongs_to.latitude - ?, 2)) <= ?");
+                         "FROM belongs_to NATURAL JOIN locations WHERE SQRT(POWER(belongs_to.longitude - ?, 2) + POWER(belongs_to.latitude - ?, 2)) <= ? " +
+                         "ORDER BY ? ?");
         db.setPStatementFloat(1, longitude);
         db.setPStatementFloat(2, latitude);
         db.setPStatementFloat(3, distance);
+        db.setPStatementString(4, sort_by == "distance"? "SQRT(POWER(belongs_to.longitude - ?, 2) + POWER(belongs_to.latitude - ?, 2))" : "listings.Price_per_day");
+        db.setPStatementString(5, order == "ascending" ? "ASC" : "DESC");
+
+        if (!db.executeSetQueryReturnN(n, listingTable))
+            throw new RunQueryException();
+
+        for (int i = 0; i < listingTable.size(); i++)
+        {
+            listingID = (String) listingTable.extractValueFromRowByName(i, "listingID");
+            amenities = getAmenitiesFromListing(listingID);
+
+            listings.add(getListingFromTable(i, amenities));
+        }
+
+        listingTable.clearTable();
+
+        return listings;
+    }
+
+    public ArrayList<Listing> getNListingsByPostalCode(Integer n, String postal_code, String sort_by, String order)
+    {
+        String listingID;
+        ArrayList<Listing> listings = new ArrayList<Listing>();
+        ArrayList<AmenityType> amenities;
+
+        db.setPStatement("SELECT listings.Listing_id, listings.Listing_type, listings.Suite_number, listings.Is_active, listings.Price_per_day, listings.Time_listed " +
+                         "FROM belongs_to NATURAL JOIN locations WHERE SUBSTRING(locations.Postal_code, 1, 3) = ?" +
+                         "ORDER BY ? ?");
+        db.setPStatementString(1, postal_code.substring(0, 4));
+        db.setPStatementString(2, sort_by == "distance" ? "SQRT(POWER(belongs_to.longitude - ?, 2) + POWER(belongs_to.latitude - ?, 2))" : "listings.Price_per_day");
+        db.setPStatementString(3, order == "ascending" ? "ASC" : "DESC");
 
         if (!db.executeSetQueryReturnN(n, listingTable))
             throw new RunQueryException();
