@@ -53,7 +53,6 @@ CREATE TABLE IF NOT EXISTS Availability (
     CONSTRAINT PK_Availability PRIMARY KEY (Start_date, Listing_id)
 );
 
-
 /* Relations */
 
 CREATE TABLE IF NOT EXISTS Bookings (
@@ -88,18 +87,17 @@ CREATE TABLE IF NOT EXISTS Rate_listing (
 );
 
 CREATE TABLE IF NOT EXISTS Rate_user (
-    FOREIGN KEY (Host) REFERENCES Users(Username),
+    FOREIGN KEY (Reviewer) REFERENCES Users(Username),
     Reviewer varchar(100),
-    FOREIGN KEY (Renter) REFERENCES Users(Username),
+    FOREIGN KEY (Reviewee) REFERENCES Users(Username),
     Reviewee varchar(100),
     Rating float,
     Timestamp Timestamp,
-    CONSTRAINT PK_Rate_User PRIMARY KEY (Host, Renter, Timestamp)
+    CONSTRAINT PK_Rate_User PRIMARY KEY (Reviewer, Reviewee, Timestamp)
 );
 
 CREATE TABLE IF NOT EXISTS Comment_listing (
-    FOREIGN KEY (Comment_id) REFERENCES Comments(Comment_id),
-    Comment_id char(36),
+    Comment_id char(36) UNIQUE,
     FOREIGN KEY (Username) REFERENCES Users(Username),
     Username varchar(100),
     FOREIGN KEY (Listing_id) REFERENCES Listings(Listing_id),
@@ -110,24 +108,15 @@ CREATE TABLE IF NOT EXISTS Comment_listing (
 );
 
 CREATE TABLE IF NOT EXISTS Comment_user (
-    FOREIGN KEY (Comment_id) REFERENCES Comments(Comment_id),
-    Comment_id char(36),
-    FOREIGN KEY (Host) REFERENCES Users(Username),
+    Comment_id char(36) UNIQUE,
+    FOREIGN KEY (Reviewer) REFERENCES Users(Username),
     Reviewer varchar(100),
-    FOREIGN KEY (Renter) REFERENCES Users(Username),
+    FOREIGN KEY (Reviewee) REFERENCES Users(Username),
     Reviewee varchar(100),
     Text varchar(255),
     Timestamp Timestamp,
     CONSTRAINT PK_Comment_user PRIMARY KEY (Comment_id)
 );
-
--- CREATE TABLE IF NOT EXISTS Available_on (
---     FOREIGN KEY (Start_Date) REFERENCES Dates(Start_date),
---     Start_date DATE, 
---     FOREIGN KEY (Listing_id) REFERENCES Listings(Listing_id),
---     Listing_id char(36),
---     CONSTRAINT PK_Available_on PRIMARY KEY (Start_Date, Listing_id)
--- );
 
 CREATE TABLE IF NOT EXISTS Belongs_to (
     FOREIGN KEY (Listing_id) REFERENCES Listings(Listing_id),

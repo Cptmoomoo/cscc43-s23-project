@@ -19,7 +19,7 @@ import resources.entities.Listing;
 import resources.exceptions.DuplicateKeyException;
 import resources.exceptions.RunQueryException;
 import resources.relations.Booking;
-import resources.relations.Comment;
+import resources.entities.Comment;
 import resources.utils.Table;
 
 public class BookingDAO extends DAO

@@ -55,7 +55,11 @@ public class App
             try
             {
                 turnOffConsoleOut();
-                db.createTables(Globals.TABLE_CREATE_FILE);
+
+                if (args.length > 0 && args[0].trim().toLowerCase().equals("-d"))
+                    db.dropTables();
+                db.createTables();
+
                 turnOnConsoleOut();
             }
             catch (SQLException e)

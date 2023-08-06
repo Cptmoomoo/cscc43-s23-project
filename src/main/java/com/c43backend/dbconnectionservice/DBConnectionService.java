@@ -9,6 +9,7 @@ import java.sql.*;
 import io.github.cdimascio.dotenv.Dotenv;
 import resources.enums.UpdateErrorCodes;
 import resources.exceptions.DuplicateKeyException;
+import resources.utils.Globals;
 import resources.utils.Row;
 import resources.utils.Table;
 
@@ -54,12 +55,22 @@ public final class DBConnectionService
         catch (Exception e){}
     }
 
-    public void createTables(String scriptPath) throws SQLException, IOException
+    public void createTables() throws SQLException, IOException
     {
         ScriptRunner sr = new ScriptRunner(_conn, false, true);
         Reader r;
 
-        r = new BufferedReader(new FileReader(scriptPath));
+        r = new BufferedReader(new FileReader(Globals.TABLE_CREATE_FILE));
+        sr.runScript(r);
+        r.close();
+    }
+
+    public void dropTables() throws SQLException, IOException
+    {
+        ScriptRunner sr = new ScriptRunner(_conn, false, true);
+        Reader r;
+
+        r = new BufferedReader(new FileReader(Globals.DROP_TABLES_FILE));
         sr.runScript(r);
         r.close();
     }

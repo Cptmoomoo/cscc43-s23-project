@@ -11,7 +11,7 @@ import com.c43backend.dbconnectionservice.DBConnectionService;
 
 import resources.exceptions.DuplicateKeyException;
 import resources.exceptions.RunQueryException;
-import resources.relations.Comment;
+import resources.entities.Comment;
 import resources.utils.Table;
 
 public class CommentDAO extends DAO
