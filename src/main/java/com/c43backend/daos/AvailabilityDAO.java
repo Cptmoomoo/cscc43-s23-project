@@ -164,7 +164,7 @@ public class AvailabilityDAO extends DAO
 
     // we would call isOverlapping() before using this so that the date range will not overlap with any existing availability
     // so we can just insert and merge with the back to back dates which can only be at most 2
-    public Boolean mergeBackToBackBookings(String listing_id, LocalDate startDate, LocalDate endDate)
+    public Boolean mergeBackToBackAvailability(String listing_id, LocalDate startDate, LocalDate endDate)
     {
         Availability date_before;
         Availability date_after;
