@@ -47,14 +47,15 @@ public class PaymentInfoDAO extends DAO
         if (!db.setPStatementString(2, paymentInfo.getSecurityCode()))
             return false;
 
-        if (!db.setPStatementString(3, paymentInfo.getFirstName()))
+        if (!db.setPStatementDate(3, Date.valueOf(paymentInfo.getExpDate())))
+            return false;
+
+        if (!db.setPStatementString(4, paymentInfo.getFirstName()))
             return false;
         
-        if (!db.setPStatementString(4, paymentInfo.getLastName()))
+        if (!db.setPStatementString(5, paymentInfo.getLastName()))
             return false;
         
-        if (!db.setPStatementDate(5, Date.valueOf(paymentInfo.getExpDate())))
-            return false;
 
         if (!db.setPStatementString(6, paymentInfo.getPostalCode()))
             return false;

@@ -157,6 +157,7 @@ public class Driver
         System.out.println(Globals.TERMINAL_INDENT + "If n is given it will return n listings maximum, defaults to 10.");
         System.out.println(Globals.TERMINAL_INDENT + "If n is given without the hostUsername, must be input as n=x. (ex. search-host n=5)");
         System.out.println("update-user: update your user information.");
+        System.out.println(Globals.TERMINAL_DIVIDER);
         System.out.println("delete-account: permanently deletes your account!");
     }
 
@@ -169,6 +170,9 @@ public class Driver
         System.out.println(Globals.TERMINAL_INDENT + "If n is given it will return n listings maximum, defaults to 10.");
         System.out.println(Globals.TERMINAL_INDENT + "If n is given without the hostUsername, must be input as n=x. (ex. search-host n=5)");
         System.out.println("update-user: update your user information.");
+        System.out.println("payment/payments: view/add/edit/delete your payment methods.");
+        System.out.println("book: begin the booking process!");
+        System.out.println(Globals.TERMINAL_DIVIDER);
         System.out.println("delete-account: permanently deletes your account!");
     }
 
@@ -234,6 +238,7 @@ public class Driver
                     break;
 
                 case "payments":
+                case "payment":
                     paymentMenu();
                     break;
 
@@ -608,12 +613,12 @@ public class Driver
 
         paymentInfos = getAndDisplayPayment();
 
-        System.out.println("What would you like to do?");
-        System.out.println("Add a payment info (a), update an existing payment info (u), delete an existing payment info (d), show your payment methods (s)");
-        System.out.println("Input q to return to the previous page.");
-
         while (!cond)
         {
+            System.out.println("What would you like to do?");
+            System.out.println("Add a payment info (a), update an existing payment info (u), delete an existing payment info (d), show your payment methods (s)");
+            System.out.println("Input q to return to the previous page.");
+
             switch (r.readLine().trim())
             {
                 case "a":
@@ -645,7 +650,6 @@ public class Driver
 
     private void addPayment() throws IOException
     {
-        Boolean cond = false;
         PaymentInfo pi;
 
         String cardNum;
@@ -674,6 +678,8 @@ public class Driver
         {
             System.out.println("Payment info already exists!");
         }
+
+        System.out.println("Successfully added payment method!");
     }
 
     private String setSecurityCode() throws IOException
@@ -755,7 +761,7 @@ public class Driver
 
             try
             {
-                Integer.parseInt(cardNum);
+                Long.parseLong(cardNum);
                 cond = true;
             }
             catch (NumberFormatException e)
