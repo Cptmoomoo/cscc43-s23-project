@@ -222,6 +222,14 @@ public class AvailabilityDAO extends DAO
         return true;
     }
 
+    public Boolean deleteAvailability(String listingID, Availability avail) throws DuplicateKeyException
+    {
+        // TODO delete this avail from listing, return true if successful
+        // false if not or the avail doesnt exist for this listing
+
+        return true;
+    }
+
     private Availability getAvailabilityFromTable(Integer rowNum) 
     {
         return new Availability(((Date) table.extractValueFromRowByName(0, "startDate")).toLocalDate(),
@@ -229,4 +237,5 @@ public class AvailabilityDAO extends DAO
                                  (String) table.extractValueFromRowByName(0, "listingID"),
                                  (Float) table.extractValueFromRowByName(0, "pricePerDay"));
     }
+
 }

@@ -143,6 +143,14 @@ public class BookingDAO extends DAO
         return bookings;
     }
 
+    public Boolean isBookedUnderDate(String listingID, Availability avail)
+    {
+        //TODO: return true if the listing is booked for dates in avail, 
+        // Any overlap counts as false
+    
+        return true;
+    }
+
     private Booking getBookingFromTable(Integer rowNum)
     {
         return new Booking((String) table.extractValueFromRowByName(rowNum, "bookingID"),
