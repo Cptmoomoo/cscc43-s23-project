@@ -40,7 +40,7 @@ public class CommentDAO extends DAO
                 add(new Triplet<String, Integer, Class<?>>("reviewer", 1, String.class));
                 add(new Triplet<String, Integer, Class<?>>("reviewee", 2, String.class));
                 add(new Triplet<String, Integer, Class<?>>("text", 3, String.class));
-                add(new Triplet<String, Integer, Class<?>>("timestamp", 24, Timestamp.class));
+                add(new Triplet<String, Integer, Class<?>>("timestamp", 4, Timestamp.class));
             }
         };
 
@@ -144,6 +144,35 @@ public class CommentDAO extends DAO
 
         return comment;
     }
+
+    public ArrayList<Comment> getListingCommentsByListing(String listingID)
+    {
+        // TODO
+
+        return new ArrayList<Comment>();
+    }
+
+    public ArrayList<Comment> getListingCommentsByReviewer(String reviewer)
+    {
+        // TODO
+
+        return new ArrayList<Comment>();
+    }
+
+    public ArrayList<Comment> getUserCommentsByReviewer(String reviewer)
+    {
+        // TODO
+
+        return new ArrayList<Comment>();
+    }
+
+    public ArrayList<Comment> getUserCommentsByReviewee(String reviewee)
+    {
+        // TODO
+
+        return new ArrayList<Comment>();
+    }
+
 
     private Comment getCommentFromTable(CommentType type, Integer rowNum)
     {
