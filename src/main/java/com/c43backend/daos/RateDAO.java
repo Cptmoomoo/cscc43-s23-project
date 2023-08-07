@@ -10,34 +10,54 @@ import org.javatuples.Triplet;
 import com.c43backend.dbconnectionservice.DBConnectionService;
 
 import resources.entities.Availability;
+import resources.entities.Comment;
 import resources.entities.PaymentInfo;
+import resources.enums.CommentType;
+import resources.enums.RatingType;
 import resources.exceptions.DuplicateKeyException;
+import resources.relations.Rating;
 import resources.utils.Table;
 
 public class RateDAO extends DAO
 {
     private final Integer listingNumCols;
-    private static final ArrayList<Triplet<String, Integer, Class<?>>> columnMetaData = new ArrayList<Triplet<String, Integer, Class<?>>>()
+    private static final ArrayList<Triplet<String, Integer, Class<?>>> listingColumnMetaData = new ArrayList<Triplet<String, Integer, Class<?>>>()
         {
             {
-                add(new Triplet<String, Integer, Class<?>>("commentID", 0, String.class));
-                add(new Triplet<String, Integer, Class<?>>("text", 1, String.class));
-                add(new Triplet<String, Integer, Class<?>>("timestamp", 2, Timestamp.class));
+                add(new Triplet<String, Integer, Class<?>>("username", 0, String.class));
+                add(new Triplet<String, Integer, Class<?>>("listingID", 1, String.class));
+                add(new Triplet<String, Integer, Class<?>>("rating", 2, Float.class));
+                add(new Triplet<String, Integer, Class<?>>("timestamp", 3, Timestamp.class));
             }
         };
 
-    private Table table;
+    private Table listingTable;
+
+    private final Integer userNumCols;
+    private static final ArrayList<Triplet<String, Integer, Class<?>>> userColumnMetaData = new ArrayList<Triplet<String, Integer, Class<?>>>()
+        {
+            {
+                add(new Triplet<String, Integer, Class<?>>("reviewer", 0, String.class));
+                add(new Triplet<String, Integer, Class<?>>("reviewee", 1, String.class));
+                add(new Triplet<String, Integer, Class<?>>("rating", 2, Float.class));
+                add(new Triplet<String, Integer, Class<?>>("timestamp", 3, Timestamp.class));
+            }
+        };
+
+    private Table userTable;
 
     public RateDAO(DBConnectionService db) throws ClassNotFoundException, SQLException
     {
         super(db);
-        this.listingNumCols = columnMetaData.size();
-        this.table = new Table(listingNumCols, columnMetaData);
+        this.listingNumCols = listingColumnMetaData.size();
+        this.listingTable = new Table(listingNumCols, listingColumnMetaData);
+        this.userNumCols = userColumnMetaData.size();
+        this.listingTable = new Table(userNumCols, userColumnMetaData);
     }
 
     public Boolean insertRateForListing(String username, String listing_id, Float rating) throws DuplicateKeyException
     {
-        db.setPStatement("INSERT INTO rate_lisintg VALUES (?, ?, ?, ?)");
+        db.setPStatement("INSERT INTO rate_listing VALUES (?, ?, ?, ?)");
 
         if (!db.setPStatementString(1, username))
             return false;
@@ -71,5 +91,40 @@ public class RateDAO extends DAO
             return false;
 
         return executeSetQueryWithDupeCheck("Reviewer Reviewee");
+    }
+
+    public ArrayList<Rating> getRatingsByListing(String listingID)
+    {
+        // TODO
+
+        return new ArrayList<Rating>();
+    }
+
+    public ArrayList<Rating> getRatingsByUser(String listingID)
+    {
+        // TODO
+        
+        return new ArrayList<Rating>();
+    }
+
+    private Rating getCommentFromTable(RatingType type, Integer rowNum)
+    {
+        if (type == RatingType.USER)
+        {
+            return new Rating((String) userTable.extractValueFromRowByName(rowNum, "reviewer"),
+                               (String) userTable.extractValueFromRowByName(rowNum, "reviewee"),
+                               RatingType.USER,
+                               (Float) userTable.extractValueFromRowByName(rowNum, "rating"), 
+                               ((Timestamp) userTable.extractValueFromRowByName(rowNum, "timestamp")).toLocalDateTime());
+                               
+        }
+        else
+        {
+            return new Rating((String) listingTable.extractValueFromRowByName(rowNum, "username"),
+                               (String) listingTable.extractValueFromRowByName(rowNum, "listingID"),
+                               RatingType.LISTING,
+                               (Float) listingTable.extractValueFromRowByName(rowNum, "rating"), 
+                               ((Timestamp) listingTable.extractValueFromRowByName(rowNum, "timestamp")).toLocalDateTime());
+        }
     }
 }
