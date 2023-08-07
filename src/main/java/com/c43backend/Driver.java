@@ -22,11 +22,13 @@ import com.c43backend.daos.CommentDAO;
 import com.c43backend.dbconnectionservice.DBConnectionService;
 
 import resources.entities.Availability;
+import resources.entities.Comment;
 import resources.entities.Listing;
 import resources.entities.User;
 import resources.entities.Location;
 import resources.entities.PaymentInfo;
 import resources.enums.AmenityType;
+import resources.enums.CommentType;
 import resources.enums.ListingType;
 import resources.enums.UserType;
 import resources.exceptions.DuplicateKeyException;
@@ -342,7 +344,209 @@ public class Driver
 
     private void rateBookingRoutine() throws IOException
     {
-        
+        ArrayList<Booking> bookings = showAndGetUserBookings();
+        Boolean cond = false;
+        String cmd;
+        Integer idx;
+        Booking toRate = null;
+
+        if (bookings.isEmpty())
+        {
+            System.out.println("There are no bookings to rate or comment!");
+            return;
+        }
+
+        while (!cond)
+        {
+            System.out.println("For which booking would you like to rate or comment? (input index)");
+
+
+            cmd = r.readLine().trim();
+
+            try
+            {
+                idx = Integer.parseInt(cmd);
+
+                if (idx > bookings.size() || idx <= 0)
+                    System.out.println("Not a valid index!");
+                else
+                {
+                    toRate = bookings.get(idx - 1);
+                    cond = true;
+                }
+                    
+            }
+            catch (NumberFormatException e)
+            {
+                System.out.println("Invalid number format!");
+            }
+        }
+
+
+        System.out.println("What would you like to do?");
+
+        if (loggedUser.getUserType() == UserType.HOST)
+            System.out.println("Rate guest (r), Comment on guest (c)");
+
+        if (loggedUser.getUserType() == UserType.RENTER)
+            System.out.println("Rate host (r), Comment host (c), Rate listing (rl), Comment listing (cl)");
+
+        switch (r.readLine().trim().toLowerCase())
+        {
+            case "r":
+                if (loggedUser.getUserType() == UserType.HOST)
+                    createRatingUser(loggedUser.getUsername(), toRate.getRenterID());
+                else
+                    createRatingUser(loggedUser.getUsername(), userDAO.getHostByBooking(toRate).getUsername());
+
+                break;
+            case "c":
+                if (loggedUser.getUserType() == UserType.HOST)
+                    createCommentUser(loggedUser.getUsername(), toRate.getRenterID());
+                else
+                    createCommentUser(loggedUser.getUsername(), userDAO.getHostByBooking(toRate).getUsername());
+    
+                break;
+            case "rl":
+                if (loggedUser.getUserType() == UserType.HOST)
+                    System.out.println("Not a valid option!");
+                else
+                    createRatingListing(loggedUser.getUsername(), toRate.getListingID());
+                break;
+            case "cl":
+                if (loggedUser.getUserType() == UserType.HOST)
+                        System.out.println("Not a valid option!");
+                else
+                    createCommentListing(loggedUser.getUsername(), toRate.getListingID());
+                break;
+            default:
+                System.out.println("Not a valid option!");
+                break;
+        }
+
+
+    }
+
+    private void createRatingListing(String reviewer, String listingID) throws IOException
+    {
+        Float val = (float) 0.0;
+        Boolean cond = false;
+
+        System.out.println("What would you like to rate this listing?");
+        System.out.println("Enter a decimal between 1 and 5 (inclusive).");
+
+        while (!cond)
+        {
+            try
+            {
+                val = Float.parseFloat(r.readLine().trim());
+                if (val < 1 || val > 5)
+                    System.out.println("Value not between 1 and 5!");
+                else
+                    cond = true;
+            }
+            catch (NumberFormatException e)
+            {
+                System.out.println("Invalid number");
+            }
+        }
+
+        try
+        {
+            rateDAO.insertRateForListing(reviewer, listingID, val);
+        }
+        catch (DuplicateKeyException e)
+        {
+            System.out.println("Problem inserting rating!");
+            return;
+        }
+
+        System.out.println("Successfully rated!");
+    }
+
+    private void createCommentListing(String reviewer, String listingID) throws IOException
+    {
+        String text = "";
+        Comment comment;
+
+        System.out.println("What would you like to comment on this listing?");
+
+        text = r.readLine().trim();
+
+        comment = new Comment(reviewer, listingID, CommentType.LISTING, text);
+
+        try
+        {
+            commentDAO.insertCommentForListing(comment);
+        }
+        catch (DuplicateKeyException e)
+        {
+            System.out.println("Problem inserting comment!");
+            return;
+        }
+
+        System.out.println("Successfully commented!");
+    }
+
+    private void createRatingUser(String reviewer, String reviewee) throws IOException
+    {
+        Float val = (float) 0.0;
+        Boolean cond = false;
+
+        System.out.println("What would you like to rate this user?");
+        System.out.println("Enter a decimal between 1 and 5 (inclusive).");
+
+        while (!cond)
+        {
+            try
+            {
+                val = Float.parseFloat(r.readLine().trim());
+                if (val < 1 || val > 5)
+                    System.out.println("Value not between 1 and 5!");
+                else
+                    cond = true;
+            }
+            catch (NumberFormatException e)
+            {
+                System.out.println("Invalid number");
+            }
+        }
+
+        try
+        {
+            rateDAO.insertRatingForUser(reviewer, reviewee, val);
+        }
+        catch (DuplicateKeyException e)
+        {
+            System.out.println("Problem inserting rating!");
+            return;
+        }
+
+        System.out.println("Successfully rated!");
+    }
+
+    private void createCommentUser(String reviewer, String reviewee) throws IOException
+    {
+        String text = "";
+        Comment comment;
+
+        System.out.println("What would you like to comment on this user?");
+
+        text = r.readLine().trim();
+
+        comment = new Comment(reviewer, reviewee, CommentType.USER, text);
+
+        try
+        {
+            commentDAO.insertCommentForUser(comment);
+        }
+        catch (DuplicateKeyException e)
+        {
+            System.out.println("Problem inserting comment!");
+            return;
+        }
+
+        System.out.println("Successfully commented!");
     }
 
     private Boolean isAllBookingsCancelled(ArrayList<Booking> bookings)

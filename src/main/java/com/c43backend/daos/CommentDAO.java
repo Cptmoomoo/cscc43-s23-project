@@ -63,7 +63,7 @@ public class CommentDAO extends DAO
         if (comment.getType() != CommentType.LISTING)
             return false;
 
-        db.setPStatement("INSERT INTO comment_user VALUES (?, ?, ?, ?, ?)");
+        db.setPStatement("INSERT INTO comment_listing VALUES (?, ?, ?, ?, ?)");
 
         if (!db.setPStatementString(1, comment.getCommentID()))
             return false;
@@ -88,7 +88,7 @@ public class CommentDAO extends DAO
         if (comment.getType() != CommentType.USER)
             return false;
 
-        db.setPStatement("INSERT INTO comment_listing VALUES (?, ?, ?, ?, ?)");
+        db.setPStatement("INSERT INTO comment_user VALUES (?, ?, ?, ?, ?)");
 
         if (!db.setPStatementString(1, comment.getCommentID()))
             return false;
