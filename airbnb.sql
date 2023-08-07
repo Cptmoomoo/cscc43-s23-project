@@ -30,6 +30,8 @@ CREATE TABLE IF NOT EXISTS Locations (
     Longitude float,
     Latitude float, 
     Postal_code char(6),
+    Street_num varchar(100),
+    Street_name varchar(10),
     City varchar(100),
     Country varchar(100),
     Province varchar(100),

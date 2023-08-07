@@ -59,7 +59,7 @@ public class Listing
     {
         Location location2 = location;
         if (location2 == null)
-            location2 = new Location((float) 0, (float) 0, "", "", "", "");
+            location2 = new Location((float) 0, (float) 0, "", "", "", "", "", "");
 
         // Need to print nice format, with nice format of location
         if (suiteNum != null)

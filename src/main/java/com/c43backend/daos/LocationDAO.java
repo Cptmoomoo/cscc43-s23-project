@@ -23,9 +23,11 @@ public class LocationDAO extends DAO
                 add(new Triplet<String, Integer, Class<?>>("longitude", 0, Float.class));
                 add(new Triplet<String, Integer, Class<?>>("latitude", 1, Float.class));
                 add(new Triplet<String, Integer, Class<?>>("postalCode", 2, String.class));
-                add(new Triplet<String, Integer, Class<?>>("city", 3, String.class));
-                add(new Triplet<String, Integer, Class<?>>("country", 4, String.class));
-                add(new Triplet<String, Integer, Class<?>>("province", 5, String.class));
+                add(new Triplet<String, Integer, Class<?>>("streetNum", 3, String.class));
+                add(new Triplet<String, Integer, Class<?>>("streetName", 4, String.class));
+                add(new Triplet<String, Integer, Class<?>>("city", 5, String.class));
+                add(new Triplet<String, Integer, Class<?>>("country", 6, String.class));
+                add(new Triplet<String, Integer, Class<?>>("province", 7, String.class));
             }
         };
 
@@ -41,7 +43,7 @@ public class LocationDAO extends DAO
 
     public Boolean insertLocation(Location location) throws DuplicateKeyException
     {
-        db.setPStatement("INSERT INTO locations VALUES (?, ?, ?, ?, ?, ?)");
+        db.setPStatement("INSERT INTO locations VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
 
         if (!db.setPStatementFloat(1, location.getCoordinate().getLongitude()))
             return false;
@@ -51,14 +53,20 @@ public class LocationDAO extends DAO
 
         if (!db.setPStatementString(3, location.getPostalCode()))
             return false;
-        
-        if (!db.setPStatementString(4, location.getCity()))
+
+        if (!db.setPStatementString(4, location.getStreetNum()))
             return false;
         
-        if (!db.setPStatementString(5, location.getCountry()))
+        if (!db.setPStatementString(5, location.getStreet()))
+            return false;
+        
+        if (!db.setPStatementString(6, location.getCity()))
+            return false;
+        
+        if (!db.setPStatementString(7, location.getCountry()))
             return false;
 
-        if (!db.setPStatementString(6, location.getProvince()))
+        if (!db.setPStatementString(8, location.getProvince()))
             return false;
 
         return executeSetQueryWithDupeCheck("coordinates");
@@ -89,7 +97,7 @@ public class LocationDAO extends DAO
     {
         Location location;
 
-        db.setPStatement("SELECT locations.Longitude, locations.Latitude, locations.Postal_code, locations.City, locations.Country, locations.Province " +
+        db.setPStatement("SELECT locations.Longitude, locations.Latitude, locations.Postal_code, locations.Street_num, locations.Street_name, locations.City, locations.Country, locations.Province " +
                          "FROM locations NATURAL JOIN (listings NATURAL JOIN belongs_to) WHERE Listing_id=?");
         db.setPStatementString(1, listingID);
 
@@ -112,6 +120,8 @@ public class LocationDAO extends DAO
         return new Location((Float) table.extractValueFromRowByName(rowNum, "longitude"),
                             (Float) table.extractValueFromRowByName(rowNum, "latitude"),
                             (String) table.extractValueFromRowByName(rowNum, "postalCode"),
+                            (String) table.extractValueFromRowByName(rowNum, "streetNum"),
+                            (String) table.extractValueFromRowByName(rowNum, "streetName"),
                             (String) table.extractValueFromRowByName(rowNum, "city"),
                             (String) table.extractValueFromRowByName(rowNum, "country"),
                             (String) table.extractValueFromRowByName(rowNum, "province"));

@@ -1515,12 +1515,11 @@ public class Driver
         Availability avail;
         Boolean cond = false;
 
-
-        System.out.println("Enter the starting date you want your listing to be available in the format (YYYY-MM-DD)");
-        System.out.println("Availability will start on that day.");
-
         while (!cond)
         {
+            System.out.println("Enter the starting date you want your listing to be available in the format (YYYY-MM-DD)");
+            System.out.println("Availability will start on that day.");
+    
             try
             {
                 start = LocalDate.parse(r.readLine().trim());
@@ -1532,17 +1531,23 @@ public class Driver
             }
         }
 
-        System.out.println("Enter the ending date you want your listing to be available in the format (YYYY-MM-DD)");
-        System.out.println("Availability will end on that day.");
-
+        
         cond = false;
 
         while (!cond)
         {
+            System.out.println("Enter the ending date you want your listing to be available in the format (YYYY-MM-DD)");
+            System.out.println("Availability will end on that day.");
+
             try
             {
                 end = LocalDate.parse(r.readLine().trim());
-                cond = true;
+
+                if (start.compareTo(end) >= 0)
+                    System.out.println("End date cannot by on or before the start date!");
+                else
+                    cond = true;
+                
             }
             catch (DateTimeParseException e)
             {
@@ -1563,12 +1568,10 @@ public class Driver
         Availability avail;
         Boolean cond = false;
 
-
-        System.out.println("Enter the starting month you want your listing to be available in the format (YYYY-MM)");
-        System.out.println("Availability will start on the first day of the month");
-
         while (!cond)
         {
+            System.out.println("Enter the starting month you want your listing to be available in the format (YYYY-MM)");
+            System.out.println("Availability will start on the first day of the month");
             try
             {
                 start = LocalDate.parse(String.format("%s-01", r.readLine().trim()));
@@ -1580,18 +1583,23 @@ public class Driver
             }
         }
 
-        System.out.println("Enter the ending month you want your listing to be available in the format (YYYY-MM)");
-        System.out.println("Availability will end on the last day of the month");
-
+        
         cond = false;
 
         while (!cond)
         {
+            System.out.println("Enter the ending month you want your listing to be available in the format (YYYY-MM)");
+            System.out.println("Availability will end on the last day of the month");
+
             try
             {
                 end = LocalDate.parse(String.format("%s-01", r.readLine().trim()));
                 end = end.with(TemporalAdjusters.lastDayOfMonth());
-                cond = true;
+
+                if (start.compareTo(end) >= 0)
+                    System.out.println("End month cannot by on or before the start month!");
+                else
+                    cond = true;
             }
             catch (DateTimeParseException e)
             {
@@ -1684,16 +1692,21 @@ public class Driver
     private Location createLocationRoutine(Float longitude, Float latitude) throws IOException
     {
         Boolean cond = false;
-        Location location = new Location((float) 0, (float) 0, null, null, null, null);
+        Location location = null;
         String city;
         String province;
         String country;
         String code;
+        String streetNum;
+        String streetName;
 
         System.out.println(String.format("Creating new location with (%f, %f)", longitude, latitude));
 
         while (!cond)
         {
+            streetNum = setStreetNum();
+            streetName = setStreetName();
+
             System.out.println("What city is this location located in?");
 
             city = r.readLine().trim().toUpperCase();
@@ -1708,7 +1721,7 @@ public class Driver
 
             code = setPostalCode();
 
-            location = new Location(longitude, latitude, code, country, province, city);
+            location = new Location(longitude, latitude, code, streetNum, streetName, country, province, city);
 
             System.out.println("Is the following information correct? (y/n)");
             System.out.println(location.toString());
@@ -1716,6 +1729,37 @@ public class Driver
         }
 
         return location;
+    }
+
+    private String setStreetName() throws IOException
+    {
+        System.out.println("What is the street name?");
+
+        return r.readLine().trim().toLowerCase();
+    }
+
+    private String setStreetNum() throws IOException
+    {
+        Boolean cond = false;
+        String num = "";
+
+        while (!cond)
+        {
+            System.out.println("What is the street number?");
+            num = r.readLine().trim();
+
+            try
+            {
+                Integer.parseInt(num);
+                cond = true;
+            }
+            catch (NumberFormatException e)
+            {
+                System.out.println("Invalid Street Number!");
+            }
+        }
+
+        return num;
     }
 
 

@@ -11,14 +11,17 @@ public class Location
 {
     private Coordinate coordinate;
     private String postalCode;
+    private String streetNum;
+    private String street;
     private String city;
     private String country;
     private String province;
+   
 
     public Location(Float longitude, Float latitude,
-        String postalCode, String country, String province, String city)
+        String postalCode, String streetNum, String street, String country, String province, String city)
     {
-        this(new Coordinate(latitude, longitude), postalCode, city, country, province);
+        this(new Coordinate(latitude, longitude), postalCode, streetNum, street, city, country, province);
     }
 
     @Override
@@ -33,10 +36,6 @@ public class Location
     @Override
     public String toString()
     {
-        return "Coordinate: " + coordinate + 
-                               ", City: "  + city + 
-                               ", Province: " + province + 
-                               ", Country: " + country +  
-                               ", Postal Code: " + postalCode;
+        return String.format("(%s)\n%s %s\n%s %s %s, %s", coordinate, streetNum, street, city, province, country, postalCode);
     }
 }
