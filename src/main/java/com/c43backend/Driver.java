@@ -10,6 +10,8 @@ import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
 import java.util.Arrays;
 
+import org.javatuples.Pair;
+
 import com.c43backend.daos.ListingDAO;
 import com.c43backend.daos.UserDAO;
 import com.c43backend.daos.LocationDAO;
@@ -22,11 +24,13 @@ import com.c43backend.daos.CommentDAO;
 import com.c43backend.dbconnectionservice.DBConnectionService;
 
 import resources.entities.Availability;
+import resources.entities.Comment;
 import resources.entities.Listing;
 import resources.entities.User;
 import resources.entities.Location;
 import resources.entities.PaymentInfo;
 import resources.enums.AmenityType;
+import resources.enums.CommentType;
 import resources.enums.ListingType;
 import resources.enums.UserType;
 import resources.exceptions.DuplicateKeyException;
@@ -342,7 +346,209 @@ public class Driver
 
     private void rateBookingRoutine() throws IOException
     {
-        
+        ArrayList<Booking> bookings = showAndGetUserBookings();
+        Boolean cond = false;
+        String cmd;
+        Integer idx;
+        Booking toRate = null;
+
+        if (bookings.isEmpty())
+        {
+            System.out.println("There are no bookings to rate or comment!");
+            return;
+        }
+
+        while (!cond)
+        {
+            System.out.println("For which booking would you like to rate or comment? (input index)");
+
+
+            cmd = r.readLine().trim();
+
+            try
+            {
+                idx = Integer.parseInt(cmd);
+
+                if (idx > bookings.size() || idx <= 0)
+                    System.out.println("Not a valid index!");
+                else
+                {
+                    toRate = bookings.get(idx - 1);
+                    cond = true;
+                }
+                    
+            }
+            catch (NumberFormatException e)
+            {
+                System.out.println("Invalid number format!");
+            }
+        }
+
+
+        System.out.println("What would you like to do?");
+
+        if (loggedUser.getUserType() == UserType.HOST)
+            System.out.println("Rate guest (r), Comment on guest (c)");
+
+        if (loggedUser.getUserType() == UserType.RENTER)
+            System.out.println("Rate host (r), Comment host (c), Rate listing (rl), Comment listing (cl)");
+
+        switch (r.readLine().trim().toLowerCase())
+        {
+            case "r":
+                if (loggedUser.getUserType() == UserType.HOST)
+                    createRatingUser(loggedUser.getUsername(), toRate.getRenterID());
+                else
+                    createRatingUser(loggedUser.getUsername(), userDAO.getHostByBooking(toRate).getUsername());
+
+                break;
+            case "c":
+                if (loggedUser.getUserType() == UserType.HOST)
+                    createCommentUser(loggedUser.getUsername(), toRate.getRenterID());
+                else
+                    createCommentUser(loggedUser.getUsername(), userDAO.getHostByBooking(toRate).getUsername());
+    
+                break;
+            case "rl":
+                if (loggedUser.getUserType() == UserType.HOST)
+                    System.out.println("Not a valid option!");
+                else
+                    createRatingListing(loggedUser.getUsername(), toRate.getListingID());
+                break;
+            case "cl":
+                if (loggedUser.getUserType() == UserType.HOST)
+                        System.out.println("Not a valid option!");
+                else
+                    createCommentListing(loggedUser.getUsername(), toRate.getListingID());
+                break;
+            default:
+                System.out.println("Not a valid option!");
+                break;
+        }
+
+
+    }
+
+    private void createRatingListing(String reviewer, String listingID) throws IOException
+    {
+        Float val = (float) 0.0;
+        Boolean cond = false;
+
+        System.out.println("What would you like to rate this listing?");
+        System.out.println("Enter a decimal between 1 and 5 (inclusive).");
+
+        while (!cond)
+        {
+            try
+            {
+                val = Float.parseFloat(r.readLine().trim());
+                if (val < 1 || val > 5)
+                    System.out.println("Value not between 1 and 5!");
+                else
+                    cond = true;
+            }
+            catch (NumberFormatException e)
+            {
+                System.out.println("Invalid number");
+            }
+        }
+
+        try
+        {
+            rateDAO.insertRateForListing(reviewer, listingID, val);
+        }
+        catch (DuplicateKeyException e)
+        {
+            System.out.println("Problem inserting rating!");
+            return;
+        }
+
+        System.out.println("Successfully rated!");
+    }
+
+    private void createCommentListing(String reviewer, String listingID) throws IOException
+    {
+        String text = "";
+        Comment comment;
+
+        System.out.println("What would you like to comment on this listing?");
+
+        text = r.readLine().trim();
+
+        comment = new Comment(reviewer, listingID, CommentType.LISTING, text);
+
+        try
+        {
+            commentDAO.insertCommentForListing(comment);
+        }
+        catch (DuplicateKeyException e)
+        {
+            System.out.println("Problem inserting comment!");
+            return;
+        }
+
+        System.out.println("Successfully commented!");
+    }
+
+    private void createRatingUser(String reviewer, String reviewee) throws IOException
+    {
+        Float val = (float) 0.0;
+        Boolean cond = false;
+
+        System.out.println("What would you like to rate this user?");
+        System.out.println("Enter a decimal between 1 and 5 (inclusive).");
+
+        while (!cond)
+        {
+            try
+            {
+                val = Float.parseFloat(r.readLine().trim());
+                if (val < 1 || val > 5)
+                    System.out.println("Value not between 1 and 5!");
+                else
+                    cond = true;
+            }
+            catch (NumberFormatException e)
+            {
+                System.out.println("Invalid number");
+            }
+        }
+
+        try
+        {
+            rateDAO.insertRatingForUser(reviewer, reviewee, val);
+        }
+        catch (DuplicateKeyException e)
+        {
+            System.out.println("Problem inserting rating!");
+            return;
+        }
+
+        System.out.println("Successfully rated!");
+    }
+
+    private void createCommentUser(String reviewer, String reviewee) throws IOException
+    {
+        String text = "";
+        Comment comment;
+
+        System.out.println("What would you like to comment on this user?");
+
+        text = r.readLine().trim();
+
+        comment = new Comment(reviewer, reviewee, CommentType.USER, text);
+
+        try
+        {
+            commentDAO.insertCommentForUser(comment);
+        }
+        catch (DuplicateKeyException e)
+        {
+            System.out.println("Problem inserting comment!");
+            return;
+        }
+
+        System.out.println("Successfully commented!");
     }
 
     private Boolean isAllBookingsCancelled(ArrayList<Booking> bookings)
@@ -413,7 +619,11 @@ public class Driver
             }
         }
 
-        bookingDAO.cancelBooking(toCancel.getBookingID(), loggedUser.getUsername());
+        try 
+        {
+            bookingDAO.cancelBooking(toCancel.getBookingID(), loggedUser.getUsername());
+        }
+        catch (DuplicateKeyException e) {}
         
         System.out.println("Cancellation Successful!");
     }
@@ -491,11 +701,11 @@ public class Driver
 
     private Boolean bookListing(Listing toBook) throws IOException
     {
-        Availability avail;
+        Pair<Availability, Availability> avail;
         PaymentInfo payInfo;
         
 
-        if ((avail = pickAvailDates(toBook)) == null)
+        if ((avail = pickAvailDates(toBook)).getValue0() == null)
             return false;
      
         System.out.println("Which payment method would you like to use?");
@@ -503,14 +713,15 @@ public class Driver
         if ((payInfo = selectPaymentInfo()) == null)
             return false;
 
-        bookingReview(toBook, avail, payInfo);
+        bookingReview(toBook, avail.getValue0(), payInfo);
 
         if (!getYesNo())
             return false;
 
         try
         {
-            bookingDAO.insertBooking(avail, loggedUser.getUsername(), payInfo);
+            bookingDAO.insertBooking(avail.getValue0(), loggedUser.getUsername(), payInfo);
+            availabilityDAO.splitAvailability(avail.getValue0().getStartDate(), avail.getValue0().getEndDate(), avail.getValue1());
         }
         catch (DuplicateKeyException e)
         {
@@ -580,12 +791,13 @@ public class Driver
         return payments.get(idx - 1);
     }
 
-    private Availability pickAvailDates(Listing toBook) throws IOException
+    private Pair<Availability, Availability> pickAvailDates(Listing toBook) throws IOException
     {
         ArrayList<Availability> avails = availabilityDAO.getAvailabilitiesByListing(toBook.getListingID());
         LocalDate startDate = null;
         LocalDate endDate = null;
         Availability chosen = null;
+        Availability base = null;
 
         Boolean cond = false;
         Boolean cond2 = false;
@@ -643,6 +855,7 @@ public class Driver
                 if (a.getStartDate().compareTo(startDate) <= 0 && a.getEndDate().compareTo(endDate) >= 0)
                 {
                     chosen = new Availability(startDate, endDate, toBook.getListingID(), a.getPricePerDay());
+                    base = a;
                     cond2 = true;
                     break;
                 }
@@ -664,7 +877,7 @@ public class Driver
         }
 
         
-        return chosen;
+        return new Pair<>(chosen, base);
     }
 
     private ArrayList<Listing> bookByHost() throws IOException
@@ -1961,6 +2174,8 @@ public class Driver
     {
         Boolean cond = false;
         ArrayList<AmenityType> amenities = new ArrayList<AmenityType>();
+        Boolean[] added = new Boolean[AmenityType.values().length]; 
+        Arrays.fill(added, Boolean.FALSE);
     
         while (!cond)
         {
@@ -1972,23 +2187,171 @@ public class Driver
             {
                 case "pool":
                 case "p":
-                    amenities.add(AmenityType.POOL);
-                    System.out.println("POOL added!");
+                    if (!added[0])
+                    {
+                        amenities.add(AmenityType.POOL);
+                        System.out.println("POOL added!");
+                        added[0] = true;
+                    }
+                    else
+                        System.out.println("POOL already added!");
                     break;
 
                 case "kitchen":
                 case "k":
-                    amenities.add(AmenityType.KITCHEN);
-                    System.out.println("KITCHEN added!");
+                    if (!added[1])
+                    {
+                        amenities.add(AmenityType.KITCHEN);
+                        System.out.println("KITCHEN added!");
+                        added[1] = true;
+                    }
+                    else
+                        System.out.println("KITCHEN already added!");
                     break;
 
                 case "parking":
                 case "park":
-                    amenities.add(AmenityType.PARKING);
-                    System.out.println("PARKING added!");
+                    if (!added[2])
+                    {
+                        amenities.add(AmenityType.PARKING);
+                        System.out.println("PARKING added!");
+                        added[2] = true;
+                    }
+                    else
+                        System.out.println("PARKING already added!");
                     break;
 
-                // Add rest of amenities
+                case "jacuzzi":
+                case "j":
+                    if (!added[3])
+                    {
+                        amenities.add(AmenityType.JACUZZI);
+                        System.out.println("JACUZZI added!");
+                        added[3] = true;
+                    }
+                    else
+                        System.out.println("JACUZZI already added!");
+                    break;
+                
+                case "airconditioning":
+                case "ac":
+                    if (!added[4])
+                    {
+                        amenities.add(AmenityType.AIR_CONDITIONING);
+                        System.out.println("AIR_CONDITIONING added!");
+                        added[4] = true;
+                    }
+                    else
+                        System.out.println("AIR_CONDITIONING already added!");
+                    break;
+
+                case "heater":
+                case "h":
+                    if (!added[5])
+                    {
+                        amenities.add(AmenityType.HEATER);
+                        System.out.println("HEATER added!");
+                        added[5] = true;
+                    }
+                    else
+                        System.out.println("HEATER already added!");
+                    break;
+                
+                case "pets":
+                case "pet":
+                    if (!added[6])
+                    {
+                        amenities.add(AmenityType.PETS_ALLOWED);
+                        System.out.println("PETS_ALLOWED added!");
+                        added[6] = true;
+                    }
+                    else
+                        System.out.println("PETS_ALLOWED already added!");
+                    break;
+                
+                case "washer-dryer":
+                case "wd":
+                    if (!added[7])
+                    {
+                        amenities.add(AmenityType.WASHER_DRYER);
+                        System.out.println("WASHER_DRYER added!");
+                        added[7] = true;
+                    }
+                    else
+                        System.out.println("WASHER_DRYER already added!");
+                    break;
+
+                case "kitchenware":
+                case "kw":
+                    if (!added[8])
+                    {
+                        amenities.add(AmenityType.KITCHENWARE);
+                        System.out.println("KITCHENWARE added!");
+                        added[8] = true;
+                    }
+                    else
+                        System.out.println("KITCHENWARE already added!");
+                    break;
+
+                case "breakfast":
+                case "b":
+                    if (!added[9])
+                    {
+                        amenities.add(AmenityType.BREAKFAST);
+                        System.out.println("BREAKFAST added!");
+                        added[9] = true;
+                    }
+                    else
+                        System.out.println("BREAKFAST already added!");
+                    break;
+
+                case "step-free":
+                case "sf":
+                    if (!added[10])
+                    {
+                        amenities.add(AmenityType.STEP_FREE_ENTRANCE);
+                        System.out.println("STEP_FREE_ENTRANCE added!");
+                        added[10] = true;
+                    }
+                    else
+                        System.out.println("STEP_FREE_ENTRANCE already added!");
+                    break;
+
+                case "wide-hallway":
+                case "wh":
+                    if (!added[11])
+                    {
+                        amenities.add(AmenityType.WIDE_HALLWAYS);
+                        System.out.println("WIDE_HALLWAYS added!");
+                        added[11] = true;
+                    }
+                    else
+                        System.out.println("WIDE_HALLWAYS already added!");
+                    break;
+
+                case "wide-entrance":
+                case "we":
+                    if (!added[12])
+                    {
+                        amenities.add(AmenityType.WIDE_ENTRANCE);
+                        System.out.println("WIDE_ENTRANCE added!");
+                        added[12] = true;
+                    }
+                    else
+                        System.out.println("WIDE_ENTRANCE already added!");
+                    break;
+
+                case "accessible-bathroom":
+                case "ab":
+                    if (!added[13])
+                    {
+                        amenities.add(AmenityType.ACCESSIBLE_BATHROOM);
+                        System.out.println("ACCESSIBLE_BATHROOM added!");
+                        added[13] = true;
+                    }
+                    else
+                        System.out.println("ACCESSIBLE_BATHROOM already added!");
+                    break;
                 
                 case "quit":
                 case "q":
@@ -2006,7 +2369,7 @@ public class Driver
 
     private void printListOfAmenities()
     {
-
+        System.out.println("Here are the list of amenities you can add:");
     }
 
 }
