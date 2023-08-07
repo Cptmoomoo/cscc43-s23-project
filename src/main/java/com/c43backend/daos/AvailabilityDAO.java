@@ -188,10 +188,38 @@ public class AvailabilityDAO extends DAO
             endDate = date_after.getEndDate();
             deleteAvailability(date_after);
         }
-        
+
         table.clearTable();
 
-        // INSERT HERE
+        // INSERT HERE USING UPDATED StartDate and EndDate
+
+        return true;
+    }
+
+    // When calling this we are under the asumption that split_avalid covers all of startDate to endDate
+    //
+    // Example: startDate = Jan 5, endDate = Jan 7 (Jan 5 to Jan 7)
+    //          split_avali.StartDate = Jan 1      (Jan 1 to Jan 9)
+    //          split_avali.EndDate = Jan 9
+    //          
+    //          we delete split_avalid and create two more avalis: (Jan 1 to Jan 4) and (Jan 8 to Jan 9)
+    //          we can then perform any operation on (Jan 5 to Jan 7) 
+                
+    public Boolean splitAvailability(LocalDate startDate, LocalDate endDate, Availability split_avali) throws DuplicateKeyException
+    {
+        Availability date_before = new Availability(split_avali.getStartDate(), startDate.minusDays(1), split_avali.getListingID(), split_avali.getPricePerDay());
+        Availability date_after = new Availability(endDate.plusDays(1), split_avali.getEndDate(), split_avali.getListingID(), split_avali.getPricePerDay());
+
+        if (!deleteAvailability(split_avali))
+            return false;
+
+        if (!insertAvailability(date_before))
+            return false;
+
+        if (!insertAvailability(date_after))
+            return false;
+
+        return true;
     }
 
     private Availability getAvailabilityFromTable(Integer rowNum) 
