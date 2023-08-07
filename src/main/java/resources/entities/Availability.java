@@ -15,6 +15,17 @@ public class Availability
     private String listingID;
     private Float pricePerDay;
 
+    public void updateStartDate(LocalDate startDate) {
+        this.startDate = startDate;
+    }
+
+    public void updateEndDate(LocalDate endDate) {
+        this.endDate = endDate;
+    }
+
+    public void updatePrice(Float new_price) {
+        this.pricePerDay = new_price;
+    }
 
     public float getTotalPrice()
     {
