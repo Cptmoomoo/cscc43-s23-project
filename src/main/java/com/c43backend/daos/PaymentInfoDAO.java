@@ -74,6 +74,18 @@ public class PaymentInfoDAO extends DAO
         return executeSetQueryWithDupeCheck("listing ID");
     }
 
+    public Boolean updatePaymentInfo(PaymentInfo payment, String userID) throws DuplicateKeyException
+    {
+        // TODO
+        return true;
+    }
+
+    public Boolean deletePaymentInfo(PaymentInfo payment, String userID) throws DuplicateKeyException
+    {
+        // TODO
+        return true;
+    }
+
     public PaymentInfo getPaymentInfo(String cardNum)
     {
         PaymentInfo paymentInfo;
@@ -106,6 +118,7 @@ public class PaymentInfoDAO extends DAO
         // TODO MAKE IT REAL
 
         payments.add(new PaymentInfo("1111222233334444", "000", "Vincent", "Li", "2000-01-01", "111222333"));
+        payments.add(new PaymentInfo("1111222233335555", "010", "Ben", "B", "2000-01-02", "111555333"));
 
         return payments;
     }

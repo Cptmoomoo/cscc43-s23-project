@@ -326,7 +326,7 @@ public class Driver
             {
                 idx = Integer.parseInt(cmd);
 
-                if (idx > searchResults.size())
+                if (idx > searchResults.size() || idx <= 0)
                     System.out.println("Not a valid booking index!");
                 else
                 {   toBook = searchResults.get(idx - 1);
@@ -605,10 +605,10 @@ public class Driver
                     addPayment();
                     break;
                 case "u":
-                    updatePayment();
+                    updatePayment(paymentInfos);
                     break;
                 case "d":
-                    deletePayment();
+                    deletePayment(paymentInfos);
                     break;
                 case "q":
                     return;
@@ -617,72 +617,102 @@ public class Driver
                     break;
             }
         }
-        
-
-
-        
     }
 
     private void addPayment() throws IOException
     {
         Boolean cond = false;
+        PaymentInfo pi;
 
         String cardNum;
+        LocalDate expDate;
+        String code;
+        String firstName;
+        String lastName;
+        String postalCode; 
 
         System.out.println("Creating new payment method.");
 
+        cardNum = setCardNumber();
+        expDate = setExpDate();
+        code = setSecurityCode();
+        firstName = setFirstName();
+        lastName = setLastName();
+        postalCode = setPostalCode();
+
+        pi = new PaymentInfo(cardNum, code, firstName, lastName, expDate, postalCode);
+
+        try
+        {
+            piDAO.insertPaymentInfo(pi, loggedUser.getUsername());
+        }
+        catch (DuplicateKeyException e)
+        {
+            System.out.println("Payment info already exists!");
+        }
+    }
+
+    private String setSecurityCode() throws IOException
+    {
+        Boolean cond = false;
+        String code = null;
+
         while (!cond)
         {
-            System.out.println("What is your card number?");
+            System.out.println("What is the security code?");
 
-            cardNum = r.readLine().trim();
+            code = r.readLine().trim();
 
-            if (cardNum.length() != 16)
+            if (code.length() != 3)
             {
-                System.out.println("Invalid card number!");
+                System.out.println("Invalid security code!");
                 continue;
             }
 
             try
             {
-                Integer.parseInt(cardNum);
+                Integer.parseInt(code);
                 cond = true;
             }
             catch (NumberFormatException e)
             {
-                System.out.println("Invalid card number!");
+                System.out.println("Invalid security code!");
                 continue;
             }
+
         }
 
+        return code;
     }
 
-    private String getExpDate() throws IOException
+    private LocalDate setExpDate() throws IOException
     {
         Boolean cond = false;
         LocalDate expDate = null;
-        String cmd = "";
 
         while (!cond)
         {
             System.out.println("What is the expiry date?");
             System.out.println("Write in the format (YYYY-MM)");
 
-            // try
-            // {
-            //     cmd = r.readLine().trim();
-            //     expDate = LocalDate.parse(String.format("%s-01"))
-            // }
-
+            try
+            {
+                expDate = LocalDate.parse(String.format("%s-01", r.readLine().trim()));
+                expDate = expDate.with(TemporalAdjusters.lastDayOfMonth());
+                cond = true;
+            }
+            catch (DateTimeParseException e)
+            {
+                System.out.println("Invalid date format!");
+                continue;
+            }
 
         }
 
-        return cmd;
-
-
+        return expDate;
     }
 
-    private String getCardNumber() throws IOException
+    private String setCardNumber() throws IOException
     {
         Boolean cond = false;
         String cardNum = "";
@@ -715,14 +745,150 @@ public class Driver
 
     }
 
-    private void updatePayment() throws IOException
+    private void updatePayment(ArrayList<PaymentInfo> paymentInfos) throws IOException
     {
+        Boolean cond = false;
+        Integer idx = 0;
+        PaymentInfo pi;
 
+        String cardNum;
+        LocalDate expDate;
+        String securityCode;
+        String firstName;
+        String lastName;
+        String postalCode;
+
+        System.out.println("Which payment would you like to update (input index number).");
+
+        while (!cond)
+        {
+            try
+            {
+                idx = Integer.parseInt(r.readLine().trim());
+
+                if (idx > paymentInfos.size() || idx <= 0)
+                    System.out.println("Invalid index number");
+                
+                cond = true;
+            }
+            catch (NumberFormatException e)
+            {
+                System.out.println("Invalid index number");
+            }
+        }
+
+        pi = paymentInfos.get(idx - 1);
+
+        cardNum = pi.getCardNum();
+        expDate = pi.getExpDate();
+        securityCode = pi.getSecurityCode();
+        firstName = pi.getFirstName();
+        lastName = pi.getLastName();
+        postalCode = pi.getPostalCode();
+
+        cond = false;
+
+        while (!cond)
+        {
+            System.out.println("What would you like to update? Type 'submit' to submit all changes, or q to quit");
+            System.out.println("Card number (c), Expiry date (e), Security code (s), First name (f), Last name (l), Postal code (p)");
+
+            switch (r.readLine().trim().toLowerCase())
+            {
+                case "c":
+                    cardNum = setCardNumber();
+                    break;
+                case "e":
+                    expDate = setExpDate();
+                    break;
+                case "s":
+                    securityCode = setSecurityCode();
+                    break;
+                case "f":
+                    firstName = setFirstName();
+                    break;
+                case "l":
+                    lastName = setLastName();
+                    break;
+                case "p":
+                    postalCode = setPostalCode();
+                    break;
+                case "submit":
+                    System.out.println("Please review your changes:");
+                    System.out.println(String.format("%s -> %s", pi.getCardNum(), cardNum));
+                    System.out.println(String.format("%s -> %s", pi.getExpDate().toString(), expDate.toString()));
+                    System.out.println(String.format("%s -> %s", pi.getSecurityCode(), securityCode));
+                    System.out.println(String.format("%s -> %s", pi.getFirstName(), firstName));
+                    System.out.println(String.format("%s -> %s", pi.getLastName(), lastName));
+                    System.out.println(String.format("%s -> %s", pi.getPostalCode(), postalCode));
+                    System.out.println("Is this correct?");
+
+                    if (getYesNo())
+                        cond = true;
+                    break;
+                case "q":
+                    return;
+                default:
+                    System.out.println("Invalid option!");
+                    break;
+            }
+        }
+
+        pi.setCardNum(cardNum);
+        pi.setExpDate(expDate);
+        pi.setSecurityCode(securityCode);
+        pi.setFirstName(firstName);
+        pi.setLastName(lastName);
+        pi.setPostalCode(postalCode);
+
+        try
+        {
+            piDAO.updatePaymentInfo(pi, loggedUser.getUsername());
+        }
+        catch (DuplicateKeyException e)
+        {
+            System.out.println("Duplicate payment method!");
+        }
     }
 
-    private void deletePayment() throws IOException
+    private void deletePayment(ArrayList<PaymentInfo> paymentInfos) throws IOException
     {
+        Boolean cond = false;
+        Integer idx = 0;
+        PaymentInfo pi;
 
+        System.out.println("Which payment would you like to delete (input index number).");
+
+        while (!cond)
+        {
+            try
+            {
+                idx = Integer.parseInt(r.readLine().trim());
+
+                if (idx > paymentInfos.size() || idx <= 0)
+                    System.out.println("Invalid index number");
+                
+                cond = true;
+            }
+            catch (NumberFormatException e)
+            {
+                System.out.println("Invalid index number");
+            }
+        }
+
+        pi = paymentInfos.get(idx - 1);
+
+        System.out.println("Are you sue you want to delete this payment method?");
+        System.out.println(pi.toString());
+
+        if (!getYesNo())
+            return;
+
+        try
+        {
+            piDAO.deletePaymentInfo(pi, loggedUser.getUsername());
+        }
+        catch (DuplicateKeyException e) {}
     }
 
     private Boolean getYesNo() throws IOException
@@ -762,26 +928,32 @@ public class Driver
                 case "password":
                 case "p":
                     loggedUser.setHashedPass(setPassword());
+                    System.out.println("Password updated!");
                     break;
                 case "sin":
                 case "s":
                     loggedUser.setSIN(setSIN());
+                    System.out.println("SIN updated!");
                     break;
                 case "occupation":
                 case "o":
                     loggedUser.setOccupation(setOccupation());
+                    System.out.println("Occupation updated!");
                     break;
                 case "birthday":
                 case "b":
                     loggedUser.setBirthday(setBirthday());
+                    System.out.println("Birthday updated!");
                     break;
                 case "first name":
                 case "f":
                     loggedUser.setFirstName(setFirstName());
+                    System.out.println("First name updated!");
                     break;
                 case "last name":
                 case "l":
                     loggedUser.setLastName(setLastName());
+                    System.out.println("Last name updated!");
                     break;
                 case "q":
                     cond = true;
@@ -1357,9 +1529,7 @@ public class Driver
 
             country = r.readLine().trim().toUpperCase();
 
-            System.out.println("What is the postal/zip code?");
-
-            code = r.readLine().trim().toUpperCase();
+            code = setPostalCode();
 
             location = new Location(longitude, latitude, code, country, province, city);
 
@@ -1369,6 +1539,14 @@ public class Driver
         }
 
         return location;
+    }
+
+
+    private String setPostalCode() throws IOException
+    {
+        System.out.println("What is the postal/zip code?");
+
+        return r.readLine().trim().toUpperCase();
     }
 
     private void searchByHost(String username, Integer n) throws IOException
