@@ -160,10 +160,17 @@ public class BookingDAO extends DAO
 
     public Boolean isBookedUnderDate(String listingID, Availability avail)
     {
-        db.setPStatement("SELECT * from bookings WHERE Listing_id=? AND Start_date=? AND End_date=?");
+        db.setPStatement("SELECT * from bookings WHERE Listing_id=? AND ((Start_date <= ? AND End_date >= ?) OR (Start_date <= ? AND End_date >= ?) OR (Start_date >= ? AND End_date <= ?))");
         db.setPStatementString(1, listingID);
-        db.setPStatementDate(2, Date.valueOf(avail.getStartDate()));
+
+        db.setPStatementDate(2, Date.valueOf(avail.getEndDate()));
         db.setPStatementDate(3, Date.valueOf(avail.getEndDate()));
+
+        db.setPStatementDate(4, Date.valueOf(avail.getStartDate()));
+        db.setPStatementDate(5, Date.valueOf(avail.getStartDate()));
+
+        db.setPStatementDate(6, Date.valueOf(avail.getStartDate()));
+        db.setPStatementDate(7, Date.valueOf(avail.getEndDate()));
 
         Boolean bookedUnderDate = !table.isEmpty();
         table.clearTable();

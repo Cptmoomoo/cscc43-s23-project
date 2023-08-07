@@ -334,6 +334,10 @@ public class Driver
                     rateBookingRoutine();
                     break;
 
+                case "update-avail":
+                    updateAvailabilityRoutine();
+                    break;
+
 
                 default:
                     System.out.println("Invalid command!");
@@ -342,6 +346,287 @@ public class Driver
 
             }
         }
+    }
+
+    private void updateAvailabilityRoutine() throws IOException
+    {
+        ArrayList<Listing> listings = listingDAO.getNListingsByHost(Globals.DEFAULT_N, loggedUser.getUsername());
+        Boolean cond = false;
+        String cmd;
+        Integer idx;
+        Listing toChange = null;
+
+        ArrayList<Availability> avails;
+
+        if (listings.isEmpty())
+        {
+            System.out.println("There are no listings to change!");
+            return;
+        }
+
+        for (int i = 0; i < listings.size(); i++)
+        {
+            System.out.println(Globals.TERMINAL_DIVIDER);
+            System.out.println(String.format("%d. %s", i + 1, listings.get(i).toString()));
+        }
+
+        while (!cond)
+        {
+            System.out.println("For which listing would you like to edit the availability of? (input index)");
+
+
+            cmd = r.readLine().trim();
+
+            try
+            {
+                idx = Integer.parseInt(cmd);
+
+                if (idx > listings.size() || idx <= 0)
+                    System.out.println("Not a valid index!");
+                else
+                {
+                    toChange = listings.get(idx - 1);
+                    cond = true;
+                }
+                    
+            }
+            catch (NumberFormatException e)
+            {
+                System.out.println("Invalid number format!");
+            }
+        }
+
+        cond = false;
+
+        while (!cond)
+        {
+            avails = availabilityDAO.getAvailabilitiesByListing(toChange.getListingID());
+
+            if (avails.isEmpty())
+            {
+                System.out.println("There are no availabilities!");
+            }
+            else
+            {
+                System.out.println("The listing you have chosen are available on these dates:");
+
+                for (int i = 0; i < avails.size(); i++)
+                    System.out.println(String.format("%d. %s", i + 1, avails.get(i).toString()));
+            }
+            
+            System.out.println("Would you like to add (a), update (u), or delete (d) an availability?");
+            System.out.println("Type q to quit.");
+
+            switch (r.readLine().trim().toLowerCase())
+            {
+                case "a":
+                    createAvailRoutine(toChange.getListingID());
+                    break;
+                case "u":
+                    updateAvailability(avails, toChange.getListingID());
+                    break;
+                case "d":
+                    deleteAvailability(avails, toChange.getListingID());
+                    break;
+
+                case "q":
+                    return;
+                
+                default:
+                    System.out.println("Invalid option!");
+                    break;
+            }
+        }
+    }
+
+    private void updateAvailability(ArrayList<Availability> avails, String listingID) throws IOException
+    {
+        Boolean cond = false;
+        Integer idx;
+        String cmd;
+        Availability toUpdate = null;
+
+        if (avails.isEmpty())
+        {
+            System.out.println("No availabilities to update!");
+            return;
+        }
+
+        while (!cond)
+        {
+            System.out.println("Which availability would you like to update? (input index)");
+
+
+            cmd = r.readLine().trim();
+
+            try
+            {
+                idx = Integer.parseInt(cmd);
+
+                if (idx > avails.size() || idx <= 0)
+                    System.out.println("Not a valid index!");
+                else
+                {
+                    toUpdate = avails.get(idx - 1);
+                    cond = true;
+                }
+                    
+            }
+            catch (NumberFormatException e)
+            {
+                System.out.println("Invalid number format!");
+            }
+        }
+
+        System.out.println("Would you like to update price (p) or date (d)?");
+
+        cond = false;
+
+        while(!cond)
+        {
+            switch (r.readLine().trim().toLowerCase())
+            {
+                case "p":
+                    updateAvailabilityPrice(toUpdate, listingID);
+                    cond = true;
+                    break;
+                case "d":
+                    updateAvailabilityByDate(toUpdate, listingID);
+                    cond = true;
+                    break;
+                
+                default:
+                    System.out.println("Invalid option!");
+            }
+        }
+        
+        System.out.println("Update successful!");
+    }
+    
+    private void updateAvailabilityByDate(Availability toUpdate, String listingID) throws IOException
+    {
+        LocalDate start = null;
+        LocalDate end = null;
+        Availability avail;
+        Boolean cond = false;
+
+        while (!cond)
+        {
+            System.out.println("Enter the starting date you want your listing to be available in the format (YYYY-MM-DD)");
+            System.out.println("Availability will start on that day.");
+    
+            try
+            {
+                start = LocalDate.parse(r.readLine().trim());
+                cond = true;
+            }
+            catch (DateTimeParseException e)
+            {
+                System.out.println("Invalid date format!");
+            }
+        }
+
+        
+        cond = false;
+
+        while (!cond)
+        {
+            System.out.println("Enter the ending date you want your listing to be available in the format (YYYY-MM-DD)");
+            System.out.println("Availability will end on that day.");
+
+            try
+            {
+                end = LocalDate.parse(r.readLine().trim());
+
+                if (start.compareTo(end) >= 0)
+                    System.out.println("End date cannot by on or before the start date!");
+                else
+                    cond = true;
+                
+            }
+            catch (DateTimeParseException e)
+            {
+                System.out.println("Invalid month format!");
+            }
+        }
+
+        avail = new Availability(start, end, listingID, toUpdate.getPricePerDay());
+
+        availabilityDAO.deleteAvailability(toUpdate);
+
+        if (!insertAvailability(avail))
+            System.out.println("Listing is already available at this time!");
+        else
+            System.out.println("Dates updated!");
+    }
+
+    private void updateAvailabilityPrice(Availability toUpdate, String listingID) throws IOException
+    {
+        Boolean cond = false;
+        Float val = (float) 0;
+    
+        while (!cond)
+        {
+            System.out.println("What would you like to update the price to?");
+
+            try
+            {
+                val = Float.parseFloat(r.readLine().trim());
+                cond = true;
+            }
+            catch (NumberFormatException e)
+            {
+                System.out.println("Invalid number");
+            }
+        }
+
+        if (!availabilityDAO.updatePriceForAvailability(toUpdate, val))
+            System.out.println("Problem updating price!");
+    }
+
+    private void deleteAvailability(ArrayList<Availability> avails, String listingID) throws IOException
+    {
+        Boolean cond = false;
+        Integer idx;
+        String cmd;
+        Availability toDelete = null;
+
+        if (avails.isEmpty())
+        {
+            System.out.println("No availabilities to delete!");
+            return;
+        }
+
+        while (!cond)
+        {
+            System.out.println("Which availability would you like to delete? (input index)");
+
+
+            cmd = r.readLine().trim();
+
+            try
+            {
+                idx = Integer.parseInt(cmd);
+
+                if (idx > avails.size() || idx <= 0)
+                    System.out.println("Not a valid index!");
+                else
+                {
+                    toDelete = avails.get(idx - 1);
+                    cond = true;
+                }
+                    
+            }
+            catch (NumberFormatException e)
+            {
+                System.out.println("Invalid number format!");
+            }
+        }
+
+        if (!availabilityDAO.deleteAvailability(toDelete))
+            System.out.println("Problem deleting availability");
+        else
+            System.out.println("Successfully deleted availability!");
     }
 
     private void rateBookingRoutine() throws IOException
@@ -1910,6 +2195,8 @@ public class Driver
 
         if (!insertAvailability(avail))
             System.out.println("Listing is already available at this time!");
+        else
+            System.out.println("Availability added!");
     }
 
     private void getMonthsFromUser(String listingID) throws IOException
@@ -1962,6 +2249,8 @@ public class Driver
 
         if (!insertAvailability(avail))
             System.out.println("Listing is already available at this time!");
+        else
+            System.out.println("Availability added!");
     }
 
     private void getYearFromUser(String listingID) throws IOException
@@ -1998,6 +2287,8 @@ public class Driver
         
         if (!insertAvailability(avail))
             System.out.println("Listing is already available at this time!");
+        else
+            System.out.println("Availability added!");
     }
 
     private Boolean insertAvailability(Availability avail)
@@ -2005,6 +2296,8 @@ public class Driver
         try
         {
             if (availabilityDAO.isAvailible(avail.getStartDate(), avail.getListingID()))
+                return false;
+            else if (bookingDAO.isBookedUnderDate(avail.getListingID(), avail))
                 return false;
             else
                 availabilityDAO.insertAvailability(avail);

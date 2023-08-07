@@ -46,6 +46,6 @@ public class Availability
     @Override
     public String toString()
     {
-        return String.format("%s - %s", startDate, endDate);
+        return String.format("%s - %s (at $%.2f per day)", startDate, endDate, pricePerDay);
     }
 }

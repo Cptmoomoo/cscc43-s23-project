@@ -19,7 +19,7 @@ import resources.utils.Table;
 
 public class AvailabilityDAO extends DAO
 {
-    private final Integer listingNumCols;
+    private final Integer numCols;
     private static final ArrayList<Triplet<String, Integer, Class<?>>> columnMetaData = new ArrayList<Triplet<String, Integer, Class<?>>>()
         {
             {
@@ -35,8 +35,8 @@ public class AvailabilityDAO extends DAO
     public AvailabilityDAO(DBConnectionService db) throws ClassNotFoundException, SQLException
     {
         super(db);
-        this.listingNumCols = columnMetaData.size();
-        this.table = new Table(listingNumCols, columnMetaData);
+        this.numCols = columnMetaData.size();
+        this.table = new Table(numCols, columnMetaData);
     }
 
     public Boolean insertAvailability(Availability availability) throws DuplicateKeyException
@@ -88,7 +88,7 @@ public class AvailabilityDAO extends DAO
             throw new RunQueryException();    
 
         if (table.isEmpty())
-            return null;
+            return availabilities;
 
         for (int i = 0; i < table.size(); i++)
         {   
@@ -231,10 +231,10 @@ public class AvailabilityDAO extends DAO
 
     private Availability getAvailabilityFromTable(Integer rowNum) 
     {
-        return new Availability(((Date) table.extractValueFromRowByName(0, "startDate")).toLocalDate(),
-                                 ((Date) table.extractValueFromRowByName(0, "endDate")).toLocalDate(),
-                                 (String) table.extractValueFromRowByName(0, "listingID"),
-                                 (Float) table.extractValueFromRowByName(0, "pricePerDay"));
+        return new Availability(((Date) table.extractValueFromRowByName(rowNum, "startDate")).toLocalDate(),
+                                 ((Date) table.extractValueFromRowByName(rowNum, "endDate")).toLocalDate(),
+                                 (String) table.extractValueFromRowByName(rowNum, "listingID"),
+                                 (Float) table.extractValueFromRowByName(rowNum, "pricePerDay"));
     }
 
 }
