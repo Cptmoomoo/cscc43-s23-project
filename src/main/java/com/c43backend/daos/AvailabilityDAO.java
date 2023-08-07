@@ -25,8 +25,8 @@ public class AvailabilityDAO extends DAO
             {
                 add(new Triplet<String, Integer, Class<?>>("startDate", 0, Date.class));
                 add(new Triplet<String, Integer, Class<?>>("endDate", 1, Date.class));
-                add(new Triplet<String, Integer, Class<?>>("listingID", 1, String.class));
-                add(new Triplet<String, Integer, Class<?>>("pricePerDay", 1, Float.class));
+                add(new Triplet<String, Integer, Class<?>>("listingID", 2, String.class));
+                add(new Triplet<String, Integer, Class<?>>("pricePerDay", 3, Float.class));
             }
         };
 
@@ -81,7 +81,7 @@ public class AvailabilityDAO extends DAO
         return availability;
     }
 
-    public ArrayList<Availability> getAvailabilitiesByListing(String listingID) throws DuplicateKeyException
+    public ArrayList<Availability> getAvailabilitiesByListing(String listingID)
     {
         ArrayList<Availability> availabilities = new ArrayList<Availability>();
         db.setPStatement("SELECT * FROM availability WHERE Listing_id=?");

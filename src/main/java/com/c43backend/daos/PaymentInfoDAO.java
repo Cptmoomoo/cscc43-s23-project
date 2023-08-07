@@ -75,13 +75,13 @@ public class PaymentInfoDAO extends DAO
         return executeSetQueryWithDupeCheck("listing ID");
     }
 
-    public Boolean updatePaymentInfo(PaymentInfo payment, String userID) throws DuplicateKeyException
+    public Boolean updatePaymentInfo(PaymentInfo payment) throws DuplicateKeyException
     {
         // TODO
         return true;
     }
 
-    public Boolean deletePaymentInfo(PaymentInfo payment, String userID) throws DuplicateKeyException
+    public Boolean deletePaymentInfo(PaymentInfo payment) throws DuplicateKeyException
     {
         // TODO
         return true;

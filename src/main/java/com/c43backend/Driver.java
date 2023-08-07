@@ -358,22 +358,22 @@ public class Driver
 
     private Boolean bookListing(Listing toBook) throws IOException
     {
+        Availability avail;
+        PaymentInfo payInfo;
+        
 
-        Availability avail = new Availability(LocalDate.now(), LocalDate.now(), toBook.getListingID(), (float) 100);
-        PaymentInfo payInfo = new PaymentInfo("1111222233334444", "322", "Vincent", "Li", "2022-02-01", "m1221m");
-        System.out.println("Select which dates you would like to book on.");
-        System.out.println("Here are the available dates for this listing:");
-
-        // SHOW AVAILABLE DATES
+        if ((avail = pickAvailDates(toBook)) == null)
+            return false;
      
         System.out.println("Which payment method would you like to use?");
-        // SELECT payment method here
+        
+        if ((payInfo = selectPaymentInfo()) == null)
+            return false;
 
-        // REVIEW BOOKING INFO
+        bookingReview(toBook, avail, payInfo);
 
-        System.out.println(String.format("Total price: $%.2f", avail.getTotalPrice()));
-
-        getYesNo();
+        if (!getYesNo())
+            return false;
 
         try
         {
@@ -384,6 +384,149 @@ public class Driver
             System.out.println("Booking failed!");
             return false;
         }
+    }
+
+    private void bookingReview(Listing toBook, Availability avail, PaymentInfo payInfo) throws IOException
+    {
+        System.out.println("Please review your booking:");
+        System.out.println(Globals.TERMINAL_DIVIDER);
+        System.out.println("Listing:");
+        System.out.println(toBook.toString());
+        System.out.println(Globals.TERMINAL_DIVIDER);
+        System.out.println("Dates Booked:");
+        System.out.println(avail.toString());
+        System.out.println(Globals.TERMINAL_DIVIDER);
+        System.out.println("Payment Info:");
+        System.out.println(payInfo.toString());
+        System.out.println("Total Price:");
+        System.out.println(String.format("Total price: $%.2f", avail.getTotalPrice()));
+        System.out.println(Globals.TERMINAL_DIVIDER);
+        System.out.println("Are you satisfied with your booking? (y/n)");
+    }
+
+    private PaymentInfo selectPaymentInfo() throws IOException
+    {
+        ArrayList<PaymentInfo> payments = getAndDisplayPayment();
+        Boolean cond = false;
+        Integer idx = 0;
+
+        while (payments.isEmpty())
+        {
+            System.out.println("Would you like to add a new payment method?");
+    
+            if (!getYesNo())
+                return null;
+
+            addPayment();
+            payments = getAndDisplayPayment();
+        }
+
+        System.out.println("Which payment method would you like to use? (input index number)");
+
+        while (!cond)
+        {
+            try
+            {
+                idx = Integer.parseInt(r.readLine().trim());
+
+                if (idx > payments.size() || idx <= 0)
+                    System.out.println("Invalid index number");
+                
+                cond = true;
+            }
+            catch (NumberFormatException e)
+            {
+                System.out.println("Invalid index number");
+            }
+        }
+
+        return payments.get(idx - 1);
+    }
+
+    private Availability pickAvailDates(Listing toBook) throws IOException
+    {
+        ArrayList<Availability> avails = availabilityDAO.getAvailabilitiesByListing(toBook.getListingID());
+        LocalDate startDate = null;
+        LocalDate endDate = null;
+        Availability chosen = null;
+
+        Boolean cond = false;
+        Boolean cond2 = false;
+
+        if (avails.isEmpty())
+        {
+            System.out.println("The listing you have chosen is fully booked!");
+            return null;
+        }
+
+        System.out.println("Select which dates you would like to book on.");
+        System.out.println("The listing you have chosen are available on these dates:");
+
+        for (int i = 0; i < avails.size(); i++)
+            System.out.println(String.format("%d. %s", i + 1, avails.get(i).toString()));
+
+        while (!cond2)
+        {
+            while (!cond)
+            {
+                System.out.println("Please select a start date for your booking (YYYY-MM-DD)");
+
+                try
+                {
+                    startDate = LocalDate.parse(r.readLine().trim());
+
+                    cond = true;
+                }
+                catch (DateTimeParseException e)
+                {
+                    System.out.println("Invalid date format!");
+                }
+            }
+
+            cond = false;
+
+            while (!cond)
+            {
+                System.out.println("Please select an end date for your booking (YYYY-MM-DD)");
+
+                try
+                {
+                    endDate = LocalDate.parse(r.readLine().trim());
+
+                    cond = true;
+                }
+                catch (DateTimeParseException e)
+                {
+                    System.out.println("Invalid date format!");
+                }
+            }
+
+            for (Availability a : avails)
+            {
+                if (a.getStartDate().compareTo(startDate) <= 0 && a.getEndDate().compareTo(endDate) >= 0)
+                {
+                    chosen = new Availability(startDate, endDate, toBook.getListingID(), a.getPricePerDay());
+                    cond2 = true;
+                    break;
+                }
+            }
+
+            if (cond2)
+            {
+                System.out.println("Would you like to confirm the following dates? (y/n)");
+                System.out.println(String.format("Start Date: %s", startDate.toString()));
+                System.out.println(String.format("End Date: %s", endDate.toString()));
+                System.out.println(String.format("Price per day: $%.2f", chosen.getPricePerDay()));
+                cond2 = getYesNo();
+            }
+            else
+            {
+                System.out.println("The listing is not available for the selected dates!");
+            }
+        }
+
+        
+        return chosen;
     }
 
     private ArrayList<Listing> bookByHost() throws IOException
@@ -598,8 +741,8 @@ public class Driver
             return payments;
         }
 
-        for (PaymentInfo p : payments)
-            System.out.println(p.toString());
+        for (int i = 0; i < payments.size(); i++)
+            System.out.println(String.format("%d. %s", i + 1, payments.get(i).toString()));
 
         return payments;
     }
@@ -873,7 +1016,7 @@ public class Driver
 
         try
         {
-            piDAO.updatePaymentInfo(pi, loggedUser.getUsername());
+            piDAO.updatePaymentInfo(pi);
         }
         catch (DuplicateKeyException e)
         {
@@ -916,7 +1059,7 @@ public class Driver
 
         try
         {
-            piDAO.deletePaymentInfo(pi, loggedUser.getUsername());
+            piDAO.deletePaymentInfo(pi);
         }
         catch (DuplicateKeyException e) {}
     }
@@ -1315,7 +1458,11 @@ public class Driver
         try
         {
             if (!listingDAO.insertListing(listing, loggedUser.getUsername(), addLocation))
+            {
                 System.out.println("There was a problem creating this listing!");
+                return;
+            }   
+                
             else
                 System.out.println("Successfully created listing!");
         }

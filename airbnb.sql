@@ -1,7 +1,7 @@
 /* Entities */
 CREATE TABLE IF NOT EXISTS Listings (
     Listing_id char(36) UNIQUE PRIMARY KEY ,
-    Listing_type varchar(10),
+    Listing_type varchar(15),
     Suite_number varchar(5),
     Max_guests int, 
     Is_active boolean,
