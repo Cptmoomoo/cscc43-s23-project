@@ -151,6 +151,7 @@ public class Driver
         System.out.println("search-host: [hostUsername] [n] search for listings by a given host. If hostUsername is not provided it will prompt you to for it.");
         System.out.println(Globals.TERMINAL_INDENT + "If n is given it will return n listings maximum, defaults to 10.");
         System.out.println(Globals.TERMINAL_INDENT + "If n is given without the hostUsername, must be input as n=x. (ex. search-host n=5)");
+        System.out.println("update-user: update your user information.");
         System.out.println("delete-account: permanently deletes your account!");
     }
 
@@ -162,6 +163,8 @@ public class Driver
         System.out.println("search-host: [hostUsername] [n] search for listings by a given host. If hostUsername is not provided it will prompt you to for it.");
         System.out.println(Globals.TERMINAL_INDENT + "If n is given it will return n listings maximum, defaults to 10.");
         System.out.println(Globals.TERMINAL_INDENT + "If n is given without the hostUsername, must be input as n=x. (ex. search-host n=5)");
+        System.out.println("update-user: update your user information.");
+        System.out.println("delete-account: permanently deletes your account!");
     }
 
     private void loggedInRoutine() throws IOException
@@ -212,6 +215,10 @@ public class Driver
                     logout();
                     break;
 
+                case "update-user":
+                    updateUser();
+                    break;
+
                 case "search-host":
                     executeSearchListingByHost(cmds);
                     break;
@@ -257,6 +264,10 @@ public class Driver
                 case "delete-account":
                     deleteAccount();
                     logout();
+                    break;
+
+                case "update-user":
+                    updateUser();
                     break;
     
                 case "create-listing":
@@ -478,25 +489,65 @@ public class Driver
         }
     }
 
-    private User createUser() throws IOException
+    private void updateUser() throws IOException
     {
-        String cmd;
+
         Boolean cond = false;
 
-        String username;
-        String password = "";
-        UserType userType = UserType.RENTER;
-        String SIN = "";
-        String occupation;
-        LocalDate birthday = LocalDate.now();
-        String firstName;
-        String lastName;
-        
-        System.out.println("Input preferred username:");
-        username = r.readLine().trim().toLowerCase();
+        while (!cond)
+        {
+            System.out.println("What would you like to update?");
+            System.out.println("Password (p), SIN (s), Occupation (o), Birthday (b), First Name (f), Last Name (l)");
+            System.out.println("Type q to quit updating.");
 
-        // check username duplicate here!
-        // Check for empty username!
+            switch (r.readLine().trim().toLowerCase())
+            {
+                case "password":
+                case "p":
+                    loggedUser.setHashedPass(setPassword());
+                    break;
+                case "sin":
+                case "s":
+                    loggedUser.setSIN(setSIN());
+                    break;
+                case "occupation":
+                case "o":
+                    loggedUser.setOccupation(setOccupation());
+                    break;
+                case "birthday":
+                case "b":
+                    loggedUser.setBirthday(setBirthday());
+                    break;
+                case "first name":
+                case "f":
+                    loggedUser.setFirstName(setFirstName());
+                    break;
+                case "last name":
+                case "l":
+                    loggedUser.setLastName(setLastName());
+                    break;
+                case "q":
+                    cond = true;
+                    break;
+                default:
+                    System.out.println("Not a valid option!");
+                    break;
+            }
+        }
+
+        try
+        {
+            userDAO.updateUser(loggedUser);
+        }
+        catch (DuplicateKeyException e) {}
+
+        System.out.println("User info updated!");
+    }
+
+    private String setPassword() throws IOException
+    {
+        Boolean cond = false;
+        String password = "";
 
         while (!cond)
         {
@@ -512,6 +563,118 @@ public class Driver
         }
 
         password = PasswordHasher.hashPassword(password);
+
+        return password;
+    }
+
+    private String setFirstName() throws IOException
+    {
+        System.out.println("Input first name:");
+        return r.readLine().trim();
+    }
+
+    private String setLastName() throws IOException
+    {
+        System.out.println("Input last name:");
+        return r.readLine().trim();
+    }
+
+    private String setSIN() throws IOException
+    {
+        Boolean cond = false;
+        String cmd;
+        String SIN = "";
+
+        while (!cond)
+        {
+            System.out.println("Input SIN number:");
+            cmd = r.readLine().trim();
+
+            try
+            {
+                SIN = parseSIN(cmd);
+
+                if (SIN.length() != 9)
+                    System.out.println("SIN is not valid, try again!");
+                else
+                    cond = true;
+            }
+            catch (ParseException e)
+            {
+                System.out.println("SIN is not valid, try again!");
+            }
+        }
+
+        return SIN;
+    }
+
+    private String setOccupation() throws IOException
+    {
+        System.out.println("Input occupation:");
+        return r.readLine().trim();
+    }  
+
+    private LocalDate setBirthday() throws IOException
+    {
+        Boolean cond = false;
+        String cmd;
+        LocalDate birthday = null;
+
+        while (!cond)
+        {
+            System.out.println("Input birthday (YYYY-MM-DD):");
+            cmd = r.readLine().trim();
+
+            try
+            {
+                birthday = LocalDate.parse(cmd);
+                cond = true;
+            }
+            catch (DateTimeParseException e)
+            {
+                System.out.println("Not a valid date format, try again!");
+         
+            }
+        }
+
+        return birthday;
+    }
+
+    private String setUsername() throws IOException
+    {
+        String username = "";
+        Boolean cond = false;
+
+        while (!cond)
+        {
+            System.out.println("Input preferred username:");
+            username = r.readLine().trim().toLowerCase();
+
+            if (userDAO.getUser(username) != null)
+                System.out.println("Username already exists!");
+            else
+                cond = true;
+        }
+
+        return username;
+    }
+
+    private User createUser() throws IOException
+    {
+        String cmd;
+        Boolean cond = false;
+
+        String username;
+        String password;
+        UserType userType = UserType.RENTER;
+        String SIN;
+        String occupation;
+        LocalDate birthday;
+        String firstName;
+        String lastName;
+        
+        username = setUsername();
+        password = setPassword();
 
         cond = false;
 
@@ -540,55 +703,11 @@ public class Driver
             }
         }
 
-        System.out.println("Input first name:");
-        firstName = r.readLine().trim();
-
-        System.out.println("Input last name:");
-        lastName = r.readLine().trim();
-
-        cond = false;
-
-        while (!cond)
-        {
-            System.out.println("Input SIN number:");
-            cmd = r.readLine().trim();
-
-            try
-            {
-                SIN = parseSIN(cmd);
-
-                if (SIN.length() != 9)
-                    System.out.println("SIN is not valid, try again!");
-                else
-                    cond = true;
-            }
-            catch (ParseException e)
-            {
-                System.out.println("SIN is not valid, try again!");
-            }
-        }
-
-        System.out.println("Input occupation:");
-        occupation = r.readLine().trim();
-
-        cond = false;
-
-        while (!cond)
-        {
-            System.out.println("Input birthday (YYYY-MM-DD):");
-            cmd = r.readLine().trim();
-
-            try
-            {
-                birthday = LocalDate.parse(cmd);
-                cond = true;
-            }
-            catch (DateTimeParseException e)
-            {
-                System.out.println("Not a valid date format, try again!");
-         
-            }
-        }
+        firstName = setFirstName();
+        lastName = setLastName();
+        SIN = setSIN();
+        occupation = setOccupation();
+        birthday = setBirthday();
 
         return new User(username, userType, SIN, occupation, birthday, firstName, lastName, password);
 
