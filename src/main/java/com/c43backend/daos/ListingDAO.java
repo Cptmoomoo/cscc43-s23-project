@@ -9,6 +9,7 @@ import org.javatuples.Triplet;
 import com.c43backend.dbconnectionservice.DBConnectionService;
 
 import resources.entities.Listing;
+import resources.entities.Location;
 import resources.enums.ListingType;
 import resources.exceptions.DuplicateKeyException;
 import resources.exceptions.RunQueryException;
@@ -24,8 +25,9 @@ public class ListingDAO extends DAO
                 add(new Triplet<String, Integer, Class<?>>("listingID", 0, String.class));
                 add(new Triplet<String, Integer, Class<?>>("listingType", 1, String.class));
                 add(new Triplet<String, Integer, Class<?>>("suiteNum", 2, String.class));
-                add(new Triplet<String, Integer, Class<?>>("isActive", 3, Boolean.class));
+                add(new Triplet<String, Integer, Class<?>>("isActive", 4, Boolean.class));
                 add(new Triplet<String, Integer, Class<?>>("timeListed", 5, Timestamp.class));
+                add(new Triplet<String, Integer, Class<?>>("maxGuests", 3, Integer.class));
             }
         };
     
@@ -41,12 +43,15 @@ public class ListingDAO extends DAO
     private Table listingTable;
     private Table amenityTable;
 
-    public ListingDAO(DBConnectionService db) throws ClassNotFoundException, SQLException
+    private final LocationDAO lDAO;
+
+    public ListingDAO(DBConnectionService db, LocationDAO lDAO) throws ClassNotFoundException, SQLException
     {
         super(db);
         this.listingNumCols = listingColumnMetaData.size();
         this.amenityNumCols = amenityColumnMetaData.size();
 
+        this.lDAO = lDAO;
         this.listingTable = new Table(listingNumCols, listingColumnMetaData);
         this.amenityTable = new Table(amenityNumCols, amenityColumnMetaData);
     }
@@ -56,7 +61,7 @@ public class ListingDAO extends DAO
     {
         String listingID = listing.getListingID();
     
-        db.setPStatement("INSERT INTO listings VALUES (?, ?, ?, ?, ?)");
+        db.setPStatement("INSERT INTO listings VALUES (?, ?, ?, ?, ?, ?)");
     
         if (!db.setPStatementString(1, listingID))
             return false;
@@ -67,10 +72,13 @@ public class ListingDAO extends DAO
         if (!db.setPStatementString(3, listing.getSuiteNum()))
             return false;
         
-        if (!db.setPStatementBoolean(4, listing.getIsActive()))
+        if (!db.setPStatementInt(4, listing.getMaxGuests()))
+            return false;
+        
+        if (!db.setPStatementBoolean(5, listing.getIsActive()))
             return false;
 
-        if (!db.setPStatementTimestamp(5, Timestamp.valueOf(listing.getTimeListed())))
+        if (!db.setPStatementTimestamp(6, Timestamp.valueOf(listing.getTimeListed())))
             return false;
 
         if (!executeSetQueryWithDupeCheck("listing ID"))
@@ -98,14 +106,25 @@ public class ListingDAO extends DAO
 
         if (!db.setPStatementString(2, listingID))
             return false;
+        
+        executeSetQueryWithDupeCheck("listing ID");
 
-        return executeSetQueryWithDupeCheck("listing ID");
+        lDAO.insertLocation(listing.getLocation());
+
+        db.setPStatement("INSERT INTO belongs_to VALUES (?, ?, ?)");
+
+        db.setPStatementString(1, listingID);
+        db.setPStatementFloat(2, listing.getLocation().getCoordinate().getLongitude());
+        db.setPStatementFloat(3, listing.getLocation().getCoordinate().getLatitude());
+
+        return executeSetQueryWithDupeCheck("belongs_to");
     }
 
     public Listing getListing(String listingID)
     {
         Listing listing;
         ArrayList<AmenityType> amenities = new ArrayList<AmenityType>();
+        Location location;
 
         db.setPStatement("SELECT * FROM listings WHERE Listing_id=?");
         db.setPStatementString(1, listingID);
@@ -118,8 +137,10 @@ public class ListingDAO extends DAO
             return null;
         
         amenities = getAmenitiesFromListing(listingID);
+        location = getLocationFromTable(listingID);
 
-        listing = getListingFromTable(0, amenities);
+        listing = getListingFromTable(0, amenities, location);
+        
 
         listingTable.clearTable();
 
@@ -160,8 +181,9 @@ public class ListingDAO extends DAO
         String listingID;
         ArrayList<AmenityType> amenities;
         ArrayList<Listing> listings = new ArrayList<Listing>();
+        Location location;
 
-        db.setPStatement("SELECT listings.Listing_id, listings.Listing_type, listings.Suite_number, listings.Is_active, listings.Time_listed " +
+        db.setPStatement("SELECT listings.Listing_id, listings.Listing_type, listings.Suite_number, listings.Max_guests, listings.Is_active, listings.Time_listed " +
                          "FROM listings NATURAL JOIN host_of WHERE host_of.Username=?");
         db.setPStatementString(1, hostUsername);
 
@@ -172,8 +194,9 @@ public class ListingDAO extends DAO
         {
             listingID = (String) listingTable.extractValueFromRowByName(i, "listingID");
             amenities = getAmenitiesFromListing(listingID);
+            location = getLocationFromTable(listingID);
 
-            listings.add(getListingFromTable(i, amenities));
+            listings.add(getListingFromTable(i, amenities, location));
         }
 
         listingTable.clearTable();
@@ -186,8 +209,9 @@ public class ListingDAO extends DAO
         String listingID;
         ArrayList<Listing> listings = new ArrayList<Listing>();
         ArrayList<AmenityType> amenities;
+        Location location;
 
-        db.setPStatement("SELECT listings.Listing_id, listings.Listing_type, listings.Suite_number, listings.Is_active, listings.Time_listed " +
+        db.setPStatement("SELECT listings.Listing_id, listings.Listing_type, listings.Suite_number, listings.Max_guests, listings.Is_active, listings.Time_listed " +
                          "FROM (belongs_to NATURAL JOIN locations ON locations.City=? AND locations.Province=? AND locations.Country=? AND locations.Postal_code=?) " +
                          "NATURAL JOIN listings");
         db.setPStatementString(1, city);
@@ -202,8 +226,9 @@ public class ListingDAO extends DAO
         {
             listingID = (String) listingTable.extractValueFromRowByName(i, "listingID");
             amenities = getAmenitiesFromListing(listingID);
+            location = getLocationFromTable(listingID);
 
-            listings.add(getListingFromTable(i, amenities));
+            listings.add(getListingFromTable(i, amenities, location));
         }
 
         listingTable.clearTable();
@@ -216,8 +241,9 @@ public class ListingDAO extends DAO
         String listingID;
         ArrayList<Listing> listings = new ArrayList<Listing>();
         ArrayList<AmenityType> amenities;
+        Location location;
 
-        db.setPStatement("SELECT listings.Listing_id, listings.Listing_type, listings.Suite_number, listings.Is_active, listings.Price_per_day, listings.Time_listed " +
+        db.setPStatement("SELECT listings.Listing_id, listings.Listing_type, listings.Suite_number, listings.Is_active, listings.Max_guests, listings.Price_per_day, listings.Time_listed " +
                          "FROM belongs_to NATURAL JOIN locations WHERE SQRT(POWER(belongs_to.Longitude - ?, 2) + POWER(belongs_to.Latitude - ?, 2)) <= ? ");
                         //  + "ORDER BY ? ?");
         db.setPStatementFloat(1, longitude);
@@ -233,8 +259,9 @@ public class ListingDAO extends DAO
         {
             listingID = (String) listingTable.extractValueFromRowByName(i, "listingID");
             amenities = getAmenitiesFromListing(listingID);
+            location = getLocationFromTable(listingID);
 
-            listings.add(getListingFromTable(i, amenities));
+            listings.add(getListingFromTable(i, amenities, location));
         }
 
         listingTable.clearTable();
@@ -247,8 +274,9 @@ public class ListingDAO extends DAO
         String listingID;
         ArrayList<Listing> listings = new ArrayList<Listing>();
         ArrayList<AmenityType> amenities;
+        Location location;
 
-        db.setPStatement("SELECT listings.Listing_id, listings.Listing_type, listings.Suite_number, listings.Is_active, listings.Price_per_day, listings.Time_listed " +
+        db.setPStatement("SELECT listings.Listing_id, listings.Listing_type, listings.Suite_number, listings.Is_active, listings.Max_guests, listings.Price_per_day, listings.Time_listed " +
                          "FROM belongs_to NATURAL JOIN locations WHERE SUBSTRING(locations.Postal_code, 1, 3) = ?");
                         //  + "ORDER BY ? ?");
         db.setPStatementString(1, postal_code.substring(0, 4));
@@ -262,8 +290,9 @@ public class ListingDAO extends DAO
         {
             listingID = (String) listingTable.extractValueFromRowByName(i, "listingID");
             amenities = getAmenitiesFromListing(listingID);
+            location = getLocationFromTable(listingID);
 
-            listings.add(getListingFromTable(i, amenities));
+            listings.add(getListingFromTable(i, amenities, location));
         }
 
         listingTable.clearTable();
@@ -271,7 +300,12 @@ public class ListingDAO extends DAO
         return listings;
     }
 
-    private Listing getListingFromTable(Integer rowNum, ArrayList<AmenityType> amenities)
+    private Location getLocationFromTable(String listingID)
+    {
+        return lDAO.getLocationByListing(listingID);
+    }
+
+    private Listing getListingFromTable(Integer rowNum, ArrayList<AmenityType> amenities, Location location)
     {
         return new Listing((String) listingTable.extractValueFromRowByName(rowNum, "listingID"),
                             ListingType.valueOf((String) listingTable.extractValueFromRowByName(rowNum, "listingType")),
@@ -279,6 +313,7 @@ public class ListingDAO extends DAO
                             (Boolean) listingTable.extractValueFromRowByName(rowNum, "isActive"),
                             ((Timestamp) listingTable.extractValueFromRowByName(rowNum, "timeListed")).toLocalDateTime(),
                             amenities,
-                            null);
+                            location,
+                            (int) listingTable.extractValueFromRowByName(rowNum, "maxGuests"));
     }
 }

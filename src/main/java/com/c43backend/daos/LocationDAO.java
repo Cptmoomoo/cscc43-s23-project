@@ -8,8 +8,10 @@ import org.javatuples.Triplet;
 import com.c43backend.dbconnectionservice.DBConnectionService;
 
 import resources.entities.Location;
+import resources.enums.AmenityType;
 import resources.exceptions.DuplicateKeyException;
 import resources.exceptions.RunQueryException;
+import resources.utils.Globals;
 import resources.utils.Table;
 
 public class LocationDAO extends DAO
@@ -82,6 +84,28 @@ public class LocationDAO extends DAO
 
         return location;
     }
+
+    public Location getLocationByListing(String listingID)
+    {
+        Location location;
+
+        db.setPStatement("SELECT locations.Longitude, locations.Latitude, locations.Postal_code, locations.City, locations.Country, locations.Province " +
+                         "FROM locations NATURAL JOIN (listings NATURAL JOIN belongs_to) WHERE Listing_id=?");
+        db.setPStatementString(1, listingID);
+
+        if (!db.executeSetQueryReturnN(1, table))
+            throw new RunQueryException();
+
+        if (table.isEmpty())
+            return null;
+            
+        location = getLocationFromTable(0);
+
+        table.clearTable();
+
+        return location;
+    }
+
 
     private Location getLocationFromTable(Integer rowNum)
     {

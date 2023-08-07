@@ -2,7 +2,8 @@
 CREATE TABLE IF NOT EXISTS Listings (
     Listing_id char(36) UNIQUE PRIMARY KEY ,
     Listing_type varchar(10),
-    Suite_number varchar(5), 
+    Suite_number varchar(5),
+    Max_guests int, 
     Is_active boolean,
     Time_listed Timestamp
 );
@@ -124,7 +125,8 @@ CREATE TABLE IF NOT EXISTS Belongs_to (
     Listing_id char(36),
     Longitude float,
     Latitude float,
-    CONSTRAINT FK_Belongs_to FOREIGN KEY (Longitude, Latitude) REFERENCES Locations(Longitude, Latitude)
+    CONSTRAINT FK_Belongs_to FOREIGN KEY (Longitude, Latitude) REFERENCES Locations(Longitude, Latitude),
+    CONSTRAINT PK_Belongs_to PRIMARY KEY (Listing_id)
 );
 
 CREATE TABLE IF NOT EXISTS Paid_with (

@@ -38,7 +38,7 @@ public class AvailabilityDAO extends DAO
         this.table = new Table(listingNumCols, columnMetaData);
     }
 
-    public Boolean insertAvailability(Availability availability, String listing_id, Float price_per_day) throws DuplicateKeyException
+    public Boolean insertAvailability(Availability availability) throws DuplicateKeyException
     {
         db.setPStatement("INSERT INTO availability VALUES (?, ?, ?, ?)");
 
@@ -48,10 +48,10 @@ public class AvailabilityDAO extends DAO
         if (!db.setPStatementDate(2, new Date(availability.getEndDate().toEpochDay())))
             return false;
 
-        if (!db.setPStatementString(3, listing_id))
+        if (!db.setPStatementString(3, availability.getListingID()))
             return false;
         
-        if (!db.setPStatementFloat(4, price_per_day))
+        if (!db.setPStatementFloat(4, availability.getPricePerDay()))
             return false;
 
         return executeSetQueryWithDupeCheck("date range");
@@ -78,6 +78,23 @@ public class AvailabilityDAO extends DAO
         table.clearTable();
 
         return availability;
+    }
+
+    public Boolean isAvailible(LocalDate date, String listingID)
+    {
+        Date day = new Date(date.toEpochDay());
+        db.setPStatement("SELECT * FROM availability WHERE Start_date <= ? AND End_date > ?");
+        db.setPStatementDate(1, day);
+        db.setPStatementDate(1, day);
+
+        if (!db.executeSetQueryReturnN(1, table))
+            throw new RunQueryException();    
+
+        if (table.isEmpty())
+            return false;
+
+        return true;
+
     }
 
     public Boolean updatePriceForAvailability(Availability availability, Float new_price)

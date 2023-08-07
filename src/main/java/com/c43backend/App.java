@@ -72,8 +72,8 @@ public class App
             }
             
             userDAO = new UserDAO(db);
-            listingDAO = new ListingDAO(db);
             locationDAO = new LocationDAO(db);
+            listingDAO = new ListingDAO(db, locationDAO);
             availabilityDAO = new AvailabilityDAO(db);
             bookingDAO = new BookingDAO(db);
             rateDAO = new RateDAO(db);

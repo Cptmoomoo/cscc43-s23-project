@@ -33,6 +33,10 @@ public class Location
     @Override
     public String toString()
     {
-        return String.format("%s, %s, %s (%s)", city, province, country, coordinate.toString());
+        return "Coordinate: " + coordinate + 
+                               ", City: "  + city + 
+                               ", Province: " + province + 
+                               ", Country: " + country +  
+                               ", Postal Code: " + postalCode;
     }
 }

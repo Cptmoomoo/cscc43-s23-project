@@ -6,6 +6,7 @@ import java.io.InputStreamReader;
 import java.text.ParseException;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
+import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -19,6 +20,7 @@ import com.c43backend.daos.CommentDAO;
 
 import com.c43backend.dbconnectionservice.DBConnectionService;
 
+import resources.entities.Availability;
 import resources.entities.Listing;
 import resources.entities.User;
 import resources.entities.Location;
@@ -100,34 +102,6 @@ public class Driver
                         loggedInRoutine();
                     break;
 
-                case "logout":
-                case "lo":
-                    if (isLoggedIn())
-                    {
-                        System.out.println(String.format("Goodbye %s!", loggedUser.getFirstName()));
-                        loggedUser = null;
-                    }
-                    else
-                        System.out.println("You are not logged in!");
-                    break;
-
-                case "create-listing":
-                    if (isLoggedIn())
-                        createListing();
-                    else
-                        System.out.println("You are not logged in!");
-                    break;
-
-                case "search-host":
-                    if (checkCmdArgs(cmds, 1, 1))
-                        searchByHost(cmds.get(1));
-                    else if (checkCmdArgs(cmds, 0, 0))
-                        searchByHost("");
-                    else
-                        printInvalid("search-host");
-                    break;
-
-
                 default:
                     System.out.println("Invalid command!");
                     System.out.println("Type h or help to see a list of commands.");
@@ -167,7 +141,29 @@ public class Driver
         System.out.println(Globals.TERMINAL_INDENT + "If none is given then you will be prompted.");
     }
 
-    private void loggedInRoutine()
+    private void hostHelp()
+    {
+        System.out.println("quit/q: quits the application.");
+        System.out.println("help/h: displays this help message.");
+        System.out.println("logout/lo: logout and return to the main menu.");
+        System.out.println("listings: return a list of your current active listings.");
+        System.out.println("create-listing: create a listing!");
+        System.out.println("search-host: [hostUsername] [n] search for listings by a given host. If hostUsername is not provided it will prompt you to for it.");
+        System.out.println(Globals.TERMINAL_INDENT + "If n is given it will return n listings maximum, defaults to 10.");
+        System.out.println(Globals.TERMINAL_INDENT + "If n is given without the hostUsername, must be input as n=x. (ex. search-host n=5)");
+    }
+
+    private void renterHelp()
+    {
+        System.out.println("quit/q: quits the application.");
+        System.out.println("help/h: displays this help message.");
+        System.out.println("logout/lo: logout and return to the main menu.");
+        System.out.println("search-host: [hostUsername] [n] search for listings by a given host. If hostUsername is not provided it will prompt you to for it.");
+        System.out.println(Globals.TERMINAL_INDENT + "If n is given it will return n listings maximum, defaults to 10.");
+        System.out.println(Globals.TERMINAL_INDENT + "If n is given without the hostUsername, must be input as n=x. (ex. search-host n=5)");
+    }
+
+    private void loggedInRoutine() throws IOException
     {
         switch (loggedUser.getUserType())
         {
@@ -181,14 +177,157 @@ public class Driver
         }
     }
 
-    private void renterMenu()
+    private void renterMenu() throws IOException
     {
-        System.out.println("Renter Menu");
+        ArrayList<String> cmds;
+
+        System.out.println("You are in the Renter Menu!");
+
+        while (true)
+        {
+            System.out.print(Globals.TERMINAL_MARKER);
+            cmds = parseCmd(r.readLine());
+
+            switch (cmds.get(0))
+            {
+                case "quit":
+                case "q":
+                    exit(0);
+                break;
+
+                case "help":
+                case "h":
+                    renterHelp();
+                    break;
+
+                case "logout":
+                case "lo":
+                    if (logout())
+                        return;
+                    break;
+
+                case "search-host":
+                    executeSearchListingByHost(cmds);
+                    break;
+
+                default:
+                    System.out.println("Invalid command!");
+                    System.out.println("Type h or help to see a list of commands.");
+                    break;
+
+            }
+        }
     }
 
-    private void hostMenu()
+    private void hostMenu() throws IOException
     {
-        System.out.println("Host Menu");
+        ArrayList<String> cmds;
+
+        System.out.println("You are in the Host Menu!");
+
+        while (true)
+        {
+            System.out.print(Globals.TERMINAL_MARKER);
+            cmds = parseCmd(r.readLine());
+
+            switch (cmds.get(0))
+            {
+                case "quit":
+                case "q":
+                    exit(0);
+                break;
+
+                case "help":
+                case "h":
+                    hostHelp();
+                    break;
+
+                case "logout":
+                case "lo":
+                    if (logout())
+                        return;
+                    break;
+                case "create-listing":
+                    createListing();
+                    break;
+                
+                case "listings":
+                    searchByHost(loggedUser.getUsername(), 50);
+                    break;
+
+                case "search-host":
+                    executeSearchListingByHost(cmds);
+                    break;
+
+                default:
+                    System.out.println("Invalid command!");
+                    System.out.println("Type h or help to see a list of commands.");
+                    break;
+
+            }
+        }
+    }
+
+    private void executeSearchListingByHost(ArrayList<String> cmds) throws IOException
+    {
+        String cmd;
+        Integer n;
+
+        if (checkCmdArgs(cmds, 2, 2))
+        {
+            try
+            {
+                n = Integer.parseInt(cmds.get(2));
+            }
+            catch (NumberFormatException e)
+            {
+                System.out.println("Invalid value for n!");
+                return;
+            }
+            searchByHost(cmds.get(1), n);
+        }
+        else if (checkCmdArgs(cmds, 1, 1))
+        {
+            cmd = cmds.get(1);
+            if (!cmd.contains("n="))
+            {
+                searchByHost(cmd, 10);
+                return;
+            }
+            else
+            {
+                cmd = cmd.replace("n=", "");
+                try
+                {
+                    n = Integer.parseInt(cmd);
+                }
+                catch (NumberFormatException e)
+                {
+                    System.out.println("Invalid value for n!");
+                    return;
+                }
+                searchByHost("", n);
+            }
+                
+        }
+        else if (checkCmdArgs(cmds, 0, 0))
+            searchByHost("", 10);
+        else
+            printInvalid("search-host");
+    }
+
+    private Boolean logout()
+    {
+        if (isLoggedIn())
+        {
+            System.out.println(String.format("Goodbye %s!", loggedUser.getFirstName()));
+            loggedUser = null;
+            return true;
+        }
+        else
+            System.out.println("You are not logged in!");
+        
+        return false;
     }
 
     private Boolean executeLogin(ArrayList<String> cmds) throws IOException
@@ -429,13 +568,18 @@ public class Driver
     private void createListing() throws IOException
     {
         Boolean cond = false;
+        Boolean addLocation = true;
     
         ListingType listingType = ListingType.HOUSE;
+        Location location;
         String suiteNum = "";
+        Float longitude = (float) 0.0;
+        Float latitude = (float) 0.0;
         Listing listing;
+        Integer numGuests = 0;
 
         System.out.println("Create new listing!!!");
-        System.out.println("What kind of listing is it? List of valid listings: house, apartment, condo, cottage.");
+        System.out.println("What kind of listing is it? List of valid listings: house (h), apartment (a/apt), condo (cn), cottage (ct).");
 
         while (!cond)
         {
@@ -478,111 +622,348 @@ public class Driver
 
         suiteNum = r.readLine().trim();
 
-        // System.out.println("Whats the price you want to set per day?");
+        cond = false;
 
-        // // Suggest price here!
+        while (!cond)
+        {
+            System.out.println("What is the max number of guests this listing can house?");
 
-        // cond = false;
-
-        // while (!cond)
-        // {
-        //     try 
-        //     {
-        //         pricePerDay = Float.parseFloat(r.readLine().trim());
-        //         cond = true;
-        //     }
-        //     catch (NumberFormatException e)
-        //     {
-        //         System.out.println("Not a valid price, try again!");
-        //     }
-        // }
-
-
-        listing = new Listing(listingType, suiteNum, getAmenities());
-
-        // Need to incorporate location as well when adding listing!
-        // Probably: ask for location info, if exists attach this listing to it
-        // If not create a new location for it
-
-        Float longitude = (float) 0.0;
-        Float latitude = (float) 0.0;
-
-        System.out.println("What is the longitude of your listing? Enter a decimal number between -180 to 180.");
+            try
+            {
+                numGuests = Integer.parseInt(r.readLine().trim());
+                cond = true;
+            }
+            catch (NumberFormatException e)
+            {
+                System.out.println("Invalid number!");
+            }
+        }
 
         cond = false;
 
         while (!cond)
         {
+
+            System.out.println("What is the longitude of your listing? Enter a decimal number between -180 to 180.");
             try 
             {
                 longitude = Float.parseFloat(r.readLine().trim());
 
-                if (longitude >= -180 && longitude <= 180) 
-                    cond = true;
-                else
+                if (longitude < -180 || longitude > 180) 
+                {
                     System.out.println("Longitude has to be between -180 to 180, try again!");
+                    continue;
+                }
             }
             catch (NumberFormatException e)
             {
                 System.out.println("Not a valid valid longitude, try again!");
+                continue;
+            }
+
+            System.out.println("What is the latitude of your listing? Enter a decimal number between -90 to 90.");
+
+            try 
+            {
+                latitude = Float.parseFloat(r.readLine().trim());
+
+                if (latitude < -90 || latitude > 90) 
+                {
+                    System.out.println("Latitude has to be between -90 to 90, try again!");
+                    continue;
+                }
+            }
+            catch (NumberFormatException e)
+            {
+                System.out.println("Not a valid valid latitude, try again!");
+                continue;
+            }
+
+            System.out.println(String.format("Are the coordinates (%f, %f) correct? (y/n)", longitude, latitude));
+
+            cond = getYesNo();
+        }
+
+        location = locationDAO.getLocation(longitude, latitude);
+
+        if (location != null)
+        {
+            System.out.println("There already exists a location with the coordinates you entered, assign the location to your listing? (y/n)");
+            System.out.println(location.toString());
+            
+            addLocation = !getYesNo();
+        }
+        else
+            System.out.println("No location with the coordinates entered, creating new location for it.");
+
+        if (addLocation)
+        {
+            location = createLocationRoutine(longitude, latitude);
+        }
+
+        listing = new Listing(listingType, suiteNum, getAmenities(), location, numGuests);
+
+        try
+        {
+            if (!listingDAO.insertListing(listing, loggedUser.getUsername()))
+                System.out.println("There was a problem creating this listing!");
+            else
+                System.out.println("Successfully created listing!");
+        }
+        catch (DuplicateKeyException e)
+        {
+            System.out.println("Duplicate listing!");
+        }
+
+        System.out.println("Add availability to the listing:");
+
+        createAvailRoutine(listing.getListingID());
+    }
+
+    private void createAvailRoutine(String listingID) throws IOException
+    {
+        Boolean cond = false;
+
+        while (!cond)
+        {
+            System.out.println("Would you like to make availabilities by year, month or day? (y/m/d)");
+            System.out.println("Type q to stop adding availabilities.");
+
+            switch (r.readLine().trim().toLowerCase())
+            {
+                case "y":
+                    getYearFromUser(listingID);
+                    break;
+                case "m":
+                    getMonthsFromUser(listingID);
+                    break;
+                case "d":
+                    getDaysFromUser(listingID);
+                    break;
+                case "q":
+                    cond = true;
+                    break;
+                default:
+                    System.out.println("Not a valid option!");
+                    break;
+            }
+        }
+    }
+
+    private void getDaysFromUser(String listingID) throws IOException
+    {
+        LocalDate start = null;
+        LocalDate end = null;
+        Availability avail;
+        Boolean cond = false;
+
+
+        System.out.println("Enter the starting date you want your listing to be available in the format (YYYY-MM-DD)");
+        System.out.println("Availability will start on that day.");
+
+        while (!cond)
+        {
+            try
+            {
+                start = LocalDate.parse(r.readLine().trim());
+                cond = true;
+            }
+            catch (DateTimeParseException e)
+            {
+                System.out.println("Invalid date format!");
             }
         }
 
-        System.out.println("What is the latitude of your listing? Enter a decimal number between -90 to 90.");
+        System.out.println("Enter the ending date you want your listing to be available in the format (YYYY-MM-DD)");
+        System.out.println("Availability will end on that day.");
 
         cond = false;
 
         while (!cond)
         {
-            try 
+            try
             {
-                latitude = Float.parseFloat(r.readLine().trim());
-
-                if (latitude >= -90 && latitude <= 90) 
-                    cond = true;
-                else
-                    System.out.println("Latitude has to be between -90 to 90, try again!");
+                end = LocalDate.parse(r.readLine().trim());
+                cond = true;
             }
-            catch (NumberFormatException e)
+            catch (DateTimeParseException e)
             {
-                System.out.println("Not a valid valid latitude, try again!");
+                System.out.println("Invalid month format!");
             }
         }
 
-        Location location;
-        location = locationDAO.getLocation(longitude, latitude);
-        
-        if (location != null) {
-            System.out.println("There already exists a location with the coordinates you entered, assign the location to your listing? (y/n)");
-            System.out.println("Coordinate: " + location.getCoordinate() + 
-                               ", City: "  + location.getCity() + 
-                               ", Province: " + location.getProvince() + 
-                               ", Country: " + location.getCountry() +  
-                               ", Postal Code: " + location.getPostalCode());
+        avail = new Availability(start, end, listingID, getPricePerDay());
+
+        if (!insertAvailability(avail))
+            System.out.println("Listing is already available at this time!");
+    }
+
+    private void getMonthsFromUser(String listingID) throws IOException
+    {
+        LocalDate start = null;
+        LocalDate end = null;
+        Availability avail;
+        Boolean cond = false;
+
+
+        System.out.println("Enter the starting month you want your listing to be available in the format (YYYY-MM)");
+        System.out.println("Availability will start on the first day of the month");
+
+        while (!cond)
+        {
+            try
+            {
+                start = LocalDate.parse(String.format("%s-01", r.readLine().trim()));
+                cond = true;
+            }
+            catch (DateTimeParseException e)
+            {
+                System.out.println("Invalid month format!");
+            }
         }
 
-        // INCOMPLETE 
-        
-        else {
-            // creat address
+        System.out.println("Enter the ending month you want your listing to be available in the format (YYYY-MM)");
+        System.out.println("Availability will end on the last day of the month");
+
+        cond = false;
+
+        while (!cond)
+        {
+            try
+            {
+                end = LocalDate.parse(String.format("%s-01", r.readLine().trim()));
+                end = end.with(TemporalAdjusters.lastDayOfMonth());
+                cond = true;
+            }
+            catch (DateTimeParseException e)
+            {
+                System.out.println("Invalid month format!");
+            }
+        }
+
+        avail = new Availability(start, end, listingID, getPricePerDay());
+
+        if (!insertAvailability(avail))
+            System.out.println("Listing is already available at this time!");
+    }
+
+    private void getYearFromUser(String listingID) throws IOException
+    {
+        Boolean cond = false;
+        String cmd;
+        Availability avail;
+        Integer year = 0;
+
+        System.out.println("Input the year you would like the listing to be available.");
+    
+        while (!cond)
+        {
+            cmd = r.readLine().trim();
+
+            if (cmd.length() != 4)
+            {
+                System.out.println("Invalid year format!");
+                continue;
+            }
 
             try
             {
-                if (!listingDAO.insertListing(listing, loggedUser.getUsername()))
-                    System.out.println("There was a problem creating this listing!");
-                else
-                    System.out.println("Successfully created listing!");
+                year = Integer.parseInt(cmd);
+                cond = true;
             }
-            catch (DuplicateKeyException e)
+            catch (NumberFormatException e)
             {
-                System.out.println("Duplicate listing!");
+                System.out.println("Invalid year format!");
             }
         }
+
+        avail = new Availability (LocalDate.of(year, 1, 1), LocalDate.of(year, 12, 31), listingID, getPricePerDay());
+        
+        if (!insertAvailability(avail))
+            System.out.println("Listing is already available at this time!");
     }
 
-    private void searchByHost(String username) throws IOException
+    private Boolean insertAvailability(Availability avail)
     {
+        try
+        {
+            if (availabilityDAO.isAvailible(avail.getStartDate(), avail.getListingID()))
+                return false;
+            else
+                availabilityDAO.insertAvailability(avail);
+        }
+        catch (DuplicateKeyException e)
+        {
+            return false;
+        }
 
+        return true;
+    }
+
+    private Float getPricePerDay() throws IOException
+    {
+        Boolean cond = false;
+        Float pricePerDay = (float) 0;
+
+        System.out.println("Whats the price you want to set per day?");
+
+        while (!cond)
+        {
+            try 
+            {
+                pricePerDay = Float.parseFloat(r.readLine().trim());
+                cond = true;
+            }
+            catch (NumberFormatException e)
+            {
+                System.out.println("Not a valid price, try again!");
+            }
+        }
+
+        return pricePerDay;
+    }
+
+    private Location createLocationRoutine(Float longitude, Float latitude) throws IOException
+    {
+        Boolean cond = false;
+        Location location = new Location((float) 0, (float) 0, null, null, null, null);
+        String city;
+        String province;
+        String country;
+        String code;
+
+        System.out.println(String.format("Creating new location with (%f, %f)", longitude, latitude));
+
+        while (!cond)
+        {
+            System.out.println("What city is this location located in?");
+
+            city = r.readLine().trim().toUpperCase();
+
+            System.out.println("What province/state is this location located in?");
+            
+            province = r.readLine().trim().toUpperCase();
+
+            System.out.println("What country is this location located in?");
+
+            country = r.readLine().trim().toUpperCase();
+
+            System.out.println("What is the postal/zip code?");
+
+            code = r.readLine().trim().toUpperCase();
+
+            location = new Location(longitude, latitude, code, country, province, city);
+
+            System.out.println("Is the following information correct? (y/n)");
+            System.out.println(location.toString());
+            cond = getYesNo();
+        }
+
+        return location;
+    }
+
+    private void searchByHost(String username, Integer n) throws IOException
+    {
         ArrayList<Listing> listings;
 
         if (username.isEmpty())
@@ -591,9 +972,13 @@ public class Driver
             username = r.readLine().trim().toLowerCase();
         }
 
+        listings = listingDAO.getNListingsByHost(n, username);
 
-        // Set 10 for now...
-        listings = listingDAO.getNListingsByHost(10, username);
+        if (listings.isEmpty())
+        {
+            System.out.println(String.format("No listings were found for host with username %s.", username));
+            return;
+        }
 
         for (Listing l : listings)
         {
