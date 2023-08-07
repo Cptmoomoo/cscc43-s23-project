@@ -77,14 +77,45 @@ public class PaymentInfoDAO extends DAO
 
     public Boolean updatePaymentInfo(PaymentInfo payment) throws DuplicateKeyException
     {
-        // TODO
-        return true;
+        db.setPStatement("UPDATE users SET Security_code=?, Expiration_date=?, First_name=?, Last_name=?, Postal_code=? WHERE Card_number=?");
+
+        if (!db.setPStatementString(1, payment.getSecurityCode()))
+            return false;
+
+        if (!db.setPStatementDate(2, Date.valueOf(payment.getExpDate())))
+            return false;
+        
+        if (!db.setPStatementString(3, payment.getFirstName()))
+            return false;
+        
+        if (!db.setPStatementString(4, payment.getLastName()))
+            return false;
+
+        if (!db.setPStatementString(5, payment.getPostalCode()))
+            return false;
+
+        if (!db.setPStatementString(6, payment.getCardNum()))
+            return false;
+
+        return executeSetQueryWithDupeCheck("update payment");
     }
 
-    public Boolean deletePaymentInfo(PaymentInfo payment) throws DuplicateKeyException
+    public Boolean deletePaymentInfo(PaymentInfo payment) 
     {
-        // TODO
-        return true;
+        // db.setPStatement("UPDATE (listings NATURAL JOIN host_of) SET Is_active=false WHERE Username=?");
+
+        // if (!db.setPStatementString(1, user.getUsername()))
+        //     return false;
+
+        // executeSetQueryWithDupeCheck("set inactive");
+
+        // db.setPStatement("DELETE FROM users WHERE Username=?");
+
+        // if (!db.setPStatementString(1, user.getUsername()))
+        //     return false;
+
+        // return executeSetQueryWithDupeCheck("delete user");
+        return false;
     }
 
     public PaymentInfo getPaymentInfo(String cardNum)
@@ -100,27 +131,40 @@ public class PaymentInfoDAO extends DAO
         if (table.isEmpty())
             return null;
 
-        paymentInfo = new PaymentInfo((String) table.extractValueFromRowByName(0, "cardNum"),
-                                      (String) table.extractValueFromRowByName(0, "securityCode"),
-                                      (String) table.extractValueFromRowByName(0, "firstName"),
-                                      (String) table.extractValueFromRowByName(0, "lastName"),
-                                      ((Date) table.extractValueFromRowByName(0, "expDate")).toLocalDate(),
-                                      (String) table.extractValueFromRowByName(0, "postalCode"));
+        paymentInfo = getPaymentInfoFromTable(0);
 
         table.clearTable();
 
         return paymentInfo;
     }
 
-    public ArrayList<PaymentInfo> getPaymentInfoByUser(String userID)
+    public ArrayList<PaymentInfo> getPaymentInfoByUser(Integer n, String userID)
     {
         ArrayList<PaymentInfo> payments = new ArrayList<PaymentInfo>();
 
-        // TODO MAKE IT REAL
+        db.setPStatement("SELECT * FROM Payment_info NATURAL JOIN Paid_with ON Paid_with.Username=?");
+        db.setPStatementString(1, userID);
 
-        payments.add(new PaymentInfo("1111222233334444", "000", "Vincent", "Li", "2000-01-01", "111222333"));
-        payments.add(new PaymentInfo("1111222233335555", "010", "Ben", "B", "2000-01-02", "111555333"));
+        if (!db.executeSetQueryReturnN(n, table))
+            throw new RunQueryException();
+
+        for (int i = 0; i < table.size(); i++)
+        {
+            payments.add(getPaymentInfoFromTable(i));
+        }
+
+        table.clearTable();
 
         return payments;
+    }
+
+    private PaymentInfo getPaymentInfoFromTable(Integer rowNum)
+    {
+        return new PaymentInfo((String) table.extractValueFromRowByName(rowNum, "cardNum"),
+                               (String) table.extractValueFromRowByName(rowNum, "securityCode"),
+                               (String) table.extractValueFromRowByName(rowNum, "firstName"),
+                               (String) table.extractValueFromRowByName(rowNum, "lastName"),
+                               ((Date) table.extractValueFromRowByName(rowNum, "expDate")).toLocalDate(),
+                               (String) table.extractValueFromRowByName(rowNum, "postalCode"));
     }
 }
