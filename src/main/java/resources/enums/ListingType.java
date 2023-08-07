@@ -2,8 +2,8 @@ package resources.enums;
 
 public enum ListingType
 {
-    HOUSE,
-    APARTMENT,
-    CONDO,
-    COTTAGE
+    ENTIRE_PLACE,
+    PRIVATE_ROOM,
+    HOTEL_ROOM,
+    SHARED_ROOM
 }

@@ -57,8 +57,8 @@ public class UserDAO extends DAO
         
         if (!db.setPStatementString(4, user.getOccupation()))
             return false;
-        
-        if (!db.setPStatementDate(5, new Date(user.getBirthday().toEpochDay())))
+
+        if (!db.setPStatementDate(5, Date.valueOf(user.getBirthday())))
             return false;
 
         if (!db.setPStatementString(6, user.getFirstName()))
@@ -106,7 +106,7 @@ public class UserDAO extends DAO
         if (!db.setPStatementString(3, user.getOccupation()))
             return false;
         
-        if (!db.setPStatementDate(4, new Date(user.getBirthday().toEpochDay())))
+        if (!db.setPStatementDate(4, Date.valueOf(user.getBirthday())))
             return false;
 
         if (!db.setPStatementString(5, user.getFirstName()))

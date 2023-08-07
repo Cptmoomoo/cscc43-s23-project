@@ -43,10 +43,10 @@ public class AvailabilityDAO extends DAO
     {
         db.setPStatement("INSERT INTO availability VALUES (?, ?, ?, ?)");
 
-        if (!db.setPStatementDate(1, new Date(availability.getStartDate().toEpochDay())))
+        if (!db.setPStatementDate(1, Date.valueOf(availability.getStartDate())))
             return false;
     
-        if (!db.setPStatementDate(2, new Date(availability.getEndDate().toEpochDay())))
+        if (!db.setPStatementDate(2, Date.valueOf(availability.getEndDate())))
             return false;
 
         if (!db.setPStatementString(3, availability.getListingID()))
@@ -62,7 +62,7 @@ public class AvailabilityDAO extends DAO
     {
         Availability availability;
         db.setPStatement("SELECT * FROM availability WHERE Start_date=? AND Listing_id=?");
-        db.setPStatementDate(1, new Date(start_date.toEpochDay()));
+        db.setPStatementDate(1, Date.valueOf(start_date));
         db.setPStatementString(2, listing_id);
 
         if (!db.executeSetQueryReturnN(1, table))
@@ -108,7 +108,7 @@ public class AvailabilityDAO extends DAO
 
     public Boolean isAvailible(LocalDate date, String listingID)
     {
-        Date day = new Date(date.toEpochDay());
+        Date day = Date.valueOf(date);
         db.setPStatement("SELECT * FROM availability WHERE Start_date <= ? AND End_date > ?");
         db.setPStatementDate(1, day);
         db.setPStatementDate(2, day);
@@ -128,7 +128,7 @@ public class AvailabilityDAO extends DAO
         db.setPStatement("UPDATE availability SET Price_per_day=? WHERE Start_date=? AND Listing_id=?");
 
         db.setPStatementFloat(1, new_price);
-        db.setPStatementDate(2, new Date(availability.getStartDate().toEpochDay()));
+        db.setPStatementDate(2, Date.valueOf(availability.getStartDate()));
         db.setPStatementString(3, availability.getListingID());
 
         return db.executeUpdateSetQueryBool();
@@ -137,8 +137,8 @@ public class AvailabilityDAO extends DAO
     public Boolean deleteAvailability(Availability availability)
     {
         db.setPStatement("DELETE FROM availability WHERE Start_date=? AND Listing_id=?");
-        db.setPStatementDate(1, new Date(availability.getStartDate().toEpochDay()));
-        db.setPStatementString(1, availability.getListingID());
+        db.setPStatementDate(1, Date.valueOf(availability.getStartDate()));
+        db.setPStatementString(2, availability.getListingID());
 
         return db.executeUpdateSetQueryBool();
     }

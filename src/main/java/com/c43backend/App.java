@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import com.c43backend.daos.UserDAO;
 import com.c43backend.daos.ListingDAO;
 import com.c43backend.daos.LocationDAO;
+import com.c43backend.daos.PaymentInfoDAO;
 import com.c43backend.daos.AvailabilityDAO;
 import com.c43backend.daos.BookingDAO;
 import com.c43backend.daos.RateDAO;
@@ -47,6 +48,7 @@ public class App
         BookingDAO bookingDAO;
         RateDAO rateDAO;
         CommentDAO commentDAO;
+        PaymentInfoDAO paymentDAO;
 
         try
         {
@@ -78,6 +80,7 @@ public class App
             bookingDAO = new BookingDAO(db);
             rateDAO = new RateDAO(db);
             commentDAO = new CommentDAO(db);
+            paymentDAO = new PaymentInfoDAO(db);
 
             PasswordHasher.init();
 
@@ -91,7 +94,7 @@ public class App
             // if (!ldao.insertListing(l))
             //     System.out.println("FAILED!");
             
-            driver = new Driver(db, userDAO, listingDAO, locationDAO, availabilityDAO, bookingDAO, rateDAO, commentDAO);
+            driver = new Driver(db, userDAO, listingDAO, locationDAO, availabilityDAO, bookingDAO, rateDAO, commentDAO, paymentDAO);
 
 
             driver.run();

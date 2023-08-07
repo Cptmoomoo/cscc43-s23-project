@@ -53,7 +53,7 @@ public class PaymentInfoDAO extends DAO
         if (!db.setPStatementString(4, paymentInfo.getLastName()))
             return false;
         
-        if (!db.setPStatementDate(5, new Date(paymentInfo.getExpDate().toEpochDay())))
+        if (!db.setPStatementDate(5, Date.valueOf(paymentInfo.getExpDate())))
             return false;
 
         if (!db.setPStatementString(6, paymentInfo.getPostalCode()))
@@ -97,5 +97,16 @@ public class PaymentInfoDAO extends DAO
         table.clearTable();
 
         return paymentInfo;
+    }
+
+    public ArrayList<PaymentInfo> getPaymentInfoByUser(String userID)
+    {
+        ArrayList<PaymentInfo> payments = new ArrayList<PaymentInfo>();
+
+        // TODO MAKE IT REAL
+
+        payments.add(new PaymentInfo("1111222233334444", "000", "Vincent", "Li", "2000-01-01", "111222333"));
+
+        return payments;
     }
 }

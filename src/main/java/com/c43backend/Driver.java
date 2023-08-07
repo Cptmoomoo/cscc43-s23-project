@@ -13,6 +13,7 @@ import java.util.Arrays;
 import com.c43backend.daos.ListingDAO;
 import com.c43backend.daos.UserDAO;
 import com.c43backend.daos.LocationDAO;
+import com.c43backend.daos.PaymentInfoDAO;
 import com.c43backend.daos.AvailabilityDAO;
 import com.c43backend.daos.BookingDAO;
 import com.c43backend.daos.RateDAO;
@@ -44,6 +45,7 @@ public class Driver
     private final BookingDAO bookingDAO;
     private final RateDAO rateDAO;
     private final CommentDAO commentDAO;
+    private final PaymentInfoDAO piDAO;
 
 
     private User loggedUser = null;
@@ -55,7 +57,8 @@ public class Driver
                   AvailabilityDAO availabilityDAO,
                   BookingDAO bookingDAO, 
                   RateDAO rateDAO, 
-                  CommentDAO commentDAO)
+                  CommentDAO commentDAO,
+                  PaymentInfoDAO piDAO)
     {
         this.db = db;
         this.userDAO = userDAO;
@@ -65,6 +68,7 @@ public class Driver
         this.bookingDAO = bookingDAO;
         this.rateDAO = rateDAO;
         this.commentDAO = commentDAO;
+        this.piDAO = piDAO;
         r = new BufferedReader(new InputStreamReader(System.in));
     }
 
@@ -575,6 +579,152 @@ public class Driver
         
     }
 
+    private ArrayList<PaymentInfo> getAndDisplayPayment()
+    {
+        return piDAO.getPaymentInfoByUser(loggedUser.getUsername());
+    }
+
+    private void paymentMenu() throws IOException
+    {
+        ArrayList<PaymentInfo> paymentInfos;
+        Boolean cond = false;
+
+        System.out.println("Here are your current payment methods:");
+
+        paymentInfos = getAndDisplayPayment();
+
+        System.out.println("What would you like to do?");
+        System.out.println("Add a payment info (a), update an existing payment info (u), delete an existing payment info (d)");
+        System.out.println("Input q to return to the previous page.");
+
+        while (!cond)
+        {
+            switch (r.readLine().trim())
+            {
+                case "a":
+                    addPayment();
+                    break;
+                case "u":
+                    updatePayment();
+                    break;
+                case "d":
+                    deletePayment();
+                    break;
+                case "q":
+                    return;
+                default:
+                    System.out.println("Invalid option!");
+                    break;
+            }
+        }
+        
+
+
+        
+    }
+
+    private void addPayment() throws IOException
+    {
+        Boolean cond = false;
+
+        String cardNum;
+
+        System.out.println("Creating new payment method.");
+
+        while (!cond)
+        {
+            System.out.println("What is your card number?");
+
+            cardNum = r.readLine().trim();
+
+            if (cardNum.length() != 16)
+            {
+                System.out.println("Invalid card number!");
+                continue;
+            }
+
+            try
+            {
+                Integer.parseInt(cardNum);
+                cond = true;
+            }
+            catch (NumberFormatException e)
+            {
+                System.out.println("Invalid card number!");
+                continue;
+            }
+        }
+
+    }
+
+    private String getExpDate() throws IOException
+    {
+        Boolean cond = false;
+        LocalDate expDate = null;
+        String cmd = "";
+
+        while (!cond)
+        {
+            System.out.println("What is the expiry date?");
+            System.out.println("Write in the format (YYYY-MM)");
+
+            // try
+            // {
+            //     cmd = r.readLine().trim();
+            //     expDate = LocalDate.parse(String.format("%s-01"))
+            // }
+
+
+        }
+
+        return cmd;
+
+
+    }
+
+    private String getCardNumber() throws IOException
+    {
+        Boolean cond = false;
+        String cardNum = "";
+
+        while (!cond)
+        {
+            System.out.println("What is your card number?");
+
+            cardNum = r.readLine().trim();
+
+            if (cardNum.length() != 16)
+            {
+                System.out.println("Invalid card number!");
+                continue;
+            }
+
+            try
+            {
+                Integer.parseInt(cardNum);
+                cond = true;
+            }
+            catch (NumberFormatException e)
+            {
+                System.out.println("Invalid card number!");
+                continue;
+            }
+        }
+
+        return cardNum;
+
+    }
+
+    private void updatePayment() throws IOException
+    {
+
+    }
+
+    private void deletePayment() throws IOException
+    {
+
+    }
+
     private Boolean getYesNo() throws IOException
     {
         while (true)
@@ -735,6 +885,7 @@ public class Driver
             try
             {
                 birthday = LocalDate.parse(cmd);
+                System.out.println(birthday.toString());
                 cond = true;
             }
             catch (DateTimeParseException e)
@@ -820,12 +971,14 @@ public class Driver
 
     }
 
+
+
     private void createListing() throws IOException
     {
         Boolean cond = false;
         Boolean addLocation = true;
     
-        ListingType listingType = ListingType.HOUSE;
+        ListingType listingType = ListingType.ENTIRE_PLACE;
         Location location;
         String suiteNum = "";
         Float longitude = (float) 0.0;
@@ -834,34 +987,33 @@ public class Driver
         Integer numGuests = 0;
 
         System.out.println("Create new listing!!!");
-        System.out.println("What kind of listing is it? List of valid listings: house (h), apartment (a/apt), condo (cn), cottage (ct).");
+        System.out.println("What kind of listing is it? List of valid listings: entire place (ep), private room (pr), hotel room (hr), shared room (sr).");
 
         while (!cond)
         {
             switch (r.readLine().trim().toLowerCase())
             {
-                case "house":
-                case "h":
-                    listingType = ListingType.HOUSE;
+                case "entire place":
+                case "ep":
+                    listingType = ListingType.ENTIRE_PLACE;
                     cond = true;
                     break;
                 
-                case "apartment":
-                case "apt":
-                case "a":
-                    listingType = ListingType.APARTMENT;
+                case "private room":
+                case "pr":
+                    listingType = ListingType.PRIVATE_ROOM;
                     cond = true;
                     break;
 
-                case "condo":
-                case "cn":
-                    listingType = ListingType.CONDO;
+                case "hotel room":
+                case "hr":
+                    listingType = ListingType.HOTEL_ROOM;
                     cond = true;
                     break;
 
-                case "cottage":
-                case "ct":
-                    listingType = ListingType.COTTAGE;
+                case "shared room":
+                case "sr":
+                    listingType = ListingType.SHARED_ROOM;
                     cond = true;
                     break;
 
