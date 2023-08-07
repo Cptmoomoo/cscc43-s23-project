@@ -71,10 +71,7 @@ public class AvailabilityDAO extends DAO
         if (table.isEmpty())
             return null;
 
-        availability = new Availability(((Date) table.extractValueFromRowByName(0, "startDate")).toLocalDate(),
-                                        ((Date) table.extractValueFromRowByName(0, "endDate")).toLocalDate(),
-                                        (String) table.extractValueFromRowByName(0, "listingID"),
-                                        (Float) table.extractValueFromRowByName(0, "pricePerDay"));
+        availability = getAvailabilityFromTable(0);
 
         table.clearTable();
 
@@ -95,10 +92,7 @@ public class AvailabilityDAO extends DAO
 
         for (int i = 0; i < table.size(); i++)
         {   
-            availabilities.add(new Availability(((Date) table.extractValueFromRowByName(0, "startDate")).toLocalDate(),
-                                        ((Date) table.extractValueFromRowByName(0, "endDate")).toLocalDate(),
-                                        (String) table.extractValueFromRowByName(0, "listingID"),
-                                        (Float) table.extractValueFromRowByName(0, "pricePerDay")));
+            availabilities.add(getAvailabilityFromTable(i));
         }
 
         table.clearTable();
@@ -149,5 +143,62 @@ public class AvailabilityDAO extends DAO
         db.setPStatementString(1, listing_id);
 
         return db.executeUpdateSetQueryBool();
+    }
+    
+    // return yes if the date range overlaps with any existing avaiablility, which means there is no valid range so we don't insert
+    // because we merge the back to back availabilities so there is always a gap between every two availabilities!!
+    public Boolean isOverlapping(String listing_id, LocalDate startDate, LocalDate endDate)
+    {
+        db.setPStatement("SELECT * FROM bookings WHERE Listing_id=? AND ((Start_date BETWEEN ? AND ?) OR (End_date Between ? AND ?))");
+        db.setPStatementString(1, listing_id);
+        db.setPStatementDate(2, Date.valueOf(startDate));
+        db.setPStatementDate(3, Date.valueOf(endDate));
+        db.setPStatementDate(4, Date.valueOf(startDate));
+        db.setPStatementDate(5, Date.valueOf(endDate));
+
+        Boolean isOverlapping = !table.isEmpty();
+        table.clearTable();
+
+        return isOverlapping;
+    }
+
+    // we would call isOverlapping() before using this so that the date range will not overlap with any existing availability
+    // so we can just insert and merge with the back to back dates which can only be at most 2
+    public Boolean mergeBackToBackBookings(String listing_id, LocalDate startDate, LocalDate endDate)
+    {
+        Availability date_before;
+        Availability date_after;
+
+        db.setPStatement("SELECT * FROM bookings WHERE Listing_id=? AND DATE_ADD(End_date, INTERVAL 1 DAY) = ?");
+        db.setPStatementDate(1, Date.valueOf(startDate));
+
+        if (db.executeSetQueryReturnN(1, table)) {
+            date_before = getAvailabilityFromTable(0);
+            startDate = date_before.getStartDate();
+            deleteAvailability(date_before);
+        }
+
+        table.clearTable();
+
+        db.setPStatement("SELECT * FROM bookings WHERE Listing_id=? AND DATE_SUB(Start_date, INTERVAL 1 DAY) = ?");
+        db.setPStatementDate(1, Date.valueOf(endDate));
+
+        if (db.executeSetQueryReturnN(1, table)) {
+            date_after = getAvailabilityFromTable(0);
+            endDate = date_after.getEndDate();
+            deleteAvailability(date_after);
+        }
+        
+        table.clearTable();
+
+        // INSERT HERE
+    }
+
+    private Availability getAvailabilityFromTable(Integer rowNum) 
+    {
+        return new Availability(((Date) table.extractValueFromRowByName(0, "startDate")).toLocalDate(),
+                                 ((Date) table.extractValueFromRowByName(0, "endDate")).toLocalDate(),
+                                 (String) table.extractValueFromRowByName(0, "listingID"),
+                                 (Float) table.extractValueFromRowByName(0, "pricePerDay"));
     }
 }
