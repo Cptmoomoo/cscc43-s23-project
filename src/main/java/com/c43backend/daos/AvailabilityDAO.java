@@ -164,36 +164,43 @@ public class AvailabilityDAO extends DAO
 
     // we would call isOverlapping() before using this so that the date range will not overlap with any existing availability
     // so we can just insert and merge with the back to back dates which can only be at most 2
-    public Boolean mergeBackToBackAvailability(String listing_id, LocalDate startDate, LocalDate endDate)
+    public Boolean InsertAndMergeAvailability(Availability merge_avali) throws DuplicateKeyException
     {
+        if (isOverlapping(merge_avali.getListingID(), merge_avali.getStartDate(), merge_avali.getEndDate()))
+            return false;
+
         Availability date_before;
         Availability date_after;
 
         db.setPStatement("SELECT * FROM bookings WHERE Listing_id=? AND DATE_ADD(End_date, INTERVAL 1 DAY) = ?");
-        db.setPStatementDate(1, Date.valueOf(startDate));
+        db.setPStatementString(1, merge_avali.getListingID());
+        db.setPStatementDate(2, Date.valueOf(merge_avali.getStartDate()));
 
         if (db.executeSetQueryReturnN(1, table)) {
             date_before = getAvailabilityFromTable(0);
-            startDate = date_before.getStartDate();
+
+            merge_avali.updateStartDate(date_before.getStartDate());
+            merge_avali.updatePrice(Math.max(merge_avali.getPricePerDay(), date_before.getPricePerDay()));
+
             deleteAvailability(date_before);
         }
-
         table.clearTable();
 
         db.setPStatement("SELECT * FROM bookings WHERE Listing_id=? AND DATE_SUB(Start_date, INTERVAL 1 DAY) = ?");
-        db.setPStatementDate(1, Date.valueOf(endDate));
+        db.setPStatementString(1, merge_avali.getListingID());
+        db.setPStatementDate(2, Date.valueOf(merge_avali.getEndDate()));
 
         if (db.executeSetQueryReturnN(1, table)) {
             date_after = getAvailabilityFromTable(0);
-            endDate = date_after.getEndDate();
+
+            merge_avali.updateEndDate(date_after.getEndDate());
+            merge_avali.updatePrice(Math.max(merge_avali.getPricePerDay(), date_after.getPricePerDay()));
+
             deleteAvailability(date_after);
         }
-
         table.clearTable();
 
-        // INSERT HERE USING UPDATED StartDate and EndDate
-
-        return true;
+        return insertAvailability(merge_avali);
     }
 
     // When calling this we are under the asumption that split_avalid covers all of startDate to endDate
@@ -218,14 +225,6 @@ public class AvailabilityDAO extends DAO
 
         if (!insertAvailability(date_after))
             return false;
-
-        return true;
-    }
-
-    public Boolean deleteAvailability(String listingID, Availability avail) throws DuplicateKeyException
-    {
-        // TODO delete this avail from listing, return true if successful
-        // false if not or the avail doesnt exist for this listing
 
         return true;
     }

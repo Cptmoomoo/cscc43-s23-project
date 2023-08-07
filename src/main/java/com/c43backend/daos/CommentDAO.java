@@ -14,6 +14,7 @@ import resources.exceptions.DuplicateKeyException;
 import resources.exceptions.RunQueryException;
 import resources.entities.Comment;
 import resources.enums.CommentType;
+import resources.utils.Globals;
 import resources.utils.Table;
 
 public class CommentDAO extends DAO
@@ -147,30 +148,94 @@ public class CommentDAO extends DAO
 
     public ArrayList<Comment> getListingCommentsByListing(String listingID)
     {
-        // TODO
+        ArrayList<Comment> comments = new ArrayList<Comment>();
 
-        return new ArrayList<Comment>();
+        db.setPStatement("SELECT * FROM Comment_listing WHERE Listing_id=?");
+        db.setPStatementString(1, listingID);
+
+        if (!db.executeSetQueryReturnN(Globals.DEFAULT_N, listingTable))
+            throw new RunQueryException();
+
+        if (listingTable.isEmpty())
+            return comments;
+
+        for (int i = 0; i < listingTable.size(); i++)
+        {
+            comments.add(getCommentFromTable(CommentType.LISTING, i));
+        }
+
+        listingTable.clearTable();
+
+        return comments;
     }
 
     public ArrayList<Comment> getListingCommentsByReviewer(String reviewer)
     {
-        // TODO
+        ArrayList<Comment> comments = new ArrayList<Comment>();
 
-        return new ArrayList<Comment>();
+        db.setPStatement("SELECT * FROM Comment_listing WHERE Username=?");
+        db.setPStatementString(1, reviewer);
+
+        if (!db.executeSetQueryReturnN(Globals.DEFAULT_N, listingTable))
+            throw new RunQueryException();
+
+        if (listingTable.isEmpty())
+            return comments;
+
+        for (int i = 0; i < listingTable.size(); i++)
+        {
+            comments.add(getCommentFromTable(CommentType.LISTING, i));
+        }
+
+        listingTable.clearTable();
+
+        return comments;
     }
 
     public ArrayList<Comment> getUserCommentsByReviewer(String reviewer)
     {
-        // TODO
+        ArrayList<Comment> comments = new ArrayList<Comment>();
 
-        return new ArrayList<Comment>();
+        db.setPStatement("SELECT * FROM Comment_user WHERE Reviewer=?");
+        db.setPStatementString(1, reviewer);
+
+        if (!db.executeSetQueryReturnN(Globals.DEFAULT_N, userTable))
+            throw new RunQueryException();
+
+        if (userTable.isEmpty())
+            return comments;
+
+        for (int i = 0; i < userTable.size(); i++)
+        {
+            comments.add(getCommentFromTable(CommentType.USER, i));
+        }
+
+        userTable.clearTable();
+
+        return comments;
     }
 
     public ArrayList<Comment> getUserCommentsByReviewee(String reviewee)
     {
-        // TODO
+        ArrayList<Comment> comments = new ArrayList<Comment>();
 
-        return new ArrayList<Comment>();
+        db.setPStatement("SELECT * FROM Comment_user WHERE Reviewee=?");
+        db.setPStatementString(1, reviewee);
+
+        if (!db.executeSetQueryReturnN(Globals.DEFAULT_N, userTable))
+            throw new RunQueryException();
+
+        if (userTable.isEmpty())
+            return comments;
+
+        for (int i = 0; i < userTable.size(); i++)
+        {
+            comments.add(getCommentFromTable(CommentType.USER, i));
+        }
+
+        userTable.clearTable();
+
+        return comments;
     }
 
 

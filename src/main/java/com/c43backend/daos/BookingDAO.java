@@ -145,10 +145,15 @@ public class BookingDAO extends DAO
 
     public Boolean isBookedUnderDate(String listingID, Availability avail)
     {
-        //TODO: return true if the listing is booked for dates in avail, 
-        // Any overlap counts as false
-    
-        return true;
+        db.setPStatement("SELECT * from bookings WHERE Listing_id=? AND Start_date=? AND End_date=?");
+        db.setPStatementString(1, listingID);
+        db.setPStatementDate(2, Date.valueOf(avail.getStartDate()));
+        db.setPStatementDate(3, Date.valueOf(avail.getEndDate()));
+
+        Boolean bookedUnderDate = !table.isEmpty();
+        table.clearTable();
+
+        return bookedUnderDate;
     }
 
     private Booking getBookingFromTable(Integer rowNum)
