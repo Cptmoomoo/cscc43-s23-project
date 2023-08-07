@@ -245,6 +245,10 @@ public class Driver
                     cancelBookingRoutine();
                     break;
 
+                case "rate-booking":
+                    rateBookingRoutine();
+                    break;
+
                 case "book":
                 case "b":
                     executeBookingRoutine();
@@ -322,6 +326,11 @@ public class Driver
                     executeSearchListingByHost(cmds);
                     break;
 
+                case "rate-booking":
+                    rateBookingRoutine();
+                    break;
+
+
                 default:
                     System.out.println("Invalid command!");
                     System.out.println("Type h or help to see a list of commands.");
@@ -329,6 +338,11 @@ public class Driver
 
             }
         }
+    }
+
+    private void rateBookingRoutine() throws IOException
+    {
+        
     }
 
     private Boolean isAllBookingsCancelled(ArrayList<Booking> bookings)
