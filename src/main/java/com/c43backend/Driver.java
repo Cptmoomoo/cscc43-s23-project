@@ -159,6 +159,7 @@ public class Driver
         System.out.println(Globals.TERMINAL_INDENT + "If n is given without the hostUsername, must be input as n=x. (ex. search-host n=5)");
         System.out.println("update-user: update your user information.");
         System.out.println("show-bookings: get a list of your current bookings.");
+        System.out.println("cancel-booking: cancel one of your bookings.");
         System.out.println(Globals.TERMINAL_DIVIDER);
         System.out.println("delete-account: permanently deletes your account!");
     }
@@ -175,6 +176,7 @@ public class Driver
         System.out.println("payment/payments: view/add/edit/delete your payment methods.");
         System.out.println("book: begin the booking process!");
         System.out.println("show-bookings: get a list of your current bookings.");
+        System.out.println("cancel-booking: cancel one of your bookings.");
         System.out.println(Globals.TERMINAL_DIVIDER);
         System.out.println("delete-account: permanently deletes your account!");
     }
