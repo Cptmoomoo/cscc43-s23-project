@@ -13,6 +13,7 @@ import resources.entities.User;
 import resources.enums.UserType;
 import resources.exceptions.DuplicateKeyException;
 import resources.exceptions.RunQueryException;
+import resources.relations.Booking;
 import resources.utils.Table;
 
 public class UserDAO extends DAO
@@ -116,6 +117,12 @@ public class UserDAO extends DAO
             return false;
 
         return executeSetQueryWithDupeCheck("update user");
+    }
+
+    public User getHostByBooking(Booking booking)
+    {
+        // TODO 
+        return null;
     }
 
     public User getUser(String username)

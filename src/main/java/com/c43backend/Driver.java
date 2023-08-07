@@ -30,6 +30,7 @@ import resources.enums.AmenityType;
 import resources.enums.ListingType;
 import resources.enums.UserType;
 import resources.exceptions.DuplicateKeyException;
+import resources.relations.Booking;
 import resources.utils.Globals;
 import resources.utils.PasswordHasher;
 
@@ -157,6 +158,8 @@ public class Driver
         System.out.println(Globals.TERMINAL_INDENT + "If n is given it will return n listings maximum, defaults to 10.");
         System.out.println(Globals.TERMINAL_INDENT + "If n is given without the hostUsername, must be input as n=x. (ex. search-host n=5)");
         System.out.println("update-user: update your user information.");
+        System.out.println("show-bookings: get a list of your current bookings.");
+        System.out.println("cancel-booking: cancel one of your bookings.");
         System.out.println(Globals.TERMINAL_DIVIDER);
         System.out.println("delete-account: permanently deletes your account!");
     }
@@ -172,6 +175,8 @@ public class Driver
         System.out.println("update-user: update your user information.");
         System.out.println("payment/payments: view/add/edit/delete your payment methods.");
         System.out.println("book: begin the booking process!");
+        System.out.println("show-bookings: get a list of your current bookings.");
+        System.out.println("cancel-booking: cancel one of your bookings.");
         System.out.println(Globals.TERMINAL_DIVIDER);
         System.out.println("delete-account: permanently deletes your account!");
     }
@@ -230,6 +235,18 @@ public class Driver
 
                 case "search-host":
                     executeSearchListingByHost(cmds);
+                    break;
+
+                case "show-bookings":
+                    showAndGetUserBookings();
+                    break;
+
+                case "cancel-booking":
+                    cancelBookingRoutine();
+                    break;
+
+                case "rate-booking":
+                    rateBookingRoutine();
                     break;
 
                 case "book":
@@ -296,10 +313,23 @@ public class Driver
                 case "listings":
                     searchByHost(loggedUser.getUsername(), Globals.DEFAULT_N);
                     break;
+                
+                case "show-bookings":
+                    showAndGetUserBookings();
+                    break;
+
+                case "cancel-booking":
+                    cancelBookingRoutine();
+                    break;
 
                 case "search-host":
                     executeSearchListingByHost(cmds);
                     break;
+
+                case "rate-booking":
+                    rateBookingRoutine();
+                    break;
+
 
                 default:
                     System.out.println("Invalid command!");
@@ -308,6 +338,109 @@ public class Driver
 
             }
         }
+    }
+
+    private void rateBookingRoutine() throws IOException
+    {
+        
+    }
+
+    private Boolean isAllBookingsCancelled(ArrayList<Booking> bookings)
+    {
+        for (Booking b : bookings)
+        {
+            if (b.getCancelledBy().isEmpty())
+                return false;
+        }
+
+        return true;
+    }
+
+    private void cancelBookingRoutine() throws IOException
+    {
+        ArrayList<Booking> bookings = showAndGetUserBookings();
+        Boolean cond = false;
+        String cmd;
+        Integer idx;
+        Booking toCancel = null;
+
+        if (bookings.isEmpty())
+        {
+            System.out.println("There are no bookings to cancel!");
+            return;
+        }
+
+        if (isAllBookingsCancelled(bookings))
+        {
+            System.out.println("All bookings are cancelled!");
+            return;
+        }
+
+        System.out.println(Globals.TERMINAL_DIVIDER);
+
+        while (!cond)
+        {
+            System.out.println("Which booking would you like to cancel? (input index)");
+
+
+            cmd = r.readLine().trim();
+
+            try
+            {
+                idx = Integer.parseInt(cmd);
+
+                if (idx > bookings.size() || idx <= 0)
+                    System.out.println("Not a valid index!");
+                else
+                {   toCancel = bookings.get(idx - 1);
+
+                    if (!toCancel.getCancelledBy().isEmpty())
+                    {   
+                        System.out.println("This booking is already cancelled!");
+                        continue;
+                    }
+                    System.out.println("Cancelling selected booking:");
+                    System.out.println(toCancel.toString());
+                    System.out.println("Is this correct? (y/n)");
+
+                    cond = getYesNo();
+                }
+                    
+            }
+            catch (NumberFormatException e)
+            {
+                System.out.println("Invalid number format!");
+            }
+        }
+
+        bookingDAO.cancelBooking(toCancel.getBookingID(), loggedUser.getUsername());
+        
+        System.out.println("Cancellation Successful!");
+    }
+
+    private ArrayList<Booking> showAndGetUserBookings()
+    {
+        ArrayList<Booking> bookings;
+
+        if (loggedUser.getUserType() == UserType.HOST)
+            bookings = bookingDAO.getBookingsUnderHost(loggedUser.getUsername());
+        else   
+            bookings = bookingDAO.getBookingsUnderRenter(loggedUser.getUsername());
+
+        if (bookings.isEmpty())
+        {
+            System.out.println("You have no active bookings!");
+            return bookings;
+        }
+
+        for (int i = 0; i < bookings.size(); i++)
+        {
+            System.out.println(Globals.TERMINAL_DIVIDER);
+            System.out.println(String.format("%d. %s", i + 1, bookings.get(i).toString()));
+        }
+            
+
+        return bookings;
     }
 
     private void executeBookingRoutine() throws IOException
@@ -377,13 +510,17 @@ public class Driver
 
         try
         {
-            return bookingDAO.insertBooking(avail, loggedUser.getUsername(), payInfo);
+            bookingDAO.insertBooking(avail, loggedUser.getUsername(), payInfo);
         }
         catch (DuplicateKeyException e)
         {
             System.out.println("Booking failed!");
             return false;
         }
+
+        System.out.println("Booking Successful!");
+
+        return true;
     }
 
     private void bookingReview(Listing toBook, Availability avail, PaymentInfo payInfo) throws IOException
@@ -399,7 +536,7 @@ public class Driver
         System.out.println("Payment Info:");
         System.out.println(payInfo.toString());
         System.out.println("Total Price:");
-        System.out.println(String.format("Total price: $%.2f", avail.getTotalPrice()));
+        System.out.println(String.format("$%.2f", avail.getTotalPrice()));
         System.out.println(Globals.TERMINAL_DIVIDER);
         System.out.println("Are you satisfied with your booking? (y/n)");
     }
@@ -412,7 +549,7 @@ public class Driver
 
         while (payments.isEmpty())
         {
-            System.out.println("Would you like to add a new payment method?");
+            System.out.println("Would you like to add a new payment method? (y/n)");
     
             if (!getYesNo())
                 return null;
@@ -517,6 +654,7 @@ public class Driver
                 System.out.println(String.format("Start Date: %s", startDate.toString()));
                 System.out.println(String.format("End Date: %s", endDate.toString()));
                 System.out.println(String.format("Price per day: $%.2f", chosen.getPricePerDay()));
+                System.out.println(String.format("Total: $%.2f", chosen.getTotalPrice()));
                 cond2 = getYesNo();
             }
             else
@@ -1790,6 +1928,7 @@ public class Driver
 
         for (Listing l : listings)
         {
+            System.out.println(Globals.TERMINAL_DIVIDER);
             System.out.println(l.toString());
         }
     }

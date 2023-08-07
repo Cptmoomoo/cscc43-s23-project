@@ -21,9 +21,9 @@ public class PaymentInfoDAO extends DAO
             {
                 add(new Triplet<String, Integer, Class<?>>("cardNum", 0, String.class));
                 add(new Triplet<String, Integer, Class<?>>("securityCode", 1, String.class));
-                add(new Triplet<String, Integer, Class<?>>("firstName", 2, String.class));
-                add(new Triplet<String, Integer, Class<?>>("lastName", 3, String.class));
-                add(new Triplet<String, Integer, Class<?>>("expDate", 4, Date.class));
+                add(new Triplet<String, Integer, Class<?>>("firstName", 3, String.class));
+                add(new Triplet<String, Integer, Class<?>>("lastName", 4, String.class));
+                add(new Triplet<String, Integer, Class<?>>("expDate", 2, Date.class));
                 add(new Triplet<String, Integer, Class<?>>("postalCode", 5, String.class));
             }
         };
@@ -66,10 +66,10 @@ public class PaymentInfoDAO extends DAO
         // attach paymentInfo to renter
         db.setPStatement("INSERT INTO Paid_with VALUES (?, ?)");
 
-        if (!db.setPStatementString(1, paymentInfo.getCardNum()))
+        if (!db.setPStatementString(2, paymentInfo.getCardNum()))
             return false;
 
-        if (!db.setPStatementString(2, renter))
+        if (!db.setPStatementString(1, renter))
             return false;
 
         return executeSetQueryWithDupeCheck("listing ID");
@@ -142,7 +142,8 @@ public class PaymentInfoDAO extends DAO
     {
         ArrayList<PaymentInfo> payments = new ArrayList<PaymentInfo>();
 
-        db.setPStatement("SELECT * FROM Payment_info NATURAL JOIN Paid_with ON Paid_with.Username=?");
+        db.setPStatement("SELECT payment_info.Card_number, payment_info.Security_code, payment_info.Expiration_date, " +
+                                "payment_info.First_name, payment_info.Last_name, payment_info.Postal_code FROM payment_info NATURAL JOIN paid_with WHERE Username=?");
         db.setPStatementString(1, userID);
 
         if (!db.executeSetQueryReturnN(n, table))
