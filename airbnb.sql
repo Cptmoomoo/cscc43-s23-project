@@ -57,6 +57,7 @@ CREATE TABLE IF NOT EXISTS Availability (
 /* Relations */
 
 CREATE TABLE IF NOT EXISTS Bookings (
+    Booking_id char(36),
     FOREIGN KEY (Listing_id) REFERENCES Listings(Listing_id) ON DELETE CASCADE,
     Listing_id char(36),
     Start_date DATE,
@@ -66,7 +67,7 @@ CREATE TABLE IF NOT EXISTS Bookings (
     Total_price float,
     Card_number char(16),
     Cancelled_by char(36) DEFAULT "",
-    CONSTRAINT PK_Bookings PRIMARY KEY (Listing_id, Start_date, Renter_id)
+    CONSTRAINT PK_Bookings PRIMARY KEY (Booking_id)
 );
 
 CREATE TABLE IF NOT EXISTS Host_of (
