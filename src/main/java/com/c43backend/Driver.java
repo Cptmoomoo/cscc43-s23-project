@@ -233,6 +233,10 @@ public class Driver
                     executeBookingRoutine();
                     break;
 
+                case "payments":
+                    paymentMenu();
+                    break;
+
                 default:
                     System.out.println("Invalid command!");
                     System.out.println("Type h or help to see a list of commands.");
@@ -581,7 +585,18 @@ public class Driver
 
     private ArrayList<PaymentInfo> getAndDisplayPayment()
     {
-        return piDAO.getPaymentInfoByUser(loggedUser.getUsername());
+        ArrayList<PaymentInfo> payments = piDAO.getPaymentInfoByUser(loggedUser.getUsername());
+
+        if (payments.isEmpty())
+        {
+            System.out.println("There are no payment methods!");
+            return payments;
+        }
+
+        for (PaymentInfo p : payments)
+            System.out.println(p.toString());
+
+        return payments;
     }
 
     private void paymentMenu() throws IOException
@@ -594,7 +609,7 @@ public class Driver
         paymentInfos = getAndDisplayPayment();
 
         System.out.println("What would you like to do?");
-        System.out.println("Add a payment info (a), update an existing payment info (u), delete an existing payment info (d)");
+        System.out.println("Add a payment info (a), update an existing payment info (u), delete an existing payment info (d), show your payment methods (s)");
         System.out.println("Input q to return to the previous page.");
 
         while (!cond)
@@ -605,10 +620,19 @@ public class Driver
                     addPayment();
                     break;
                 case "u":
-                    updatePayment(paymentInfos);
+                    if (paymentInfos.isEmpty())
+                        System.out.println("You have no payment methods to update!");
+                    else
+                        updatePayment(paymentInfos);
                     break;
                 case "d":
-                    deletePayment(paymentInfos);
+                    if (paymentInfos.isEmpty())
+                            System.out.println("You have no payment methods to delete!");
+                    else
+                        deletePayment(paymentInfos);
+                    break;
+                case "s":
+                    paymentInfos = getAndDisplayPayment();
                     break;
                 case "q":
                     return;
