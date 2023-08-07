@@ -45,10 +45,13 @@ public class BookingDAO extends DAO
 
     private Table table;
 
-    public BookingDAO(DBConnectionService db) throws ClassNotFoundException, SQLException
+    private final AvailabilityDAO availDAO;
+
+    public BookingDAO(DBConnectionService db, AvailabilityDAO availDAO) throws ClassNotFoundException, SQLException
     {
         super(db);
         this.numCols = columnMetaData.size();
+        this.availDAO = availDAO;
         this.table = new Table(numCols, columnMetaData);
     }
 
@@ -83,13 +86,25 @@ public class BookingDAO extends DAO
         return executeSetQueryWithDupeCheck("Listing id, Start date, Renter id");
     }
 
-    public Boolean cancelBooking(String bookingID, String user_id) 
+    public Boolean cancelBooking(String bookingID, String user_id) throws DuplicateKeyException 
     {
         db.setPStatement("UPDATE bookings SET Cancelled_by=? WHERE Booking_id=?");
         db.setPStatementString(1, user_id);
         db.setPStatementString(2, bookingID);
-    
-        return db.executeUpdateSetQueryBool();
+        
+        Booking booking;
+        db.setPStatement("SELECT * bookings WHERE Booking_id=?");
+        db.setPStatementString(1, bookingID);
+
+        if (!db.executeSetQueryReturnN(1, table)) 
+            return false;
+        
+        booking = getBookingFromTable(0);
+        table.clearTable();
+
+        float pricePerDay = (booking.getTotalPrice() / ChronoUnit.DAYS.between(booking.getStartDate(), booking.getEndDate())) + 2;
+        Availability avail = new Availability(booking.getStartDate(), booking.getEndDate(), booking.getListingID(), pricePerDay);
+        return availDAO.InsertAndMergeAvailability(avail);
     }
 
     public ArrayList<Booking> getBookingsUnderRenter(String renter_id) throws RunQueryException 
