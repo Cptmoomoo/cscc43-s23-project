@@ -15,7 +15,9 @@ import resources.entities.PaymentInfo;
 import resources.enums.CommentType;
 import resources.enums.RatingType;
 import resources.exceptions.DuplicateKeyException;
+import resources.exceptions.RunQueryException;
 import resources.relations.Rating;
+import resources.utils.Globals;
 import resources.utils.Table;
 
 public class RateDAO extends DAO
@@ -95,19 +97,51 @@ public class RateDAO extends DAO
 
     public ArrayList<Rating> getRatingsByListing(String listingID)
     {
-        // TODO
+        ArrayList<Rating> ratings = new ArrayList<Rating>();
 
-        return new ArrayList<Rating>();
+        db.setPStatement("SELECT * FROM Rate_listing WHERE Listing_id=?");
+        db.setPStatementString(1, listingID);
+
+        if (!db.executeSetQueryReturnN(Globals.DEFAULT_N, listingTable))
+            throw new RunQueryException();
+
+        if (listingTable.isEmpty())
+            return ratings;
+
+        for (int i = 0; i < listingTable.size(); i++)
+        {
+            ratings.add(getRateFromTable(RatingType.LISTING, i));
+        }
+
+        listingTable.clearTable();
+
+        return ratings;
     }
 
-    public ArrayList<Rating> getRatingsByUser(String listingID)
+    public ArrayList<Rating> getRatingsByReviewee(String reviewee)
     {
-        // TODO
-        
-        return new ArrayList<Rating>();
+        ArrayList<Rating> ratings = new ArrayList<Rating>();
+
+        db.setPStatement("SELECT * FROM Rate_user WHERE Reviewee=?");
+        db.setPStatementString(1, reviewee);
+
+        if (!db.executeSetQueryReturnN(Globals.DEFAULT_N, userTable))
+            throw new RunQueryException();
+
+        if (userTable.isEmpty())
+            return ratings;
+
+        for (int i = 0; i < userTable.size(); i++)
+        {
+            ratings.add(getRateFromTable(RatingType.USER, i));
+        }
+
+        userTable.clearTable();
+
+        return ratings;
     }
 
-    private Rating getCommentFromTable(RatingType type, Integer rowNum)
+    private Rating getRateFromTable(RatingType type, Integer rowNum)
     {
         if (type == RatingType.USER)
         {
