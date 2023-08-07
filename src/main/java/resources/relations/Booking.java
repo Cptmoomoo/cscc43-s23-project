@@ -24,4 +24,21 @@ public class Booking
     {
         this(UUID.randomUUID().toString(), listingID, startDate, endDate, renterID, totalPrice, cardNum, cancelledBy);
     }
+
+    @Override
+    public String toString()
+    {
+        String str = String.format("Booking ID:%s\nListing ID:%s\nFrom %s to %s\nRented by:%s\nPaid with card:%s\nTotal price:$%.2f",
+                                 bookingID,
+                                 listingID,
+                                 startDate.toString(),
+                                 endDate.toString(),
+                                 renterID,
+                                 cardNum,
+                                 totalPrice);
+        if (!cancelledBy.isEmpty())
+            str = String.format("[THIS BOOKING WAS CANCELLED BY %s AND IS NOW INACTIVE]\n", cancelledBy) + str;
+    
+        return str;
+    }
 }
