@@ -2175,6 +2175,7 @@ public class Driver
         Boolean cond = false;
         ArrayList<AmenityType> amenities = new ArrayList<AmenityType>();
         Boolean[] added = new Boolean[AmenityType.values().length]; 
+        Arrays.fill(added, Boolean.FALSE);
     
         while (!cond)
         {
