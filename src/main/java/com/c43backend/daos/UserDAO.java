@@ -73,6 +73,51 @@ public class UserDAO extends DAO
         return executeSetQueryWithDupeCheck("username or SIN");
     }
 
+    public Boolean deleteUser(User user) throws DuplicateKeyException
+    {
+        db.setPStatement("UPDATE (listings NATURAL JOIN host_of) SET Is_active=false WHERE Username=?");
+
+        if (!db.setPStatementString(1, user.getUsername()))
+            return false;
+
+        executeSetQueryWithDupeCheck("set inactive");
+
+        db.setPStatement("DELETE FROM users WHERE Username=?");
+
+        if (!db.setPStatementString(1, user.getUsername()))
+            return false;
+
+        return executeSetQueryWithDupeCheck("delete user");
+    }
+
+    public Boolean updateUser(User user) throws DuplicateKeyException
+    {
+        db.setPStatement("UPDATE users SET password=?, SIN=?, Occupation=?, Date_of_birth=?, First_name=?, Last_name=? WHERE Username=?");
+
+        if (!db.setPStatementString(7, user.getUsername()))
+            return false;
+    
+        if (!db.setPStatementString(1, user.getHashedPass()))
+            return false;
+
+        if (!db.setPStatementString(2, user.getSIN()))
+            return false;
+        
+        if (!db.setPStatementString(3, user.getOccupation()))
+            return false;
+        
+        if (!db.setPStatementDate(4, new Date(user.getBirthday().toEpochDay())))
+            return false;
+
+        if (!db.setPStatementString(5, user.getFirstName()))
+            return false;
+
+        if (!db.setPStatementString(6, user.getLastName()))
+            return false;
+
+        return executeSetQueryWithDupeCheck("update user");
+    }
+
     public User getUser(String username)
     {
         User user;
@@ -90,14 +135,6 @@ public class UserDAO extends DAO
         table.clearTable();
 
         return user;
-    }
-
-    public Boolean deleteUser(String username)
-    {
-        db.setPStatement("DELETE FROM users WHERE Username=?");
-        db.setPStatementString(1, username);
-
-        return db.executeUpdateSetQueryBool();
     }
 
     public ArrayList<User> rankUsersByMostCancellationsByYear(Integer n, Integer year) {

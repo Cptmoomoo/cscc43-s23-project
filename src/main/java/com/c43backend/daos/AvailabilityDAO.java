@@ -85,7 +85,7 @@ public class AvailabilityDAO extends DAO
         Date day = new Date(date.toEpochDay());
         db.setPStatement("SELECT * FROM availability WHERE Start_date <= ? AND End_date > ?");
         db.setPStatementDate(1, day);
-        db.setPStatementDate(1, day);
+        db.setPStatementDate(2, day);
 
         if (!db.executeSetQueryReturnN(1, table))
             throw new RunQueryException();    

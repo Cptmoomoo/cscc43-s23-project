@@ -151,6 +151,7 @@ public class Driver
         System.out.println("search-host: [hostUsername] [n] search for listings by a given host. If hostUsername is not provided it will prompt you to for it.");
         System.out.println(Globals.TERMINAL_INDENT + "If n is given it will return n listings maximum, defaults to 10.");
         System.out.println(Globals.TERMINAL_INDENT + "If n is given without the hostUsername, must be input as n=x. (ex. search-host n=5)");
+        System.out.println("delete-account: permanently deletes your account!");
     }
 
     private void renterHelp()
@@ -206,6 +207,11 @@ public class Driver
                         return;
                     break;
 
+                case "delete-account":
+                    deleteAccount();
+                    logout();
+                    break;
+
                 case "search-host":
                     executeSearchListingByHost(cmds);
                     break;
@@ -247,6 +253,12 @@ public class Driver
                     if (logout())
                         return;
                     break;
+
+                case "delete-account":
+                    deleteAccount();
+                    logout();
+                    break;
+    
                 case "create-listing":
                     createListing();
                     break;
@@ -265,6 +277,23 @@ public class Driver
                     break;
 
             }
+        }
+    }
+
+    private void deleteAccount() throws IOException
+    {
+        System.out.println("Are you sure you would like to delete your account? (y/n)");
+    
+        if (!getYesNo())
+            return;
+
+        try
+        {  
+            userDAO.deleteUser(loggedUser);
+        }
+        catch (DuplicateKeyException e)
+        {
+            System.out.println("Problem deleting account!");
         }
     }
 
@@ -718,6 +747,8 @@ public class Driver
         System.out.println("Add availability to the listing:");
 
         createAvailRoutine(listing.getListingID());
+
+        System.out.println("Listing created!");
     }
 
     private void createAvailRoutine(String listingID) throws IOException
