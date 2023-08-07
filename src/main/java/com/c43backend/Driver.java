@@ -24,6 +24,7 @@ import resources.entities.Availability;
 import resources.entities.Listing;
 import resources.entities.User;
 import resources.entities.Location;
+import resources.entities.PaymentInfo;
 import resources.enums.AmenityType;
 import resources.enums.ListingType;
 import resources.enums.UserType;
@@ -223,6 +224,11 @@ public class Driver
                     executeSearchListingByHost(cmds);
                     break;
 
+                case "book":
+                case "b":
+                    executeBookingRoutine();
+                    break;
+
                 default:
                     System.out.println("Invalid command!");
                     System.out.println("Type h or help to see a list of commands.");
@@ -275,7 +281,7 @@ public class Driver
                     break;
                 
                 case "listings":
-                    searchByHost(loggedUser.getUsername(), 50);
+                    searchByHost(loggedUser.getUsername(), Globals.DEFAULT_N);
                     break;
 
                 case "search-host":
@@ -289,6 +295,107 @@ public class Driver
 
             }
         }
+    }
+
+    private void executeBookingRoutine() throws IOException
+    {
+        // let people search to get results, for now get all listings from "vli"
+
+        ArrayList<Listing> searchResults;
+        String cmd;
+        Integer idx;
+        Boolean cond = false;
+        Listing toBook = null;
+
+        // choose what to search with
+
+        searchResults = bookByHost();
+
+        while (!cond)
+        {
+            System.out.println("Select which listing you want to book (type the number)");
+
+
+            cmd = r.readLine().trim();
+
+            try
+            {
+                idx = Integer.parseInt(cmd);
+
+                if (idx > searchResults.size())
+                    System.out.println("Not a valid booking index!");
+                else
+                {   toBook = searchResults.get(idx - 1);
+                    System.out.println("Booking selected listing:");
+                    System.out.println(toBook.toString());
+                    System.out.println("Is this correct? (y/n)");
+
+                    cond = getYesNo();
+                }
+                    
+            }
+            catch (NumberFormatException e)
+            {
+                System.out.println("Invalid number format!");
+            }
+        }
+
+        bookListing(toBook);
+    }
+
+    private Boolean bookListing(Listing toBook) throws IOException
+    {
+
+        Availability avail = new Availability(LocalDate.now(), LocalDate.now(), toBook.getListingID(), (float) 100);
+        PaymentInfo payInfo = new PaymentInfo("1111222233334444", "322", "Vincent", "Li", "2022-02-01", "m1221m");
+        System.out.println("Select which dates you would like to book on.");
+        System.out.println("Here are the available dates for this listing:");
+
+        // SHOW AVAILABLE DATES
+     
+        System.out.println("Which payment method would you like to use?");
+        // SELECT payment method here
+
+        // REVIEW BOOKING INFO
+
+        System.out.println(String.format("Total price: $%.2f", avail.getTotalPrice()));
+
+        getYesNo();
+
+        try
+        {
+            return bookingDAO.insertBooking(avail, loggedUser.getUsername(), payInfo);
+        }
+        catch (DuplicateKeyException e)
+        {
+            System.out.println("Booking failed!");
+            return false;
+        }
+    }
+
+    private ArrayList<Listing> bookByHost() throws IOException
+    {
+        ArrayList<Listing> listings;
+        String username;
+
+        System.out.println("Input host username");
+        username = r.readLine().trim().toLowerCase();
+    
+
+        listings = listingDAO.getNListingsByHost(Globals.DEFAULT_N, username);
+
+        if (listings.isEmpty())
+        {
+            System.out.println(String.format("No listings were found for host with username %s.", username));
+            return null;
+        }
+
+        for (int i = 0; i < listings.size(); i++)
+        {
+            System.out.println(String.format("%d. %s", i + 1, listings.get(i).toString()));
+        }
+
+        return listings;
     }
 
     private void deleteAccount() throws IOException

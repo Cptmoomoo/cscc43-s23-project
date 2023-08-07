@@ -14,6 +14,7 @@ import com.c43backend.dbconnectionservice.DBConnectionService;
 import resources.entities.Availability;
 import resources.exceptions.DuplicateKeyException;
 import resources.exceptions.RunQueryException;
+import resources.utils.Globals;
 import resources.utils.Table;
 
 public class AvailabilityDAO extends DAO
@@ -78,6 +79,31 @@ public class AvailabilityDAO extends DAO
         table.clearTable();
 
         return availability;
+    }
+
+    public ArrayList<Availability> getAvailabilitiesByListing(String listingID) throws DuplicateKeyException
+    {
+        ArrayList<Availability> availabilities = new ArrayList<Availability>();
+        db.setPStatement("SELECT * FROM availability WHERE Listing_id=?");
+        db.setPStatementString(1, listingID);
+
+        if (!db.executeSetQueryReturnN(Globals.DEFAULT_N * 2, table))
+            throw new RunQueryException();    
+
+        if (table.isEmpty())
+            return null;
+
+        for (int i = 0; i < table.size(); i++)
+        {   
+            availabilities.add(new Availability(((Date) table.extractValueFromRowByName(0, "startDate")).toLocalDate(),
+                                        ((Date) table.extractValueFromRowByName(0, "endDate")).toLocalDate(),
+                                        (String) table.extractValueFromRowByName(0, "listingID"),
+                                        (Float) table.extractValueFromRowByName(0, "pricePerDay")));
+        }
+
+        table.clearTable();
+
+        return availabilities;
     }
 
     public Boolean isAvailible(LocalDate date, String listingID)

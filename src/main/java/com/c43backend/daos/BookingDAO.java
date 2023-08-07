@@ -23,6 +23,7 @@ import resources.exceptions.DuplicateKeyException;
 import resources.exceptions.RunQueryException;
 import resources.relations.Booking;
 import resources.entities.Comment;
+import resources.utils.Globals;
 import resources.utils.Table;
 
 public class BookingDAO extends DAO
@@ -71,7 +72,7 @@ public class BookingDAO extends DAO
         if (!db.setPStatementString(5, renter_id))
             return false;
 
-        if (!db.setPStatementFloat(6, availability.getPricePerDay() * ChronoUnit.DAYS.between(availability.getStartDate(), availability.getEndDate())))
+        if (!db.setPStatementFloat(6, availability.getTotalPrice()))
             return false;
 
         if (!db.setPStatementString(7, payment.getCardNum()))
@@ -99,7 +100,7 @@ public class BookingDAO extends DAO
                          "FROM bookings WHERE Renter_id = ?");
         db.setPStatementString(1, renter_id);
 
-        if (!db.executeSetQueryReturnN(50, table))
+        if (!db.executeSetQueryReturnN(Globals.DEFAULT_N, table))
             throw new RunQueryException();
 
         if (table.isEmpty())
@@ -126,7 +127,7 @@ public class BookingDAO extends DAO
                          "FROM bookings NATURAL JOIN host_of WHERE host_of.Username = ?");
         db.setPStatementString(1, host_id);
 
-        if (!db.executeSetQueryReturnN(50, table))
+        if (!db.executeSetQueryReturnN(Globals.DEFAULT_N, table))
             throw new RunQueryException();
 
         if (table.isEmpty())

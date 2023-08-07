@@ -1,6 +1,7 @@
 package resources.entities;
 
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -13,6 +14,12 @@ public class Availability
     private LocalDate endDate;
     private String listingID;
     private Float pricePerDay;
+
+
+    public float getTotalPrice()
+    {
+        return pricePerDay * ChronoUnit.DAYS.between(startDate, endDate);
+    }
 
     @Override
     public boolean equals(Object right)

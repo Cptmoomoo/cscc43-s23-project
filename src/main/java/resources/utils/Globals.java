@@ -5,7 +5,7 @@ import resources.enums.AmenityType;
 public class Globals
 {
     // Number constants
-    public static final Integer TABLE_SIZE = 50;
+    public static final Integer DEFAULT_N = 50;
     public static final Integer NUM_AMENITIES = AmenityType.values().length;
 
     // Driver constants
