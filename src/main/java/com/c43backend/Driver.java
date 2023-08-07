@@ -617,7 +617,11 @@ public class Driver
             }
         }
 
-        bookingDAO.cancelBooking(toCancel.getBookingID(), loggedUser.getUsername());
+        try 
+        {
+            bookingDAO.cancelBooking(toCancel.getBookingID(), loggedUser.getUsername());
+        }
+        catch (DuplicateKeyException e) {}
         
         System.out.println("Cancellation Successful!");
     }
