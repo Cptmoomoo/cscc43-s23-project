@@ -960,7 +960,7 @@ public class Driver
 
         try
         {
-            if (!listingDAO.insertListing(listing, loggedUser.getUsername()))
+            if (!listingDAO.insertListing(listing, loggedUser.getUsername(), addLocation))
                 System.out.println("There was a problem creating this listing!");
             else
                 System.out.println("Successfully created listing!");

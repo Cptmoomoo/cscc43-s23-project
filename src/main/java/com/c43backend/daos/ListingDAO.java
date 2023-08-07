@@ -57,7 +57,7 @@ public class ListingDAO extends DAO
     }
     
 
-    public Boolean insertListing(Listing listing, String hostUsername) throws DuplicateKeyException
+    public Boolean insertListing(Listing listing, String hostUsername, Boolean createLocation) throws DuplicateKeyException
     {
         String listingID = listing.getListingID();
     
@@ -109,7 +109,8 @@ public class ListingDAO extends DAO
         
         executeSetQueryWithDupeCheck("listing ID");
 
-        lDAO.insertLocation(listing.getLocation());
+        if (createLocation)
+            lDAO.insertLocation(listing.getLocation());
 
         db.setPStatement("INSERT INTO belongs_to VALUES (?, ?, ?)");
 
