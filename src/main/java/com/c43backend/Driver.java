@@ -733,7 +733,7 @@ public class Driver
 
     private ArrayList<PaymentInfo> getAndDisplayPayment()
     {
-        ArrayList<PaymentInfo> payments = piDAO.getPaymentInfoByUser(loggedUser.getUsername());
+        ArrayList<PaymentInfo> payments = piDAO.getPaymentInfoByUser(Globals.DEFAULT_N, loggedUser.getUsername());
 
         if (payments.isEmpty())
         {

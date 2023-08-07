@@ -6,17 +6,21 @@ import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
+import resources.enums.CommentType;
 
 @Getter @Setter @AllArgsConstructor
 public class Comment
 {
     private String commentID;
+    private String commentOwner;
+    private String userListingID;
+    private CommentType type;
     private String text;
     private LocalDateTime timestamp;
 
-    public Comment(String text)
+    public Comment(String commentOwner, String userListingID, CommentType type, String text)
     {
-        this(UUID.randomUUID().toString(), text, LocalDateTime.now());
+        this(UUID.randomUUID().toString(), commentOwner, userListingID, type, text, LocalDateTime.now());
     }
 
     @Override

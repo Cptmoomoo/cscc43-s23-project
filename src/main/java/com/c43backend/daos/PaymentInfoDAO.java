@@ -100,7 +100,7 @@ public class PaymentInfoDAO extends DAO
         return executeSetQueryWithDupeCheck("update payment");
     }
 
-    public Boolean deletePaymentInfo(PaymentInfo payment) 
+    public Boolean deletePaymentInfo(PaymentInfo payment) throws DuplicateKeyException
     {
         // db.setPStatement("UPDATE (listings NATURAL JOIN host_of) SET Is_active=false WHERE Username=?");
 
