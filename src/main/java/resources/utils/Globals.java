@@ -10,7 +10,7 @@ public class Globals
 
     // Driver constants
     public static final String APP_NAME = "skyBnB";
-    public static final String TERMINAL_DIVIDER = "-".repeat(30);
+    public static final String TERMINAL_DIVIDER = "-".repeat(40);
     public static final String TERMINAL_MARKER = APP_NAME + "> ";
     public static final String TERMINAL_INDENT = " ".repeat(15);
     public static final String POSTAL_CODE_REGEX = "[A-Z][0-9][A-Z] ?[0-9][A-Z][0-9]";

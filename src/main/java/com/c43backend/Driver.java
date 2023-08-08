@@ -160,9 +160,6 @@ public class Driver
         System.out.println("listings: return a list of your current active listings.");
         System.out.println("create-listing: create a listing!");
         System.out.println("search: enter the search menu.");
-        System.out.println("search-host: [hostUsername] [n] search for listings by a given host. If hostUsername is not provided it will prompt you to for it.");
-        System.out.println(Globals.TERMINAL_INDENT + "If n is given it will return n listings maximum, defaults to 10.");
-        System.out.println(Globals.TERMINAL_INDENT + "If n is given without the hostUsername, must be input as n=x. (ex. search-host n=5)");
         System.out.println("update-user: update your user information.");
         System.out.println("show-bookings: get a list of your current bookings.");
         System.out.println("cancel-booking: cancel one of your bookings.");
@@ -177,9 +174,6 @@ public class Driver
         System.out.println("help/h: displays this help message.");
         System.out.println("logout/lo: logout and return to the main menu.");
         System.out.println("search: enter the search menu.");
-        System.out.println("search-host: [hostUsername] [n] search for listings by a given host. If hostUsername is not provided it will prompt you to for it.");
-        System.out.println(Globals.TERMINAL_INDENT + "If n is given it will return n listings maximum, defaults to 10.");
-        System.out.println(Globals.TERMINAL_INDENT + "If n is given without the hostUsername, must be input as n=x. (ex. search-host n=5)");
         System.out.println("update-user: update your user information.");
         System.out.println("payment/payments: view/add/edit/delete your payment methods.");
         System.out.println("book: begin the booking process!");
@@ -241,8 +235,8 @@ public class Driver
                     updateUser();
                     break;
 
-                case "search-host":
-                    executeSearchListingByHost(cmds);
+                case "search":
+                    searchMenu();
                     break;
 
                 case "show-bookings":
@@ -330,8 +324,8 @@ public class Driver
                     cancelBookingRoutine();
                     break;
 
-                case "search-host":
-                    executeSearchListingByHost(cmds);
+                case "search":
+                    searchMenu();
                     break;
 
                 case "rate-booking":
@@ -352,9 +346,161 @@ public class Driver
         }
     }
 
-    private void searchMenu() throws IOException
+    private ArrayList<Listing> searchMenu() throws IOException
     {
-        System.out.println("What would you like to search by?");
+        ArrayList<String> cmds;
+        ArrayList<Listing> listings = new ArrayList<>();
+
+        Boolean cond = false;
+
+        while (!cond)
+        {
+            System.out.println("What would you like to search by?");
+            printSearchOptions();
+            System.out.println("Type q to quit.");
+    
+            cmds = parseCmd(r.readLine());
+        
+            switch (cmds.get(0))
+            {
+                case "h":
+                    listings = executeSearchListingByHost(cmds);
+                    break;
+                case "c":
+                    listings = searchByCoordinates();
+                    break;
+                case "p":
+                    listings = searchByPostalcode();
+                    break;
+                case "d":
+                    listings = searchByDates();
+                    break;
+                case "q":
+                    cond = true;
+                    break;
+                default:
+                    System.out.println("Invalid option!");
+                    break;
+            }
+        }
+
+        return listings;
+    }
+
+    private ArrayList<Listing> searchByCoordinates() throws IOException
+    {
+        Float longitude;
+        Float latitude;
+        ArrayList<Listing> listings = new ArrayList<>();
+
+        longitude = setLongitude();
+        latitude = setLatitude();
+
+        // GET HERE
+
+        if (listings.isEmpty())
+        {
+            System.out.println("No listings within the vicinity of these coordinates.");
+            return listings;
+        }
+
+        printListings(listings);
+    
+        return listings;
+    }
+
+    private ArrayList<Listing> searchByPostalcode() throws IOException
+    {
+        String postal;
+        ArrayList<Listing> listings = new ArrayList<>();
+
+        postal = setPostalCode();
+
+        // GET HERE
+
+        if (listings.isEmpty())
+        {
+            System.out.println("No listings within the vicinity of this postal code.");
+            return listings;
+        }
+    
+        return listings;
+    }
+
+    private ArrayList<Listing> searchByDates() throws IOException
+    {
+        LocalDate start = null;
+        LocalDate end = null;
+        Boolean cond = false;
+        ArrayList<Listing> listings = new ArrayList<>();
+
+        while (!cond)
+        {
+            System.out.println("Enter the starting date you want your listing to be available in the format (YYYY-MM-DD)");
+    
+            try
+            {
+                start = LocalDate.parse(r.readLine().trim());
+                cond = true;
+            }
+            catch (DateTimeParseException e)
+            {
+                System.out.println("Invalid date format!");
+            }
+        }
+        
+        cond = false;
+
+        while (!cond)
+        {
+            System.out.println("Enter the ending date you want your listing to be available in the format (YYYY-MM-DD)");
+
+            try
+            {
+                end = LocalDate.parse(r.readLine().trim());
+
+                if (start.compareTo(end) >= 0)
+                    System.out.println("End date cannot by on or before the start date!");
+                else
+                    cond = true;
+                
+            }
+            catch (DateTimeParseException e)
+            {
+                System.out.println("Invalid month format!");
+            }
+        }
+
+        // GET HERE
+
+        if (listings.isEmpty())
+        {
+            System.out.println("No listings are available within these dates!");
+            return listings;
+        }
+    
+        return listings;
+    }
+
+    private void printListings(ArrayList<Listing> listings)
+    {
+        for (int i = 0; i < listings.size(); i++)
+        {
+            System.out.println(Globals.TERMINAL_DIVIDER);
+            System.out.println(String.format("%d. %s", i + 1, listings.get(i).toString()));
+        }
+    }
+
+    private void printSearchOptions()
+    {
+        System.out.println(Globals.TERMINAL_DIVIDER);
+        System.out.println("host (h): [hostUsername] [n] search for listings by a given host. If hostUsername is not provided it will prompt you to for it.");
+        System.out.println(Globals.TERMINAL_INDENT + "If n is given it will return n listings maximum, defaults to 10.");
+        System.out.println(Globals.TERMINAL_INDENT + "If n is given without the hostUsername, must be input as n=x. (ex. search-host n=5)");
+        System.out.println("coordinates (c): search by longitude and latitude within a specified radius (KM).");
+        System.out.println("postal-code (p): search by postal code, gets listings with the given postal code or nearby postal codes.");
+        System.out.println("date-range (d): search for listings that are available within the selected date ranges.");
+        System.out.println(Globals.TERMINAL_DIVIDER);
     }
 
     private void updateAvailabilityRoutine() throws IOException
@@ -373,11 +519,7 @@ public class Driver
             return;
         }
 
-        for (int i = 0; i < listings.size(); i++)
-        {
-            System.out.println(Globals.TERMINAL_DIVIDER);
-            System.out.println(String.format("%d. %s", i + 1, listings.get(i).toString()));
-        }
+        printListings(listings);
 
         while (!cond)
         {
@@ -1192,13 +1334,10 @@ public class Driver
         if (listings.isEmpty())
         {
             System.out.println(String.format("No listings were found for host with username %s.", username));
-            return null;
+            return listings;
         }
 
-        for (int i = 0; i < listings.size(); i++)
-        {
-            System.out.println(String.format("%d. %s", i + 1, listings.get(i).toString()));
-        }
+        printListings(listings);
 
         return listings;
     }
@@ -1220,10 +1359,11 @@ public class Driver
         }
     }
 
-    private void executeSearchListingByHost(ArrayList<String> cmds) throws IOException
+    private ArrayList<Listing> executeSearchListingByHost(ArrayList<String> cmds) throws IOException
     {
         String cmd;
         Integer n;
+        ArrayList<Listing> listings = new ArrayList<>();
 
         if (checkCmdArgs(cmds, 2, 2))
         {
@@ -1234,7 +1374,7 @@ public class Driver
             catch (NumberFormatException e)
             {
                 System.out.println("Invalid value for n!");
-                return;
+                return listings;
             }
             searchByHost(cmds.get(1), n);
         }
@@ -1242,10 +1382,7 @@ public class Driver
         {
             cmd = cmds.get(1);
             if (!cmd.contains("n="))
-            {
-                searchByHost(cmd, 10);
-                return;
-            }
+                return searchByHost(cmd, 10);
             else
             {
                 cmd = cmd.replace("n=", "");
@@ -1256,16 +1393,18 @@ public class Driver
                 catch (NumberFormatException e)
                 {
                     System.out.println("Invalid value for n!");
-                    return;
+                    return listings;
                 }
                 searchByHost("", n);
             }
                 
         }
         else if (checkCmdArgs(cmds, 0, 0))
-            searchByHost("", 10);
+            return searchByHost("", 10);
         else
             printInvalid("search-host");
+        
+        return listings;
     }
 
     private Boolean logout()
@@ -2045,40 +2184,8 @@ public class Driver
         while (!cond)
         {
 
-            System.out.println("What is the longitude of your listing? Enter a decimal number between -180 to 180.");
-            try 
-            {
-                longitude = Float.parseFloat(r.readLine().trim());
-
-                if (longitude < -180 || longitude > 180) 
-                {
-                    System.out.println("Longitude has to be between -180 to 180, try again!");
-                    continue;
-                }
-            }
-            catch (NumberFormatException e)
-            {
-                System.out.println("Not a valid valid longitude, try again!");
-                continue;
-            }
-
-            System.out.println("What is the latitude of your listing? Enter a decimal number between -90 to 90.");
-
-            try 
-            {
-                latitude = Float.parseFloat(r.readLine().trim());
-
-                if (latitude < -90 || latitude > 90) 
-                {
-                    System.out.println("Latitude has to be between -90 to 90, try again!");
-                    continue;
-                }
-            }
-            catch (NumberFormatException e)
-            {
-                System.out.println("Not a valid valid latitude, try again!");
-                continue;
-            }
+            longitude = setLongitude();
+            latitude = setLatitude();
 
             System.out.println(String.format("Are the coordinates (%f, %f) correct? (y/n)", longitude, latitude));
 
@@ -2125,6 +2232,69 @@ public class Driver
         createAvailRoutine(listing.getListingID());
 
         System.out.println("Listing created!");
+    }
+
+    private Float setLongitude() throws IOException
+    {
+        Float longitude = (float) 0;
+        Boolean cond = false;
+
+        while (!cond)
+        {
+
+            System.out.println("What is the longitude of your listing? Enter a decimal number between -180 to 180.");
+            try 
+            {
+                longitude = Float.parseFloat(r.readLine().trim());
+
+                if (longitude < -180 || longitude > 180) 
+                {
+                    System.out.println("Longitude has to be between -180 to 180, try again!");
+                    continue;
+                }
+
+                cond = true;
+            }
+            catch (NumberFormatException e)
+            {
+                System.out.println("Not a valid valid longitude, try again!");
+                continue;
+            }
+        }
+
+        return longitude;
+    }
+
+    private Float setLatitude() throws IOException
+    {
+        Float latitude = (float) 0;
+        Boolean cond = false;
+
+        while (!cond)
+        {
+
+            System.out.println("What is the latitude of your listing? Enter a decimal number between -90 to 90.");
+
+            try 
+            {
+                latitude = Float.parseFloat(r.readLine().trim());
+
+                if (latitude < -90 || latitude > 90) 
+                {
+                    System.out.println("Latitude has to be between -90 to 90, try again!");
+                    continue;
+                }
+
+                cond = true;
+            }
+            catch (NumberFormatException e)
+            {
+                System.out.println("Not a valid valid latitude, try again!");
+                continue;
+            }
+        }
+
+        return latitude;
     }
 
     private void createAvailRoutine(String listingID) throws IOException
@@ -2452,7 +2622,7 @@ public class Driver
         return code;
     }
 
-    private void searchByHost(String username, Integer n) throws IOException
+    private ArrayList<Listing> searchByHost(String username, Integer n) throws IOException
     {
         ArrayList<Listing> listings;
 
@@ -2467,7 +2637,7 @@ public class Driver
         if (listings.isEmpty())
         {
             System.out.println(String.format("No listings were found for host with username %s.", username));
-            return;
+            return listings;
         }
 
         for (Listing l : listings)
@@ -2475,6 +2645,8 @@ public class Driver
             System.out.println(Globals.TERMINAL_DIVIDER);
             System.out.println(l.toString());
         }
+
+        return listings;
     }
 
     private Boolean checkCmdArgs(ArrayList<String> cmds, Integer min, Integer max)
@@ -2712,6 +2884,7 @@ public class Driver
 
     private void printListOfAmenities()
     {
+        System.out.println(Globals.TERMINAL_DIVIDER);
         System.out.println("Here are the list of amenities you can add:");
         System.out.println("Pool (p): your listing has a pool.");
         System.out.println("Wifi (w): your listing comes with wifi.");
@@ -2728,6 +2901,7 @@ public class Driver
         System.out.println("Wide entrance (we): [Acessibility] your listing comes with a wide entrance.");
         System.out.println("Wide entrance (wh): [Acessibility] your listing comes with wide hallways.");
         System.out.println("Accessible washroom (ab): [Acessibility] your listing comes with an accessible washroom.");
+        System.out.println(Globals.TERMINAL_DIVIDER);
     }
 
 }
