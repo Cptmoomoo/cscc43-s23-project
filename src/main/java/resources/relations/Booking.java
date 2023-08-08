@@ -27,7 +27,7 @@ public class Booking
     @Override
     public String toString()
     {
-        String str = String.format("Booking ID:%s\nListing ID:%s\nFrom %s to %s\nRented by:%s\nPaid with card:%s\nTotal price:$%.2f",
+        String str = String.format("Booking ID: %s\nListing ID: %s\nFrom %s to %s\nRented by: %s\nPaid with card: %s\nTotal price: $%.2f",
                                  bookingID,
                                  listingID,
                                  startDate.toString(),

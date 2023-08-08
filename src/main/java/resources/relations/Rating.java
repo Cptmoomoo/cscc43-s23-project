@@ -15,4 +15,10 @@ public class Rating
     RatingType type;
     Float rating;
     LocalDateTime timestamp;
+
+    @Override
+    public String toString()
+    {
+        return String.format("[%s: %s]\n (%s) %s\nRating: %.1f/5.0", type.toString(), userListingID, owningUser, timestamp.toString(), rating);
+    }
 }
