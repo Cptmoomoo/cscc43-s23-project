@@ -158,7 +158,7 @@ public class UserDAO extends DAO
         return user;
     }
 
-    public ArrayList<Pair<User, Integer>> rankUsersByMostCancellationsByYear(Integer n) {
+    public ArrayList<Pair<String, Integer>> rankUsersByMostCancellationsByYear(Integer n, Integer year) {
         ArrayList<User> users = new ArrayList<User>();
 
         // TODO
@@ -178,39 +178,39 @@ public class UserDAO extends DAO
 
         table.clearTable();
 
-        return new ArrayList<Pair<User, Integer>>();
+        return new ArrayList<Pair<String, Integer>>();
     }
 
-    public ArrayList<Pair<User, Integer>> rankHostsByListingNumber(String country, Integer n)
+    public ArrayList<Pair<String, Integer>> rankHostsByListingNumber(String country, Integer n)
     {
         /*
          * TODO: get the n hosts that have the most listings in this country.
          * Order descending!!!
          * Returns a list of Pairs, user + number of listings
          */
-        return new ArrayList<Pair<User, Integer>>();
+        return new ArrayList<Pair<String, Integer>>();
     }
 
-    public ArrayList<Pair<User, Integer>> rankHostsByListingNumber(String country, String city, Integer n)
+    public ArrayList<Pair<String, Integer>> rankHostsByListingNumber(String country, String city, Integer n)
     {
         /*
          * TODO: get the n hosts that have the most listings in this country + city
          * Order descending!!!
          * Returns a list of Pairs, user + number of listings
          */
-        return new ArrayList<Pair<User, Integer>>();
+        return new ArrayList<Pair<String, Integer>>();
     }
 
-    public ArrayList<User> getPotentialCommercial(String country, String city, Integer n)
+    public ArrayList<String> getPotentialCommercial(String country, String city, Integer n)
     {
         /*
          * TODO: get the n hosts that within this city and country, has more than 10%
          * of the listings in that city and country.
          */
-        return new ArrayList<User>();
+        return new ArrayList<String>();
     }
 
-    public ArrayList<Pair<User, Integer>> rankRentersByBookingNumbers(LocalDate start, LocalDate end, Integer n)
+    public ArrayList<Pair<String, Integer>> rankRentersByBookingNumbers(LocalDate start, LocalDate end, Integer n)
     {
         /*
          * TODO: get the n users that have the highest number of bookings, within the start and end date.
@@ -218,10 +218,10 @@ public class UserDAO extends DAO
          * Only return users with greater than 1 booking!!
          * Returns a list of Pairs, user + number of bookings
          */
-        return new ArrayList<Pair<User, Integer>>();
+        return new ArrayList<Pair<String, Integer>>();
     }
 
-    public ArrayList<Pair<User, Integer>> rankRentersByBookingNumbers(LocalDate start, LocalDate end, String country, String city, Integer n)
+    public ArrayList<Pair<String, Integer>> rankRentersByBookingNumbers(LocalDate start, LocalDate end, String country, String city, Integer n)
     {
         /*
          * TODO: get the n users that have the highest number of bookings, within the start and end date, and within the country + city
@@ -229,7 +229,7 @@ public class UserDAO extends DAO
          * Only return users with greater than 1 booking!!
          * Returns a list of Pairs, user + number of bookings
          */
-        return new ArrayList<Pair<User, Integer>>();
+        return new ArrayList<Pair<String, Integer>>();
     }
 
     private User getUserFromTable(Integer rowNum)

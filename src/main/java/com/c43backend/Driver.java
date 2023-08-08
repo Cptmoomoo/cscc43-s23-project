@@ -47,6 +47,7 @@ public class Driver
     private final DBConnectionService db;
     private final BufferedReader r;
     private final ListingFilter lf;
+    private final ReportDriver rd;
 
     private final UserDAO userDAO;
     private final ListingDAO listingDAO;
@@ -81,6 +82,7 @@ public class Driver
         this.piDAO = piDAO;
         r = new BufferedReader(new InputStreamReader(System.in));
         lf = new ListingFilter(availabilityDAO);
+        rd = new ReportDriver(bookingDAO, listingDAO, userDAO, commentDAO);
     }
 
     public void run() throws IOException
@@ -120,6 +122,7 @@ public class Driver
 
                 case "reports":
                 case "rep":
+                    rd.run();
                     break;
 
                 default:
