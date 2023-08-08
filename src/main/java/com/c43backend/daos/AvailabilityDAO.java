@@ -151,7 +151,7 @@ public class AvailabilityDAO extends DAO
     // because we merge the back to back availabilities so there is always a gap between every two availabilities!!
     public Boolean isOverlapping(String listing_id, LocalDate startDate, LocalDate endDate)
     {
-        db.setPStatement("SELECT * FROM bookings WHERE Listing_id=? AND ((Start_date BETWEEN ? AND ?) OR (End_date Between ? AND ?))");
+        db.setPStatement("SELECT * FROM availability WHERE Listing_id=? AND ((Start_date BETWEEN ? AND ?) OR (End_date Between ? AND ?))");
         db.setPStatementString(1, listing_id);
         db.setPStatementDate(2, Date.valueOf(startDate));
         db.setPStatementDate(3, Date.valueOf(endDate));
@@ -174,7 +174,7 @@ public class AvailabilityDAO extends DAO
         Availability date_before;
         Availability date_after;
 
-        db.setPStatement("SELECT * FROM bookings WHERE Listing_id=? AND DATE_ADD(End_date, INTERVAL 1 DAY) = ?");
+        db.setPStatement("SELECT * FROM availability WHERE Listing_id=? AND DATE_ADD(End_date, INTERVAL 1 DAY) = ?");
         db.setPStatementString(1, merge_avail.getListingID());
         db.setPStatementDate(2, Date.valueOf(merge_avail.getStartDate()));
 
@@ -188,7 +188,7 @@ public class AvailabilityDAO extends DAO
         }
         table.clearTable();
 
-        db.setPStatement("SELECT * FROM bookings WHERE Listing_id=? AND DATE_SUB(Start_date, INTERVAL 1 DAY) = ?");
+        db.setPStatement("SELECT * FROM availability WHERE Listing_id=? AND DATE_SUB(Start_date, INTERVAL 1 DAY) = ?");
         db.setPStatementString(1, merge_avail.getListingID());
         db.setPStatementDate(2, Date.valueOf(merge_avail.getEndDate()));
 
