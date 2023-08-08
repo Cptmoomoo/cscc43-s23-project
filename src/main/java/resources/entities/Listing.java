@@ -24,25 +24,16 @@ public class Listing
     private ArrayList<AmenityType> amenities;
     private Location location;
     private Integer maxGuests;
+    private Float avgPrice;
 
     public Listing(ListingType listingType, ArrayList<AmenityType> amenities, Location location, Integer maxGuests)
     {
-        this(UUID.randomUUID().toString(), listingType, "", true, LocalDateTime.now(), amenities, location, maxGuests);
+        this(UUID.randomUUID().toString(), listingType, "", true, LocalDateTime.now(), amenities, location, maxGuests, (float) 0);
     }
 
     public Listing(ListingType listingType, String suiteNum, ArrayList<AmenityType> amenities, Location location, Integer maxGuests)
     {
-        this(UUID.randomUUID().toString(), listingType, suiteNum, true, LocalDateTime.now(), amenities, location, maxGuests);
-    }
-
-    public Listing(ListingType listingType)
-    {
-        this(UUID.randomUUID().toString(), listingType, "", true, LocalDateTime.now(), new ArrayList<AmenityType>(), null, 0);
-    }
-
-    public Listing(ListingType listingType, String suiteNum)
-    {
-        this(UUID.randomUUID().toString(), listingType, suiteNum, true, LocalDateTime.now(), new ArrayList<AmenityType>(), null, 0);
+        this(UUID.randomUUID().toString(), listingType, suiteNum, true, LocalDateTime.now(), amenities, location, maxGuests, (float) 0);
     }
 
     @Override
@@ -63,7 +54,7 @@ public class Listing
 
         // Need to print nice format, with nice format of location
         if (suiteNum != null)
-            return String.format("%s (%s) %s\n%s", listingType, listingID, amenities.toString(), location2.toString());
+            return String.format("%s (%s) %s\nAverage price per day: $%.2f\n%s", listingType, listingID, amenities.toString(), avgPrice, location2.toString());
         
         return String.format("%s %s (%s) %s\n%s", suiteNum, listingType, listingID, amenities.toString(), location2.toString());
     }

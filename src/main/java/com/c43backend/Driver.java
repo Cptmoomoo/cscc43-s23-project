@@ -12,6 +12,7 @@ import java.util.Arrays;
 import java.util.regex.Pattern;
 
 import org.javatuples.Pair;
+import org.javatuples.Quartet;
 
 import com.c43backend.daos.ListingDAO;
 import com.c43backend.daos.UserDAO;
@@ -37,6 +38,7 @@ import resources.enums.UserType;
 import resources.exceptions.DuplicateKeyException;
 import resources.relations.Booking;
 import resources.utils.Globals;
+import resources.utils.HostToolkit;
 import resources.utils.ListingFilter;
 import resources.utils.PasswordHasher;
 
@@ -354,13 +356,11 @@ public class Driver
         ArrayList<String> cmds;
         ArrayList<Listing> listings = new ArrayList<>();
 
-        Boolean cond = false;
-
-        while (!cond)
+        while (true)
         {
             System.out.println("What would you like to search by?");
             printSearchOptions();
-            System.out.println("Type q to quit.");
+            System.out.println("Type q to quit when you are satisfied.");
     
             cmds = parseCmd(r.readLine());
         
@@ -379,8 +379,7 @@ public class Driver
                     listings = searchByDates();
                     break;
                 case "q":
-                    cond = true;
-                    break;
+                    return listings;
                 default:
                     System.out.println("Invalid option!");
                     continue;
@@ -396,31 +395,32 @@ public class Driver
             
             listings = filterResults(listings);
         }
-
-        return listings;
     }
 
     private ArrayList<Listing> filterResults(ArrayList<Listing> listings) throws IOException
     {
-        System.out.println("How would you like to filter your results?");
-        printFilterOptions();
-        System.out.println("Type q to quit.");
-
         Pair<Float, Float> priceRange;
         Pair<LocalDate, LocalDate> dateRange;
 
         while (true)
         {
+            System.out.println("How would you like to filter your results?");
+            printFilterOptions();
+            System.out.println("Type q to quit.");
+    
             switch (r.readLine().trim().toLowerCase())
             {
-                case "s":
-                    lf.sortListByPrice(listings);
+                case "sa":
+                    lf.sortListByPrice(listings, true);
+                    break;
+                case "sd":
+                    lf.sortListByPrice(listings, false);
                     break;
                 case "pc":
                     listings = lf.filterByPostalCode(listings, setPostalCode());
                     break;
                 case "a":
-                    listings = lf.filterByAmenities(listings, getAmenities());
+                    listings = lf.filterByAmenities(listings, getAmenities(false));
                     break;
                 case "pr":
                     priceRange = getPriceRange();
@@ -436,6 +436,8 @@ public class Driver
                     System.out.println("Invalid option!");
                     continue;
             }
+
+            printListings(listings);
         }
     }
 
@@ -530,7 +532,8 @@ public class Driver
     private void printFilterOptions()
     {
         System.out.println(Globals.TERMINAL_DIVIDER);
-        System.out.println("sort-price (s): sorts listings ascending by price.");
+        System.out.println("sort-price (sa): sorts listings ascending by price, ascending.");
+        System.out.println("sort-price (sd): sorts listings ascending by price, ascending.");
         System.out.println("postal-code (pc): only gets listings that are near the supplied postal code.");
         System.out.println("amenities (a): only gets listings with the desired amenities.");
         System.out.println("price-range (pr): only gets listings that are within the price range.");
@@ -744,7 +747,7 @@ public class Driver
             switch (r.readLine().trim().toLowerCase())
             {
                 case "a":
-                    createAvailRoutine(toChange.getListingID());
+                    createAvailRoutine(toChange);
                     break;
                 case "u":
                     updateAvailability(avails, toChange.getListingID());
@@ -1278,7 +1281,15 @@ public class Driver
 
         // choose what to search with
 
-        searchResults = bookByHost();
+        System.out.println("Search the platform for listings you wish to book.");
+        System.out.println("Quit the search menu when the listing you want to book is in your search results.");
+
+        searchResults = searchMenu();
+
+        System.out.println(Globals.TERMINAL_DIVIDER);
+        System.out.println("Here are your search results:");
+
+        printListings(searchResults);
 
         while (!cond)
         {
@@ -1474,6 +1485,8 @@ public class Driver
                 }
             }
 
+            cond = false;
+        
             if (cond2)
             {
                 System.out.println("Would you like to confirm the following dates? (y/n)");
@@ -2382,7 +2395,7 @@ public class Driver
             location = createLocationRoutine(longitude, latitude);
         }
 
-        listing = new Listing(listingType, suiteNum, getAmenities(), location, numGuests);
+        listing = new Listing(listingType, suiteNum, getAmenities(true), location, numGuests);
 
         try
         {
@@ -2402,7 +2415,7 @@ public class Driver
 
         System.out.println("Add availability to the listing:");
 
-        createAvailRoutine(listing.getListingID());
+        createAvailRoutine(listing);
 
         System.out.println("Listing created!");
     }
@@ -2470,7 +2483,7 @@ public class Driver
         return latitude;
     }
 
-    private void createAvailRoutine(String listingID) throws IOException
+    private void createAvailRoutine(Listing listing) throws IOException
     {
         Boolean cond = false;
 
@@ -2482,13 +2495,13 @@ public class Driver
             switch (r.readLine().trim().toLowerCase())
             {
                 case "y":
-                    getYearFromUser(listingID);
+                    getYearFromUser(listing);
                     break;
                 case "m":
-                    getMonthsFromUser(listingID);
+                    getMonthsFromUser(listing);
                     break;
                 case "d":
-                    getDaysFromUser(listingID);
+                    getDaysFromUser(listing);
                     break;
                 case "q":
                     cond = true;
@@ -2500,7 +2513,7 @@ public class Driver
         }
     }
 
-    private void getDaysFromUser(String listingID) throws IOException
+    private void getDaysFromUser(Listing listing) throws IOException
     {
         LocalDate start = null;
         LocalDate end = null;
@@ -2548,7 +2561,7 @@ public class Driver
             }
         }
 
-        avail = new Availability(start, end, listingID, getPricePerDay());
+        avail = new Availability(start, end, listing.getListingID(), getPricePerDay(listing));
 
         res = insertAvailability(avail);
         if (res == 0)
@@ -2559,7 +2572,7 @@ public class Driver
             System.out.println("Availability added!");
     }
 
-    private void getMonthsFromUser(String listingID) throws IOException
+    private void getMonthsFromUser(Listing listing) throws IOException
     {
         LocalDate start = null;
         LocalDate end = null;
@@ -2606,7 +2619,7 @@ public class Driver
             }
         }
 
-        avail = new Availability(start, end, listingID, getPricePerDay());
+        avail = new Availability(start, end, listing.getListingID(), getPricePerDay(listing));
 
         res = insertAvailability(avail);
         if (res == 0)
@@ -2617,7 +2630,7 @@ public class Driver
             System.out.println("Availability added!");
     }
 
-    private void getYearFromUser(String listingID) throws IOException
+    private void getYearFromUser(Listing listing) throws IOException
     {
         Boolean cond = false;
         String cmd;
@@ -2648,7 +2661,7 @@ public class Driver
             }
         }
 
-        avail = new Availability (LocalDate.of(year, 1, 1), LocalDate.of(year, 12, 31), listingID, getPricePerDay());
+        avail = new Availability (LocalDate.of(year, 1, 1), LocalDate.of(year, 12, 31), listing.getListingID(), getPricePerDay(listing));
         
         res = insertAvailability(avail);
         if (res == 0)
@@ -2678,10 +2691,18 @@ public class Driver
         return 1;
     }
 
-    private Float getPricePerDay() throws IOException
+    private Float getPricePerDay(Listing listing) throws IOException
     {
         Boolean cond = false;
         Float pricePerDay = (float) 0;
+        Float suggestedPrice = HostToolkit.suggestPrice(listing.getListingType(), listing.getMaxGuests(), listing.getAmenities());
+
+        System.out.println(Globals.APP_NAME + " suggests the following price given your listing type and amenities:");
+        System.out.println(String.format("$%.2f per night", suggestedPrice));
+        System.out.println("Would you like to use the suggested price? (y/n)");
+
+        if (getYesNo())
+            return suggestedPrice;
 
         System.out.println("Whats the price you want to set per day?");
 
@@ -2700,6 +2721,7 @@ public class Driver
 
         return pricePerDay;
     }
+
 
     private Location createLocationRoutine(Float longitude, Float latitude) throws IOException
     {
@@ -2813,11 +2835,7 @@ public class Driver
             return listings;
         }
 
-        for (Listing l : listings)
-        {
-            System.out.println(Globals.TERMINAL_DIVIDER);
-            System.out.println(l.toString());
-        }
+        printListings(listings);
 
         return listings;
     }
@@ -2846,9 +2864,10 @@ public class Driver
         return loggedUser != null;
     }
 
-    private ArrayList<AmenityType> getAmenities() throws IOException
+    private ArrayList<AmenityType> getAmenities(Boolean suggest) throws IOException
     {
         Boolean cond = false;
+        Quartet<AmenityType, AmenityType, AmenityType, Float> suggested;
         ArrayList<AmenityType> amenities = new ArrayList<AmenityType>();
         Boolean[] added = new Boolean[AmenityType.values().length]; 
         Arrays.fill(added, Boolean.FALSE);
@@ -3043,7 +3062,27 @@ public class Driver
                 
                 case "quit":
                 case "q":
-                    cond = true;
+                    if (suggest)
+                    {
+                        suggested = HostToolkit.suggestAmenities(amenities);
+
+                        if (suggested != null)
+                        {
+                            System.out.println("Here are the top 3 amenities that would lead to the highest profit:");
+                            System.out.println(String.format("1. %s", suggested.getValue0().toString()));
+                            if (suggested.getValue1() != null)
+                                System.out.println(String.format("2. %s", suggested.getValue1().toString()));
+                            if (suggested.getValue2() != null)
+                                System.out.println(String.format("3. %s", suggested.getValue2().toString()));
+                            System.out.println(String.format("Adding these amenities would lead to a %.2f%% increase!", suggested.getValue3() * 100));
+                            System.out.println("Would you like to go back and add those amenities? (y/n)");
+                            cond = !getYesNo();
+                        }
+                        else
+                            cond = true;
+                    }
+                    else
+                        cond = true;
                     break;
 
                 default:
