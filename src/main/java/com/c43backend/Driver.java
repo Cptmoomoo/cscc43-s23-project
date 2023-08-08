@@ -37,12 +37,14 @@ import resources.enums.UserType;
 import resources.exceptions.DuplicateKeyException;
 import resources.relations.Booking;
 import resources.utils.Globals;
+import resources.utils.ListingFilter;
 import resources.utils.PasswordHasher;
 
 public class Driver
 {
     private final DBConnectionService db;
     private final BufferedReader r;
+    private final ListingFilter lf;
 
     private final UserDAO userDAO;
     private final ListingDAO listingDAO;
@@ -76,6 +78,7 @@ public class Driver
         this.commentDAO = commentDAO;
         this.piDAO = piDAO;
         r = new BufferedReader(new InputStreamReader(System.in));
+        lf = new ListingFilter(availabilityDAO);
     }
 
     public void run() throws IOException
@@ -380,11 +383,159 @@ public class Driver
                     break;
                 default:
                     System.out.println("Invalid option!");
-                    break;
+                    continue;
             }
+
+            if (listings.isEmpty())
+                continue;
+            
+            System.out.println("Would you like to filter your results? (y/n)");
+
+            if (!getYesNo())
+                continue;
+            
+            listings = filterResults(listings);
         }
 
         return listings;
+    }
+
+    private ArrayList<Listing> filterResults(ArrayList<Listing> listings) throws IOException
+    {
+        System.out.println("How would you like to filter your results?");
+        printFilterOptions();
+        System.out.println("Type q to quit.");
+
+        Pair<Float, Float> priceRange;
+        Pair<LocalDate, LocalDate> dateRange;
+
+        while (true)
+        {
+            switch (r.readLine().trim().toLowerCase())
+            {
+                case "s":
+                    lf.sortListByPrice(listings);
+                    break;
+                case "pc":
+                    listings = lf.filterByPostalCode(listings, setPostalCode());
+                    break;
+                case "a":
+                    listings = lf.filterByAmenities(listings, getAmenities());
+                    break;
+                case "pr":
+                    priceRange = getPriceRange();
+                    listings = lf.filterByPriceRange(listings, priceRange.getValue0(), priceRange.getValue1());
+                    break;
+                case "d":
+                    dateRange = getDateRange();
+                    listings = lf.filterByDate(listings, dateRange.getValue0(), dateRange.getValue1());
+                    break;
+                case "q":
+                    return listings;
+                default:
+                    System.out.println("Invalid option!");
+                    continue;
+            }
+        }
+    }
+
+    private Pair<Float, Float> getPriceRange() throws IOException
+    {
+        Float max = (float) 0;
+        Float min = (float) 0;
+        Boolean cond = false;
+    
+        while (!cond)
+        {
+            System.out.println("What is your max price?");
+
+            try
+            {
+                max = Float.parseFloat(r.readLine().trim());
+                cond = true;
+            }
+            catch (NumberFormatException e)
+            {
+                System.out.println("Invalid number");
+            }
+        }
+
+        cond = false;
+
+        while (!cond)
+        {
+            System.out.println("What is your min price?");
+
+            try
+            {
+                min = Float.parseFloat(r.readLine().trim());
+                cond = true;
+            }
+            catch (NumberFormatException e)
+            {
+                System.out.println("Invalid number");
+            }
+        }
+
+        return new Pair<Float,Float>(max, min);
+    }
+
+    private Pair<LocalDate, LocalDate> getDateRange() throws IOException
+    {
+        LocalDate start = null;
+        LocalDate end = null;
+        Boolean cond = false;
+
+        while (!cond)
+        {
+            System.out.println("Enter the starting date you want your listing to be available in the format (YYYY-MM-DD)");
+    
+            try
+            {
+                start = LocalDate.parse(r.readLine().trim());
+                cond = true;
+            }
+            catch (DateTimeParseException e)
+            {
+                System.out.println("Invalid date format!");
+            }
+        }
+
+        
+        cond = false;
+
+        while (!cond)
+        {
+            System.out.println("Enter the ending date you want your listing to be available in the format (YYYY-MM-DD)");
+
+            try
+            {
+                end = LocalDate.parse(r.readLine().trim());
+
+                if (start.compareTo(end) >= 0)
+                    System.out.println("End date cannot by on or before the start date!");
+                else
+                    cond = true;
+                
+            }
+            catch (DateTimeParseException e)
+            {
+                System.out.println("Invalid month format!");
+            }
+        }
+
+        return new Pair<LocalDate,LocalDate>(start, end);
+    }
+
+    private void printFilterOptions()
+    {
+        System.out.println(Globals.TERMINAL_DIVIDER);
+        System.out.println("sort-price (s): sorts listings ascending by price.");
+        System.out.println("postal-code (pc): only gets listings that are near the supplied postal code.");
+        System.out.println("amenities (a): only gets listings with the desired amenities.");
+        System.out.println("price-range (pr): only gets listings that are within the price range.");
+        System.out.println("availability-date (d): only gets listings that are available on the given dates.");
+        System.out.println(Globals.TERMINAL_DIVIDER);
     }
 
     private ArrayList<Listing> searchByCoordinates() throws IOException
@@ -2490,7 +2641,7 @@ public class Driver
     {
         try
         {
-            if (availabilityDAO.isAvailible(avail.getStartDate(), avail.getListingID()))
+            if (availabilityDAO.isAvailible(avail.getStartDate(), avail.getEndDate(), avail.getListingID()))
                 return 0;
             else if (bookingDAO.isBookedUnderDate(avail.getListingID(), avail))
                 return -1;

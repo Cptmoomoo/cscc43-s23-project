@@ -100,12 +100,13 @@ public class AvailabilityDAO extends DAO
         return availabilities;
     }
 
-    public Boolean isAvailible(LocalDate date, String listingID)
+    public Boolean isAvailible(LocalDate startDate, LocalDate endDate, String listingID)
     {
-        Date day = Date.valueOf(date);
-        db.setPStatement("SELECT * FROM availability WHERE Start_date <= ? AND End_date > ?");
-        db.setPStatementDate(1, day);
-        db.setPStatementDate(2, day);
+        db.setPStatement("SELECT * FROM availability WHERE Listing_id = ? AND (Start_date <= ? AND End_date >= ?)");
+
+        db.setPStatementString(1, listingID);
+        db.setPStatementDate(2, Date.valueOf(startDate));
+        db.setPStatementDate(3, Date.valueOf(endDate));
 
         if (!db.executeSetQueryReturnN(1, table))
             throw new RunQueryException();    
