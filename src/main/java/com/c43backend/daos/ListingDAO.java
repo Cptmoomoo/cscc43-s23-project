@@ -282,7 +282,7 @@ public class ListingDAO extends DAO
         Location location;
 
         db.setPStatement("SELECT listings.Listing_id, listings.Listing_type, listings.Suite_number, listings.Max_guests, listings.Is_active, listings.Time_listed " +
-                         "FROM belongs_to NATURAL JOIN locations WHERE SUBSTRING(locations.Postal_code, 1, 3) = ?");
+                         "FROM (belongs_to NATURAL JOIN locations) NATURAL JOIN listings WHERE SUBSTRING(locations.Postal_code, 1, 3) = ?");
         db.setPStatementString(1, postal_code.substring(0, 4));
 
         if (!db.executeSetQueryReturnN(n, listingTable))
