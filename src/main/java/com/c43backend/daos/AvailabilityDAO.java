@@ -164,68 +164,67 @@ public class AvailabilityDAO extends DAO
 
     // we would call isOverlapping() before using this so that the date range will not overlap with any existing availability
     // so we can just insert and merge with the back to back dates which can only be at most 2
-    public Boolean InsertAndMergeAvailability(Availability merge_avali) throws DuplicateKeyException
+    public Boolean InsertAndMergeAvailability(Availability merge_avail) throws DuplicateKeyException
     {
-        if (isOverlapping(merge_avali.getListingID(), merge_avali.getStartDate(), merge_avali.getEndDate()))
+        if (isOverlapping(merge_avail.getListingID(), merge_avail.getStartDate(), merge_avail.getEndDate()))
             return false;
 
         Availability date_before;
         Availability date_after;
 
         db.setPStatement("SELECT * FROM bookings WHERE Listing_id=? AND DATE_ADD(End_date, INTERVAL 1 DAY) = ?");
-        db.setPStatementString(1, merge_avali.getListingID());
-        db.setPStatementDate(2, Date.valueOf(merge_avali.getStartDate()));
+        db.setPStatementString(1, merge_avail.getListingID());
+        db.setPStatementDate(2, Date.valueOf(merge_avail.getStartDate()));
 
         if (db.executeSetQueryReturnN(1, table)) {
             date_before = getAvailabilityFromTable(0);
 
-            merge_avali.updateStartDate(date_before.getStartDate());
-            merge_avali.updatePrice(Math.max(merge_avali.getPricePerDay(), date_before.getPricePerDay()));
+            merge_avail.updateStartDate(date_before.getStartDate());
+            merge_avail.updatePrice(Math.max(merge_avail.getPricePerDay(), date_before.getPricePerDay()));
 
             deleteAvailability(date_before);
         }
         table.clearTable();
 
         db.setPStatement("SELECT * FROM bookings WHERE Listing_id=? AND DATE_SUB(Start_date, INTERVAL 1 DAY) = ?");
-        db.setPStatementString(1, merge_avali.getListingID());
-        db.setPStatementDate(2, Date.valueOf(merge_avali.getEndDate()));
+        db.setPStatementString(1, merge_avail.getListingID());
+        db.setPStatementDate(2, Date.valueOf(merge_avail.getEndDate()));
 
         if (db.executeSetQueryReturnN(1, table)) {
             date_after = getAvailabilityFromTable(0);
 
-            merge_avali.updateEndDate(date_after.getEndDate());
-            merge_avali.updatePrice(Math.max(merge_avali.getPricePerDay(), date_after.getPricePerDay()));
+            merge_avail.updateEndDate(date_after.getEndDate());
+            merge_avail.updatePrice(Math.max(merge_avail.getPricePerDay(), date_after.getPricePerDay()));
 
             deleteAvailability(date_after);
         }
         table.clearTable();
 
-        return insertAvailability(merge_avali);
+        return insertAvailability(merge_avail);
     }
 
-    // When calling this we are under the asumption that split_avalid covers all of startDate to endDate
+    // When calling this we are under the asumption that split_availd covers all of startDate to endDate
     //
     // Example: startDate = Jan 5, endDate = Jan 7 (Jan 5 to Jan 7)
-    //          split_avali.StartDate = Jan 1      (Jan 1 to Jan 9)
-    //          split_avali.EndDate = Jan 9
+    //          split_avail.StartDate = Jan 1      (Jan 1 to Jan 9)
+    //          split_avail.EndDate = Jan 9
     //          
-    //          we delete split_avalid and create two more avalis: (Jan 1 to Jan 4) and (Jan 8 to Jan 9)
-    //          we can then perform any operation on (Jan 5 to Jan 7) 
-                
-    public Boolean splitAvailability(LocalDate startDate, LocalDate endDate, Availability split_avali) throws DuplicateKeyException
+    //          we delete split_availd and create two more avails: (Jan 1 to Jan 4) and (Jan 8 to Jan 9)
+    //          we can then perform any operation on (Jan 5 to Jan 7)   
+    public Boolean splitAvailability(LocalDate startDate, LocalDate endDate, Availability split_avail) throws DuplicateKeyException
     {
-        Availability date_before = new Availability(split_avali.getStartDate(), startDate.minusDays(1), split_avali.getListingID(), split_avali.getPricePerDay());
-        Availability date_after = new Availability(endDate.plusDays(1), split_avali.getEndDate(), split_avali.getListingID(), split_avali.getPricePerDay());
-
-        if (!deleteAvailability(split_avali))
+        if (!deleteAvailability(split_avail))
             return false;
 
-        if (!insertAvailability(date_before))
-            return false;
+        if (split_avail.getStartDate().isBefore(startDate)) {
+            if (!insertAvailability(new Availability(split_avail.getStartDate(), startDate.minusDays(1), split_avail.getListingID(), split_avail.getPricePerDay())))
+                return false;
+        }
 
-        if (!insertAvailability(date_after))
-            return false;
-
+        if (split_avail.getEndDate().isAfter(endDate)) {
+            if (!insertAvailability(new Availability(endDate.plusDays(1), split_avail.getEndDate(), split_avail.getListingID(), split_avail.getPricePerDay())))
+                return false;
+        }
         return true;
     }
 

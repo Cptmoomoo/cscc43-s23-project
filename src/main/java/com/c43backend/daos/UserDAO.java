@@ -121,8 +121,21 @@ public class UserDAO extends DAO
 
     public User getHostByBooking(Booking booking)
     {
-        // TODO 
-        return null;
+        User user;
+        db.setPStatement("SELECT users.Username, users.Password, users.SIN, users.Occupation, users.Date_of_birth, users.First_name, users.Last_name, users.User_type " +
+                         "FROM (host_of INNER JOIN bookings ON bookings.Booking_id=?) NATURAL JOIN users");
+        db.setPStatementString(1, booking.getBookingID());
+
+        if (!db.executeSetQueryReturnN(1, table))
+            throw new RunQueryException();    
+
+        if (table.isEmpty())
+            return null;
+
+        user = getUserFromTable(0);
+        table.clearTable();
+
+        return user;
     }
 
     public User getUser(String username)
