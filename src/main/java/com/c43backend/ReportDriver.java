@@ -196,7 +196,7 @@ public class ReportDriver
 
     private void rankHostsRoutine() throws IOException
     {
-        ArrayList<Pair<String, Integer>> hosts;
+        ArrayList<Pair<String, Long>> hosts;
         String country;
         String city;
 
@@ -225,7 +225,7 @@ public class ReportDriver
 
     private void rankRentersRoutine() throws IOException
     {
-        ArrayList<Pair<String, Integer>> renters;
+        ArrayList<Pair<String, Long>> renters;
         Pair<LocalDate, LocalDate> dates;
         LocalDate start;
         LocalDate end;
@@ -261,7 +261,7 @@ public class ReportDriver
 
     private void rankCancelRoutine() throws IOException
     {
-        ArrayList<Pair<String, Integer>> users;
+        ArrayList<Pair<String, Long>> users;
         Integer year = 0;
 
         System.out.println("Getting highest cancellers.");
@@ -307,9 +307,9 @@ public class ReportDriver
             System.out.println(s);
     }
 
-    private void printAllPairList(ArrayList<Pair<String, Integer>> list)
+    private void printAllPairList(ArrayList<Pair<String, Long>> list)
     {
-        for (Pair<String, Integer> p : list)
+        for (Pair<String, Long> p : list)
             System.out.println(String.format("%s: %d", p.getValue0(), p.getValue1()));
     }
 

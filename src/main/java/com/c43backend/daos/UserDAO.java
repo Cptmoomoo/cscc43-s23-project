@@ -41,7 +41,7 @@ public class UserDAO extends DAO
         {
             {
                 add(new Triplet<String, Integer, Class<?>>("ID", 0, String.class));
-                add(new Triplet<String, Integer, Class<?>>("Count", 1, Integer.class));
+                add(new Triplet<String, Integer, Class<?>>("Count", 1, Long.class));
             }
         };
     private Table reportTable;
@@ -171,15 +171,16 @@ public class UserDAO extends DAO
         return user;
     }
 
-    public ArrayList<Pair<String, Integer>> rankUsersByMostCancellationsByYear(Integer n, Integer year) {
+    public ArrayList<Pair<String, Long>> rankUsersByMostCancellationsByYear(Integer n, Integer year) {
         // TODO
         // im pretty sure this query doesnt work, it definitely doesnt return the right columns.
         // but this function should return a 'n' size list of users, in the order of most cancellations.
         // Returns a list of Pairs, user + number of cancellations
-        ArrayList<Pair<String, Integer>> report = new ArrayList<Pair<String, Integer>>();
+        ArrayList<Pair<String, Long>> report = new ArrayList<Pair<String, Long>>();
 
         db.setPStatement("SELECT Cancelled_by as Username, COUNT(*) as Count FROM bookings WHERE Cancelled_by IS NOT NULL AND YEAR(Start_date)=? OR YEAR(End_date)=? GROUP BY Username ORDER BY Count DESC");
         db.setPStatementInt(1, year);
+        db.setPStatementInt(2, year);
 
         if (!db.executeSetQueryReturnN(n, reportTable))
             throw new RunQueryException();
@@ -189,7 +190,7 @@ public class UserDAO extends DAO
 
         for (int i = 0; i < reportTable.size(); i++)
         {
-            report.add(new Pair<String, Integer>((String) reportTable.extractValueFromRowByName(i, "ID"), (Integer) reportTable.extractValueFromRowByName(i, "Count")));
+            report.add(new Pair<String, Long>((String) reportTable.extractValueFromRowByName(i, "ID"), (Long) reportTable.extractValueFromRowByName(i, "Count")));
         }
 
         reportTable.clearTable();
@@ -197,14 +198,14 @@ public class UserDAO extends DAO
         return report;
     }
 
-    public ArrayList<Pair<String, Integer>> rankHostsByListingNumber(String country, Integer n)
+    public ArrayList<Pair<String, Long>> rankHostsByListingNumber(String country, Integer n)
     {
         /*
          * TODO: get the n hosts that have the most listings in this country.
          * Order descending!!!
          * Returns a list of Pairs, user + number of listings
          */
-        ArrayList<Pair<String, Integer>> report = new ArrayList<Pair<String, Integer>>();
+        ArrayList<Pair<String, Long>> report = new ArrayList<Pair<String, Long>>();
 
         db.setPStatement("SELECT host_of.Username, COUNT(*) as Count FROM (host_of NATURAL JOIN belongs_to NATURAL JOIN locations) WHERE locations.Country=? GROUP BY host_of.Username ORDER BY Count DESC");
         db.setPStatementString(1, country);
@@ -217,7 +218,7 @@ public class UserDAO extends DAO
 
         for (int i = 0; i < reportTable.size(); i++)
         {
-            report.add(new Pair<String, Integer>((String) reportTable.extractValueFromRowByName(i, "ID"), (Integer) reportTable.extractValueFromRowByName(i, "Count")));
+            report.add(new Pair<String, Long>((String) reportTable.extractValueFromRowByName(i, "ID"), (Long) reportTable.extractValueFromRowByName(i, "Count")));
         }
 
         reportTable.clearTable();
@@ -225,14 +226,14 @@ public class UserDAO extends DAO
         return report;
     }
 
-    public ArrayList<Pair<String, Integer>> rankHostsByListingNumber(String country, String city, Integer n)
+    public ArrayList<Pair<String, Long>> rankHostsByListingNumber(String country, String city, Integer n)
     {
         /*
          * TODO: get the n hosts that have the most listings in this country + city
          * Order descending!!!
          * Returns a list of Pairs, user + number of listings
          */
-        ArrayList<Pair<String, Integer>> report = new ArrayList<Pair<String, Integer>>();
+        ArrayList<Pair<String, Long>> report = new ArrayList<Pair<String, Long>>();
 
         db.setPStatement("SELECT host_of.Username, COUNT(*) as Count FROM (host_of NATURAL JOIN belongs_to NATURAL JOIN locations) WHERE locations.Country=? AND locations.City=? GROUP BY host_of.Username ORDER BY Count DESC");
         db.setPStatementString(1, country);
@@ -246,7 +247,7 @@ public class UserDAO extends DAO
 
         for (int i = 0; i < reportTable.size(); i++)
         {
-            report.add(new Pair<String, Integer>((String) reportTable.extractValueFromRowByName(i, "ID"), (Integer) reportTable.extractValueFromRowByName(i, "Count")));
+            report.add(new Pair<String, Long>((String) reportTable.extractValueFromRowByName(i, "ID"), (Long) reportTable.extractValueFromRowByName(i, "Count")));
         }
 
         reportTable.clearTable();
@@ -299,7 +300,7 @@ public class UserDAO extends DAO
         return report;
     }
 
-    public ArrayList<Pair<String, Integer>> rankRentersByBookingNumbers(LocalDate start, LocalDate end, Integer n)
+    public ArrayList<Pair<String, Long>> rankRentersByBookingNumbers(LocalDate start, LocalDate end, Integer n)
     {
         /*
          * TODO: get the n users that have the highest number of bookings, within the start and end date.
@@ -307,7 +308,7 @@ public class UserDAO extends DAO
          * Only return users with greater than 1 booking!!
          * Returns a list of Pairs, user + number of bookings
          */
-        ArrayList<Pair<String, Integer>> report = new ArrayList<Pair<String, Integer>>();
+        ArrayList<Pair<String, Long>> report = new ArrayList<Pair<String, Long>>();
 
         db.setPStatement("SELECT Renter_id, COUNT(*) as Count FROM bookings WHERE Start_date >= ? AND End_date <= ? GROUP BY Renter_id ORDER BY Count DESC");
         db.setPStatementDate(1, Date.valueOf(start));
@@ -319,14 +320,14 @@ public class UserDAO extends DAO
         if (reportTable.isEmpty())
             return report;
 
-        int number_of_bookings;
+        Long number_of_bookings;
         for (int i = 0; i < reportTable.size(); i++)
         {
-            number_of_bookings = (Integer) reportTable.extractValueFromRowByName(i, "Count");
+            number_of_bookings = (Long) reportTable.extractValueFromRowByName(i, "Count");
             if (number_of_bookings <= 1)
                 break;
             
-            report.add(new Pair<String, Integer>((String) reportTable.extractValueFromRowByName(i, "ID"), number_of_bookings));
+            report.add(new Pair<String, Long>((String) reportTable.extractValueFromRowByName(i, "ID"), number_of_bookings));
         }
 
         reportTable.clearTable();
@@ -334,7 +335,7 @@ public class UserDAO extends DAO
         return report;
     }
 
-    public ArrayList<Pair<String, Integer>> rankRentersByBookingNumbers(LocalDate start, LocalDate end, String country, String city, Integer n)
+    public ArrayList<Pair<String, Long>> rankRentersByBookingNumbers(LocalDate start, LocalDate end, String country, String city, Integer n)
     {
         /*
          * TODO: get the n users that have the highest number of bookings, within the start and end date, and within the country + city
@@ -342,7 +343,7 @@ public class UserDAO extends DAO
          * Only return users with greater than 1 booking!!
          * Returns a list of Pairs, user + number of bookings
          */
-        ArrayList<Pair<String, Integer>> report = new ArrayList<Pair<String, Integer>>();
+        ArrayList<Pair<String, Long>> report = new ArrayList<Pair<String, Long>>();
 
         db.setPStatement("SELECT bookings.Renter_id, COUNT(*) as Count FROM (bookings NATURAL JOIN belongs_to NATURAL JOIN locations) " +
                          "WHERE locations.Country=? AND locations.City=? AND bookings.Start_date >= ? AND bookings.End_date <= ? GROUP BY bookings.Renter_id ORDER BY Count DESC");
@@ -358,14 +359,14 @@ public class UserDAO extends DAO
         if (reportTable.isEmpty())
             return report;
 
-        int number_of_bookings;
+        Long number_of_bookings;
         for (int i = 0; i < reportTable.size(); i++)
         {
-            number_of_bookings = (Integer) reportTable.extractValueFromRowByName(i, "Count");
+            number_of_bookings = (Long) reportTable.extractValueFromRowByName(i, "Count");
             if (number_of_bookings <= 1)
                 break;
             
-            report.add(new Pair<String, Integer>((String) reportTable.extractValueFromRowByName(i, "ID"), number_of_bookings));
+            report.add(new Pair<String, Long>((String) reportTable.extractValueFromRowByName(i, "ID"), number_of_bookings));
         }
 
         reportTable.clearTable();
