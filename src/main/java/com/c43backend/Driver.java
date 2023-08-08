@@ -9,6 +9,7 @@ import java.time.format.DateTimeParseException;
 import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.regex.Pattern;
 
 import org.javatuples.Pair;
 
@@ -158,6 +159,7 @@ public class Driver
         System.out.println("logout/lo: logout and return to the main menu.");
         System.out.println("listings: return a list of your current active listings.");
         System.out.println("create-listing: create a listing!");
+        System.out.println("search: enter the search menu.");
         System.out.println("search-host: [hostUsername] [n] search for listings by a given host. If hostUsername is not provided it will prompt you to for it.");
         System.out.println(Globals.TERMINAL_INDENT + "If n is given it will return n listings maximum, defaults to 10.");
         System.out.println(Globals.TERMINAL_INDENT + "If n is given without the hostUsername, must be input as n=x. (ex. search-host n=5)");
@@ -174,6 +176,7 @@ public class Driver
         System.out.println("quit/q: quits the application.");
         System.out.println("help/h: displays this help message.");
         System.out.println("logout/lo: logout and return to the main menu.");
+        System.out.println("search: enter the search menu.");
         System.out.println("search-host: [hostUsername] [n] search for listings by a given host. If hostUsername is not provided it will prompt you to for it.");
         System.out.println(Globals.TERMINAL_INDENT + "If n is given it will return n listings maximum, defaults to 10.");
         System.out.println(Globals.TERMINAL_INDENT + "If n is given without the hostUsername, must be input as n=x. (ex. search-host n=5)");
@@ -347,6 +350,11 @@ public class Driver
 
             }
         }
+    }
+
+    private void searchMenu() throws IOException
+    {
+        System.out.println("What would you like to search by?");
     }
 
     private void updateAvailabilityRoutine() throws IOException
@@ -2426,9 +2434,22 @@ public class Driver
 
     private String setPostalCode() throws IOException
     {
-        System.out.println("What is the postal/zip code?");
+        Boolean cond = false;
+        String code = "";
 
-        return r.readLine().trim().toUpperCase();
+        System.out.println("What is the postal code?");
+        System.out.println("format must be A1A 1A1 or A1A1A1");
+
+        while (!cond)
+        {
+            code = r.readLine().trim().toUpperCase();
+            if (!code.matches(Globals.POSTAL_CODE_REGEX))
+                System.out.println("Invalid postal code format!");
+            else
+                cond = true;
+        }
+
+        return code;
     }
 
     private void searchByHost(String username, Integer n) throws IOException
@@ -2662,6 +2683,18 @@ public class Driver
                     else
                         System.out.println("ACCESSIBLE_BATHROOM already added!");
                     break;
+
+                case "wifi":
+                case "w":
+                    if (!added[14])
+                    {
+                        amenities.add(AmenityType.WIFI);
+                        System.out.println("WIFI added!");
+                        added[14] = true;
+                    }
+                    else
+                        System.out.println("WIFI already added!");
+                    break;
                 
                 case "quit":
                 case "q":
@@ -2680,6 +2713,21 @@ public class Driver
     private void printListOfAmenities()
     {
         System.out.println("Here are the list of amenities you can add:");
+        System.out.println("Pool (p): your listing has a pool.");
+        System.out.println("Wifi (w): your listing comes with wifi.");
+        System.out.println("Kitchen (k): your listing comes with a kitchen.");
+        System.out.println("Parking (park): your listing comes with parking.");
+        System.out.println("Jacuzzi (j): your listing comes with a jacuzzi.");
+        System.out.println("Air conditioning (ac): your listing comes with air conditioning.");
+        System.out.println("Heater (h): your listing comes with a heater.");
+        System.out.println("Pets allowed (pet/pets): your listing allows pets.");
+        System.out.println("Washer/Dryer (wd): your listing comes with a washer and a dryer.");
+        System.out.println("Kitchenware (kw): your listing comes with kitchenware.");
+        System.out.println("Breakfast (b): your listing comes with breakfast.");
+        System.out.println("Step-free entrance (sf/step-free): [Acessibility] your listing comes with a step free entrance.");
+        System.out.println("Wide entrance (we): [Acessibility] your listing comes with a wide entrance.");
+        System.out.println("Wide entrance (wh): [Acessibility] your listing comes with wide hallways.");
+        System.out.println("Accessible washroom (ab): [Acessibility] your listing comes with an accessible washroom.");
     }
 
 }
