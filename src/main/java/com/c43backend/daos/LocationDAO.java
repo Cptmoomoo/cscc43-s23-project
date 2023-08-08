@@ -112,6 +112,39 @@ public class LocationDAO extends DAO
         return location;
     }
 
+    public Float getLongitudeByListing(String listingID)
+    {
+        db.setPStatement("SELECT locations.Longitude FROM locations NATURAL JOIN (listings NATURAL JOIN belongs_to) WHERE Listing_id=?");
+        db.setPStatementString(1, listingID);
+
+        if (!db.executeSetQueryReturnN(1, table))
+            throw new RunQueryException();
+
+        if (table.isEmpty())
+            return null;
+
+        Float longitude = (Float) table.extractValueFromRowByName(0, "longitude");
+        table.clearTable();
+
+        return longitude;
+    }
+
+    public Float getLatitudeByListing(String listingID)
+    {
+        db.setPStatement("SELECT locations.Latitude FROM locations NATURAL JOIN (listings NATURAL JOIN belongs_to) WHERE Listing_id=?");
+        db.setPStatementString(1, listingID);
+
+        if (!db.executeSetQueryReturnN(1, table))
+            throw new RunQueryException();
+
+        if (table.isEmpty())
+            return null;
+
+        Float longitude = (Float) table.extractValueFromRowByName(0, "latitude");
+        table.clearTable();
+
+        return longitude;
+    }
 
     private Location getLocationFromTable(Integer rowNum)
     {
