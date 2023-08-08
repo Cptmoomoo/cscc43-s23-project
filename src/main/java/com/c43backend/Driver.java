@@ -164,6 +164,7 @@ public class Driver
         System.out.println("update-user: update your user information.");
         System.out.println("show-bookings: get a list of your current bookings.");
         System.out.println("cancel-booking: cancel one of your bookings.");
+        System.out.println("update-avail: update the availabilities of your listings.");
         System.out.println(Globals.TERMINAL_DIVIDER);
         System.out.println("delete-account: permanently deletes your account!");
     }
