@@ -1562,7 +1562,7 @@ public class Driver
         PaymentInfo payInfo;
         
 
-        if ((avail = pickAvailDates(toBook)).getValue0() == null)
+        if ((avail = pickAvailDates(toBook)) == null)
             return false;
      
         System.out.println("Which payment method would you like to use?");
