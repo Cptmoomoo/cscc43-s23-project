@@ -249,10 +249,9 @@ public class ListingDAO extends DAO
         ArrayList<AmenityType> amenities;
         Location location;
 
-        db.setPStatement("SELECT listings.Listing_id, listings.Listing_type, listings.Suite_number, listings.Is_active, listings.Max_guests, listings.Price_per_day, listings.Time_listed, " +
-                         "FROM ((belongs_to NATURAL JOIN locations) NATURAL JOIN listings) WHERE " +
-                         "(111.111 * DEGREES(ACOS(LEAST(1.0, COS(RADIANS(locations.Latitude)) * COS(RADIANS(?)) * COS(RADIANS(locations.Longitude - ?)) + SIN(RADIANS(locations.Latitude)) * SIN(RADIANS(?)))))) <= ? " +
-                         "HAVING ");
+        db.setPStatement("SELECT listings.Listing_id, listings.Listing_type, listings.Suite_number, listings.Max_guests, listings.Is_active, listings.Time_listed " +
+                         "FROM (belongs_to NATURAL JOIN locations) NATURAL JOIN listings WHERE " +
+                         "111.111 * DEGREES(ACOS(LEAST(1.0, COS(RADIANS(locations.Latitude)) * COS(RADIANS(?)) * COS(RADIANS(locations.Longitude - ?)) + SIN(RADIANS(locations.Latitude)) * SIN(RADIANS(?))))) <= ? ");
         db.setPStatementFloat(1, latitude);
         db.setPStatementFloat(2, longitude);
         db.setPStatementFloat(3, latitude);
@@ -282,7 +281,7 @@ public class ListingDAO extends DAO
         ArrayList<AmenityType> amenities;
         Location location;
 
-        db.setPStatement("SELECT listings.Listing_id, listings.Listing_type, listings.Suite_number, listings.Is_active, listings.Max_guests, listings.Price_per_day, listings.Time_listed " +
+        db.setPStatement("SELECT listings.Listing_id, listings.Listing_type, listings.Suite_number, listings.Max_guests, listings.Is_active, listings.Time_listed " +
                          "FROM belongs_to NATURAL JOIN locations WHERE SUBSTRING(locations.Postal_code, 1, 3) = ?");
         db.setPStatementString(1, postal_code.substring(0, 4));
 
@@ -310,7 +309,7 @@ public class ListingDAO extends DAO
         ArrayList<AmenityType> amenities;
         Location location;
 
-        db.setPStatement("SELECT listings.Listing_id, listings.Listing_type, listings.Suite_number, listings.Is_active, listings.Max_guests, listings.Price_per_day, listings.Time_listed " +
+        db.setPStatement("SELECT listings.Listing_id, listings.Listing_type, listings.Suite_number, listings.Max_guests, listings.Is_active, listings.Time_listed " +
                          "FROM listings NATURAL JOIN availability WHERE (? BETWEEN availability.Start_Date AND availability.End_Date) " +
                                                                    "AND (? BETWEEN availability.End_Date AND availability.End_Date) ");
         db.setPStatementDate(1, Date.valueOf(start_date));
