@@ -5,6 +5,7 @@ import java.time.LocalDate;
 import java.sql.Date;
 import java.util.ArrayList;
 
+import org.javatuples.Pair;
 import org.javatuples.Triplet;
 
 import com.c43backend.dbconnectionservice.DBConnectionService;
@@ -157,12 +158,13 @@ public class UserDAO extends DAO
         return user;
     }
 
-    public ArrayList<User> rankUsersByMostCancellationsByYear(Integer n) {
+    public ArrayList<Pair<User, Integer>> rankUsersByMostCancellationsByYear(Integer n) {
         ArrayList<User> users = new ArrayList<User>();
 
         // TODO
         // im pretty sure this query doesnt work, it definitely doesnt return the right columns.
         // but this function should return a 'n' size list of users, in the order of most cancellations.
+        // Returns a list of Pairs, user + number of bookings
 
         db.setPStatement("SELECT bookings.Cancelled_by, COUNT(*) as count FROM bookings LEFT JOIN users ON bookings.Cancelled_by = users.Username GROUP BY bookings.Cancelled_by");
 
@@ -176,25 +178,27 @@ public class UserDAO extends DAO
 
         table.clearTable();
 
-        return users;
+        return new ArrayList<Pair<User, Integer>>();
     }
 
-    public ArrayList<User> rankHostsByListingNumber(String country, Integer n)
+    public ArrayList<Pair<User, Integer>> rankHostsByListingNumber(String country, Integer n)
     {
         /*
          * TODO: get the n hosts that have the most listings in this country.
          * Order descending!!!
+         * Returns a list of Pairs, user + number of bookings
          */
-        return new ArrayList<User>();
+        return new ArrayList<Pair<User, Integer>>();
     }
 
-    public ArrayList<User> rankHostsByListingNumber(String country, String city, Integer n)
+    public ArrayList<Pair<User, Integer>> rankHostsByListingNumber(String country, String city, Integer n)
     {
         /*
          * TODO: get the n hosts that have the most listings in this country + city
          * Order descending!!!
+         * Returns a list of Pairs, user + number of bookings
          */
-        return new ArrayList<User>();
+        return new ArrayList<Pair<User, Integer>>();
     }
 
     public ArrayList<User> getPotentialCommercial(String country, String city, Integer n)
@@ -206,24 +210,26 @@ public class UserDAO extends DAO
         return new ArrayList<User>();
     }
 
-    public ArrayList<User> rankRentersByBookingNumbers(LocalDate start, LocalDate end, Integer n)
+    public ArrayList<Pair<User, Integer>> rankRentersByBookingNumbers(LocalDate start, LocalDate end, Integer n)
     {
         /*
          * TODO: get the n users that have the highest number of bookings, within the start and end date.
          * ASSUMING: we only care if the start date of the booking is within the dates, ie. when the booking starts
          * Only return users with greater than 1 booking!!
+         * Returns a list of Pairs, user + number of bookings
          */
-        return new ArrayList<User>();
+        return new ArrayList<Pair<User, Integer>>();
     }
 
-    public ArrayList<User> rankRentersByBookingNumbers(LocalDate start, LocalDate end, String country, String city, Integer n)
+    public ArrayList<Pair<User, Integer>> rankRentersByBookingNumbers(LocalDate start, LocalDate end, String country, String city, Integer n)
     {
         /*
          * TODO: get the n users that have the highest number of bookings, within the start and end date, and within the country + city
          * ASSUMING: we only care if the start date of the booking is within the dates, ie. when the booking starts
          * Only return users with greater than 1 booking!!
+         * Returns a list of Pairs, user + number of bookings
          */
-        return new ArrayList<User>();
+        return new ArrayList<Pair<User, Integer>>();
     }
 
     private User getUserFromTable(Integer rowNum)
