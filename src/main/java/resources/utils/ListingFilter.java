@@ -20,9 +20,9 @@ public class ListingFilter
         this.aDAO = aDAO;
     }
 
-    public void sortListByPrice(ArrayList<Listing> listings)
+    public void sortListByPrice(ArrayList<Listing> listings, Boolean asc)
     {
-        Collections.sort(listings, sortbyPrice());
+        Collections.sort(listings, sortbyPrice(asc));
     }
 
     public ArrayList<Listing> filterByPostalCode(ArrayList<Listing> listings, String postalCode)
@@ -84,16 +84,26 @@ public class ListingFilter
         return filtered;
     }
 
-    private Comparator<Listing> sortbyPrice()
+    private Comparator<Listing> sortbyPrice(Boolean asc)
     {
-        return new Comparator<Listing>()
-        {
-            @Override
-            public int compare(Listing l1, Listing l2)
+        if (asc)
+            return new Comparator<Listing>()
+                {
+                    @Override
+                    public int compare(Listing l1, Listing l2)
+                    {
+                        return Float.compare(getAvgPriceOfListing(l2), getAvgPriceOfListing(l1));
+                    }
+                };
+        else
+            return new Comparator<Listing>()
             {
-                return Float.compare(getAvgPriceOfListing(l1), getAvgPriceOfListing(l2));
-            }
-        };
+                @Override
+                public int compare(Listing l1, Listing l2)
+                {
+                    return Float.compare(getAvgPriceOfListing(l1), getAvgPriceOfListing(l2));
+                }
+            };
     }
 
     private Float getAvgPriceOfListing(Listing l)
