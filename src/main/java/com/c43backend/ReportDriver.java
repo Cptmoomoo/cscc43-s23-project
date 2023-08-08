@@ -27,7 +27,9 @@ public class ReportDriver
         System.out.println("total-bookings: get the total number of bookings in a specific date range by country, city, and optionally postal code.");
         System.out.println("total-listings: get the total number of listings in a specific country, and optionally city, and optionally postal code.");
         System.out.println("check-potential-commercial (cpc): get the users within a country, city that own more than 10% of the listings in that country, city.");
-        System.out.println("rank-hosts: rank hosts by total number ");
+        System.out.println("rank-hosts: rank hosts by total number of listings by country and optionally by city.");
+        System.out.println("rank-renters: rank renters by total number of listings by date range, and optionally by country and city.");
+        System.out.println("rank-cancel: rank users by most cancellations.");
 
     }
 }

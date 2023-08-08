@@ -164,7 +164,7 @@ public class UserDAO extends DAO
         // TODO
         // im pretty sure this query doesnt work, it definitely doesnt return the right columns.
         // but this function should return a 'n' size list of users, in the order of most cancellations.
-        // Returns a list of Pairs, user + number of bookings
+        // Returns a list of Pairs, user + number of cancellations
 
         db.setPStatement("SELECT bookings.Cancelled_by, COUNT(*) as count FROM bookings LEFT JOIN users ON bookings.Cancelled_by = users.Username GROUP BY bookings.Cancelled_by");
 
@@ -186,7 +186,7 @@ public class UserDAO extends DAO
         /*
          * TODO: get the n hosts that have the most listings in this country.
          * Order descending!!!
-         * Returns a list of Pairs, user + number of bookings
+         * Returns a list of Pairs, user + number of listings
          */
         return new ArrayList<Pair<User, Integer>>();
     }
@@ -196,7 +196,7 @@ public class UserDAO extends DAO
         /*
          * TODO: get the n hosts that have the most listings in this country + city
          * Order descending!!!
-         * Returns a list of Pairs, user + number of bookings
+         * Returns a list of Pairs, user + number of listings
          */
         return new ArrayList<Pair<User, Integer>>();
     }
