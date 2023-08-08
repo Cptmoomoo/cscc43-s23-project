@@ -338,22 +338,54 @@ public class ListingDAO extends DAO
     public Integer getNumberOfListings(String country)
     {
         // TODO: get number of listings for this country
-        return 0;
+        db.setPStatement("SELECT listings.Listing_id, listings.Listing_type, listings.Suite_number, listings.Max_guests, listings.Is_active, listings.Time_listed " +
+                         "FROM (listings NATURAL JOIN belongs_to NATURAL JOIN locations) WHERE locations.Country=?");
+        db.setPStatementString(1, country);
+
+        if (!db.executeSetQueryReturnN(Globals.DEFAULT_N, listingTable))
+            throw new RunQueryException();
+
+        int number_of_listings = listingTable.size();
+        listingTable.clearTable();
+
+        return number_of_listings;
     }
 
     public Integer getNumberOfListings(String country, String city)
     {
         // TODO: get number of listings this country and city
         // function name is the same on purpose, just overriding
+        db.setPStatement("SELECT listings.Listing_id, listings.Listing_type, listings.Suite_number, listings.Max_guests, listings.Is_active, listings.Time_listed " +
+                         "FROM (listings NATURAL JOIN belongs_to NATURAL JOIN locations) WHERE locations.Country=? AND locations.City=?");
+        db.setPStatementString(1, country);
+        db.setPStatementString(2, city);
 
-        return 0;
+        if (!db.executeSetQueryReturnN(Globals.DEFAULT_N, listingTable))
+            throw new RunQueryException();
+
+        int number_of_listings = listingTable.size();
+        listingTable.clearTable();
+
+        return number_of_listings;
     }
 
     public Integer getNumberOfListings(String country, String city, String postalCode)
     {
         // TODO: get number of listings this country and city and postalCode
         // function name is the same on purpose, just overriding
-        return 0;
+        db.setPStatement("SELECT listings.Listing_id, listings.Listing_type, listings.Suite_number, listings.Max_guests, listings.Is_active, listings.Time_listed " +
+                         "FROM (listings NATURAL JOIN belongs_to NATURAL JOIN locations) WHERE locations.Country=? AND locations.City=? AND locations.postalCode=?");
+        db.setPStatementString(1, country);
+        db.setPStatementString(2, city);
+        db.setPStatementString(3, postalCode);
+
+        if (!db.executeSetQueryReturnN(Globals.DEFAULT_N, listingTable))
+            throw new RunQueryException();
+
+        int number_of_listings = listingTable.size();
+        listingTable.clearTable();
+
+        return number_of_listings;
     }
 
 
