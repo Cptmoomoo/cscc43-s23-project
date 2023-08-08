@@ -40,7 +40,7 @@ public class UserDAO extends DAO
     private static final ArrayList<Triplet<String, Integer, Class<?>>> reportMetaData = new ArrayList<Triplet<String, Integer, Class<?>>>()
         {
             {
-                add(new Triplet<String, Integer, Class<?>>("UserID", 0, String.class));
+                add(new Triplet<String, Integer, Class<?>>("ID", 0, String.class));
                 add(new Triplet<String, Integer, Class<?>>("Count", 1, Integer.class));
             }
         };
@@ -189,7 +189,7 @@ public class UserDAO extends DAO
 
         for (int i = 0; i < reportTable.size(); i++)
         {
-            report.add(new Pair<String, Integer>((String) reportTable.extractValueFromRowByName(i, "UserID"), (Integer) reportTable.extractValueFromRowByName(i, "Count")));
+            report.add(new Pair<String, Integer>((String) reportTable.extractValueFromRowByName(i, "ID"), (Integer) reportTable.extractValueFromRowByName(i, "Count")));
         }
 
         reportTable.clearTable();
@@ -217,7 +217,7 @@ public class UserDAO extends DAO
 
         for (int i = 0; i < reportTable.size(); i++)
         {
-            report.add(new Pair<String, Integer>((String) reportTable.extractValueFromRowByName(i, "UserID"), (Integer) reportTable.extractValueFromRowByName(i, "Count")));
+            report.add(new Pair<String, Integer>((String) reportTable.extractValueFromRowByName(i, "ID"), (Integer) reportTable.extractValueFromRowByName(i, "Count")));
         }
 
         reportTable.clearTable();
@@ -246,12 +246,28 @@ public class UserDAO extends DAO
 
         for (int i = 0; i < reportTable.size(); i++)
         {
-            report.add(new Pair<String, Integer>((String) reportTable.extractValueFromRowByName(i, "UserID"), (Integer) reportTable.extractValueFromRowByName(i, "Count")));
+            report.add(new Pair<String, Integer>((String) reportTable.extractValueFromRowByName(i, "ID"), (Integer) reportTable.extractValueFromRowByName(i, "Count")));
         }
 
         reportTable.clearTable();
 
         return report;
+    }
+
+    private Integer getTotalListings(String country, String city, Integer n)
+    {
+        db.setPStatement("SELECT host_of.Listing_id, 0 FROM (host_of NATURAL JOIN belongs_to NATURAL JOIN locations) " +
+                         "WHERE locations.Country=? AND locations.City=?");
+        db.setPStatementString(1, country);
+        db.setPStatementString(2, city);
+
+        if (!db.executeSetQueryReturnN(Globals.DEFAULT_N, reportTable))
+            throw new RunQueryException();
+
+        int total_listings = reportTable.size();
+        reportTable.clearTable();
+
+        return total_listings;
     }
 
     public ArrayList<String> getPotentialCommercial(String country, String city, Integer n)
@@ -260,29 +276,27 @@ public class UserDAO extends DAO
          * TODO: get the n hosts that within this city and country, has more than 10%
          * of the listings in that city and country.
          */
-        // ArrayList<Pair<String, Integer>> report = new ArrayList<Pair<String, Integer>>();
+        ArrayList<String> report = new ArrayList<String>();
 
-        // db.setPStatement("SELECT host_of.Username, COUNT(*) as Count FROM (host_of NATURAL JOIN belongs_to NATURAL JOIN locations) " +
-        //                  "WHERE locations.Country=? AND locations.City=? AND Count/SUM() GROUP BY host_of ORDER BY Count DESC");
-        // db.setPStatementString(1, country);
-        // db.setPStatementString(2, city);
+        db.setPStatement("SELECT host_of.Username, COUNT(*) as Count FROM (host_of NATURAL JOIN belongs_to NATURAL JOIN locations) " +
+                         "WHERE locations.Country=? AND locations.City=? AND Count / ? >= 0.1 GROUP BY host_of.Username ORDER BY Count DESC");
+        db.setPStatementString(1, country);
+        db.setPStatementString(2, city);
+        db.setPStatementInt(3, getTotalListings(country, city, n));
 
-        // if (!db.executeSetQueryReturnN(n, reportTable))
-        //     throw new RunQueryException();
+        if (!db.executeSetQueryReturnN(n, reportTable))
+            throw new RunQueryException();
 
-        // if (reportTable.isEmpty())
-        //     return report;
+        if (reportTable.isEmpty())
+            return report;
 
-        // for (int i = 0; i < reportTable.size(); i++)
-        // {
-        //     report.add(new Pair<String, Integer>((String) reportTable.extractValueFromRowByName(i, "UserID"), (Integer) reportTable.extractValueFromRowByName(i, "Count")));
-        // }
+        for (int i = 0; i < reportTable.size(); i++)
+        {
+            report.add((String) reportTable.extractValueFromRowByName(i, "ID"));
+        }
+        reportTable.clearTable();
 
-        // reportTable.clearTable();
-
-        // return report;
-
-        return new ArrayList<String>();
+        return report;
     }
 
     public ArrayList<Pair<String, Integer>> rankRentersByBookingNumbers(LocalDate start, LocalDate end, Integer n)
@@ -312,7 +326,7 @@ public class UserDAO extends DAO
             if (number_of_bookings <= 1)
                 break;
             
-            report.add(new Pair<String, Integer>((String) reportTable.extractValueFromRowByName(i, "UserID"), number_of_bookings));
+            report.add(new Pair<String, Integer>((String) reportTable.extractValueFromRowByName(i, "ID"), number_of_bookings));
         }
 
         reportTable.clearTable();
@@ -351,7 +365,7 @@ public class UserDAO extends DAO
             if (number_of_bookings <= 1)
                 break;
             
-            report.add(new Pair<String, Integer>((String) reportTable.extractValueFromRowByName(i, "UserID"), number_of_bookings));
+            report.add(new Pair<String, Integer>((String) reportTable.extractValueFromRowByName(i, "ID"), number_of_bookings));
         }
 
         reportTable.clearTable();
