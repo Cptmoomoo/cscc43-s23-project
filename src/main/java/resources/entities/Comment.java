@@ -35,6 +35,6 @@ public class Comment
     @Override
     public String toString()
     {
-        return String.format("(%s) %s\n%s", commentID, timestamp.toString(), text);
+        return String.format("[%s: %s]\n (%s) %s\n%s", type.toString(), userListingID, commentOwner, timestamp.toString(), text);
     }
 }

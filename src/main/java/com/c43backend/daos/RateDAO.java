@@ -49,7 +49,7 @@ public class RateDAO extends DAO
         this.listingNumCols = listingColumnMetaData.size();
         this.listingTable = new Table(listingNumCols, listingColumnMetaData);
         this.userNumCols = userColumnMetaData.size();
-        this.listingTable = new Table(userNumCols, userColumnMetaData);
+        this.userTable = new Table(userNumCols, userColumnMetaData);
     }
 
     public Boolean insertRateForListing(String username, String listing_id, Float rating) throws DuplicateKeyException

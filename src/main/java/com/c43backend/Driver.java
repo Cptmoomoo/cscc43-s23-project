@@ -36,6 +36,7 @@ import resources.enums.ListingType;
 import resources.enums.UserType;
 import resources.exceptions.DuplicateKeyException;
 import resources.relations.Booking;
+import resources.relations.Rating;
 import resources.utils.Globals;
 import resources.utils.HostToolkit;
 import resources.utils.ListingFilter;
@@ -171,8 +172,12 @@ public class Driver
         System.out.println("search: enter the search menu.");
         System.out.println("update-user: update your user information.");
         System.out.println("show-bookings: get a list of your current bookings.");
+        System.out.println("rate-booking: rate one of your bookings.");
         System.out.println("cancel-booking: cancel one of your bookings.");
         System.out.println("update-avail: update the availabilities of your listings.");
+        System.out.println("see-comments: see comments made about you.");
+        System.out.println("see-my-comments: see comments you made.");
+        System.out.println("see-ratings: see ratings made about you.");
         System.out.println(Globals.TERMINAL_DIVIDER);
         System.out.println("delete-account: permanently deletes your account!");
     }
@@ -187,7 +192,11 @@ public class Driver
         System.out.println("payment/payments: view/add/edit/delete your payment methods.");
         System.out.println("book: begin the booking process!");
         System.out.println("show-bookings: get a list of your current bookings.");
+        System.out.println("rate-booking: rate one of your bookings.");
         System.out.println("cancel-booking: cancel one of your bookings.");
+        System.out.println("see-comments: see comments made about you.");
+        System.out.println("see-my-comments: see comments you made.");
+        System.out.println("see-ratings: see ratings made about you.");
         System.out.println(Globals.TERMINAL_DIVIDER);
         System.out.println("delete-account: permanently deletes your account!");
     }
@@ -270,6 +279,18 @@ public class Driver
                     paymentMenu();
                     break;
 
+                case "see-comments":
+                    printAllComments(false);
+                    break;
+
+                case "see-my-comments":
+                    printAllComments(true);
+                    break;
+                
+                case "see-ratings":
+                    printAllRatings();
+                    break;
+
                 default:
                     System.out.println("Invalid command!");
                     System.out.println("Type h or help to see a list of commands.");
@@ -345,6 +366,18 @@ public class Driver
                     updateAvailabilityRoutine();
                     break;
 
+                case "see-comments":
+                    printAllComments(false);
+                    break;
+
+                case "see-my-comments":
+                    printAllComments(true);
+                    break;
+
+                case "see-ratings":
+                    printAllRatings();
+                    break;
+
 
                 default:
                     System.out.println("Invalid command!");
@@ -352,6 +385,62 @@ public class Driver
                     break;
 
             }
+        }
+    }
+
+    private void printAllRatings()
+    {
+        ArrayList<Rating> ratings = rateDAO.getRatingsByReviewee(loggedUser.getUsername());
+
+        if (ratings.isEmpty())
+        {
+            System.out.println("No ratings to display!");
+            return;
+        }
+
+        printRatings(ratings);
+    }
+
+    private void printAllComments(Boolean mine)
+    {
+        ArrayList<Comment> comments;
+
+        if (mine)
+        {
+            comments = commentDAO.getUserCommentsByReviewer(loggedUser.getUsername());
+            comments.addAll(commentDAO.getListingCommentsByReviewer(loggedUser.getUsername()));
+        }
+        else
+        {
+            comments = commentDAO.getUserCommentsByReviewee(loggedUser.getUsername());
+        }
+
+        if (comments.isEmpty())
+        {
+            System.out.println("No comments to display!");
+            return;
+        }
+
+        printComments(comments);
+    }
+
+    private void printComments(ArrayList<Comment> comments)
+    {
+        for (Comment c : comments)
+        {
+            System.out.println(Globals.TERMINAL_DIVIDER);
+            System.out.println(c.toString());
+            System.out.println(Globals.TERMINAL_DIVIDER);
+        }
+    }
+
+    private void printRatings(ArrayList<Rating> ratings)
+    {
+        for (Rating r : ratings)
+        {
+            System.out.println(Globals.TERMINAL_DIVIDER);
+            System.out.println(r.toString());
+            System.out.println(Globals.TERMINAL_DIVIDER);
         }
     }
 
@@ -365,7 +454,8 @@ public class Driver
             System.out.println("What would you like to search by?");
             printSearchOptions();
             System.out.println("Type q to quit when you are satisfied.");
-    
+            
+            System.out.print(Globals.TERMINAL_MARKER);
             cmds = parseCmd(r.readLine());
         
             switch (cmds.get(0))
@@ -382,6 +472,12 @@ public class Driver
                 case "d":
                     listings = searchByDates();
                     break;
+                case "sc":
+                    showListingComments(listings);
+                    continue;
+                case "sr":
+                    showListingRatings(listings);
+                    continue;
                 case "q":
                     return listings;
                 default:
@@ -401,6 +497,129 @@ public class Driver
         }
     }
 
+    private void showListingComments(ArrayList<Listing> listings) throws IOException
+    {
+        String cmd;
+        Integer idx;
+        Listing toList;
+        ArrayList<Comment> comments;
+
+        if (listings.isEmpty())
+        {
+            System.out.println("Search results empty!");
+            return;
+        }
+
+        while (true)
+        {
+            printListings(listings);
+            System.out.println("For which listing do you want to see the comments for?");
+            System.out.println("Type q to quit.");
+
+            cmd = r.readLine().trim();
+
+            if (cmd.equals("q"))
+                return;
+
+            try
+            {
+                idx = Integer.parseInt(cmd);
+
+                if (idx > listings.size() || idx <= 0)
+                {
+                    System.out.println("Not a valid index!");
+                    continue;
+                }
+                else
+                {
+                    toList = listings.get(idx - 1);
+                }
+                    
+            }
+            catch (NumberFormatException e)
+            {
+                System.out.println("Invalid number format!");
+                continue;
+            }
+
+            comments = commentDAO.getListingCommentsByListing(toList.getListingID());
+
+            if (comments.isEmpty())
+            {
+                System.out.println("No comments for this listing!");
+                continue;
+            }
+
+            printComments(comments);
+
+            System.out.println("Press enter key to continue...");
+            r.readLine();
+
+
+        }
+        
+    }
+
+    private void showListingRatings(ArrayList<Listing> listings) throws IOException
+    {
+        String cmd;
+        Integer idx;
+        Listing toList;
+        ArrayList<Rating> ratings;
+
+        if (listings.isEmpty())
+        {
+            System.out.println("Search results empty!");
+            return;
+        }
+
+        while (true)
+        {
+            printListings(listings);
+            System.out.println("For which listing do you want to see the comments for?");
+            System.out.println("Type q to quit.");
+
+            cmd = r.readLine().trim();
+
+            if (cmd.equals("q"))
+                return;
+
+            try
+            {
+                idx = Integer.parseInt(cmd);
+
+                if (idx > listings.size() || idx <= 0)
+                {
+                    System.out.println("Not a valid index!");
+                    continue;
+                }
+                else
+                {
+                    toList = listings.get(idx - 1);
+                }
+                    
+            }
+            catch (NumberFormatException e)
+            {
+                System.out.println("Invalid number format!");
+                continue;
+            }
+
+            ratings = rateDAO.getRatingsByListing(toList.getListingID());
+
+            if (ratings.isEmpty())
+            {
+                System.out.println("No ratings for this listing!");
+                continue;
+            }
+
+            printRatings(ratings);
+
+            System.out.println("Press enter key to continue...");
+            r.readLine();
+        }
+    }
+
     private ArrayList<Listing> filterResults(ArrayList<Listing> listings) throws IOException
     {
         Pair<Float, Float> priceRange;
@@ -411,7 +630,8 @@ public class Driver
             System.out.println("How would you like to filter your results?");
             printFilterOptions();
             System.out.println("Type q to quit.");
-    
+            
+            System.out.print(Globals.TERMINAL_MARKER);
             switch (r.readLine().trim().toLowerCase())
             {
                 case "sa":
@@ -680,6 +900,8 @@ public class Driver
         System.out.println("coordinates (c): search by longitude and latitude within a specified radius (KM).");
         System.out.println("postal-code (p): search by postal code, gets listings with the given postal code or nearby postal codes.");
         System.out.println("date-range (d): search for listings that are available within the selected date ranges.");
+        System.out.println("see-comments (sc): see the comments for a listing in your search result.");
+        System.out.println("see-ratings (sr): see the ratings for a listing in your search result.");
         System.out.println(Globals.TERMINAL_DIVIDER);
     }
 
