@@ -166,7 +166,7 @@ public class UserDAO extends DAO
         // but this function should return a 'n' size list of users, in the order of most cancellations.
         // Returns a list of Pairs, user + number of cancellations
 
-        db.setPStatement("SELECT bookings.Cancelled_by, COUNT(*) as count FROM bookings LEFT JOIN users ON bookings.Cancelled_by = users.Username GROUP BY bookings.Cancelled_by");
+        db.setPStatement("SELECT bookings.Cancelled_by, COUNT(*) as Count FROM bookings LEFT JOIN users ON bookings.Cancelled_by = users.Username GROUP BY bookings.Cancelled_by");
 
         if (!db.executeSetQueryReturnN(n, table))
             throw new RunQueryException();

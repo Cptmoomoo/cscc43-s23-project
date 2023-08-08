@@ -114,7 +114,8 @@ public class LocationDAO extends DAO
 
     public Float getLongitudeByListing(String listingID)
     {
-        db.setPStatement("SELECT locations.Longitude FROM locations NATURAL JOIN (listings NATURAL JOIN belongs_to) WHERE Listing_id=?");
+        db.setPStatement("SELECT locations.Longitude, locations.Latitude, locations.Postal_code, locations.Street_num, locations.Street_name, locations.City, locations.Country, locations.Province " +
+                         "FROM locations NATURAL JOIN (listings NATURAL JOIN belongs_to) WHERE Listing_id=?");
         db.setPStatementString(1, listingID);
 
         if (!db.executeSetQueryReturnN(1, table))
@@ -131,7 +132,8 @@ public class LocationDAO extends DAO
 
     public Float getLatitudeByListing(String listingID)
     {
-        db.setPStatement("SELECT locations.Latitude FROM locations NATURAL JOIN (listings NATURAL JOIN belongs_to) WHERE Listing_id=?");
+        db.setPStatement("SELECT locations.Longitude, locations.Latitude, locations.Postal_code, locations.Street_num, locations.Street_name, locations.City, locations.Country, locations.Province " +
+                         "FROM locations NATURAL JOIN (listings NATURAL JOIN belongs_to) WHERE Listing_id=?");
         db.setPStatementString(1, listingID);
 
         if (!db.executeSetQueryReturnN(1, table))
@@ -140,10 +142,10 @@ public class LocationDAO extends DAO
         if (table.isEmpty())
             return null;
 
-        Float longitude = (Float) table.extractValueFromRowByName(0, "latitude");
+        Float latitude = (Float) table.extractValueFromRowByName(0, "latitude");
         table.clearTable();
 
-        return longitude;
+        return latitude;
     }
 
     private Location getLocationFromTable(Integer rowNum)

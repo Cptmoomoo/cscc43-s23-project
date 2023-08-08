@@ -1,6 +1,7 @@
 package com.c43backend.daos;
 
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.sql.Date;
 import java.util.ArrayList;
 import java.util.UUID;
@@ -10,6 +11,7 @@ import java.time.temporal.ChronoUnit;
 import org.javatuples.Triplet;
 
 import com.c43backend.dbconnectionservice.DBConnectionService;
+import com.mysql.cj.conf.ConnectionUrlParser.Pair;
 
 import resources.entities.Availability;
 import resources.entities.PaymentInfo;
@@ -38,14 +40,29 @@ public class BookingDAO extends DAO
 
     private Table table;
 
+    private final Integer reportCols;
+    private static final ArrayList<Triplet<String, Integer, Class<?>>> reportMetaData = new ArrayList<Triplet<String, Integer, Class<?>>>()
+        {
+            {
+                add(new Triplet<String, Integer, Class<?>>("ListingID", 0, String.class));
+                add(new Triplet<String, Integer, Class<?>>("Count", 1, Integer.class));
+            }
+        };
+
+    private Table reportTable;
+
     private final AvailabilityDAO availDAO;
 
     public BookingDAO(DBConnectionService db, AvailabilityDAO availDAO) throws ClassNotFoundException, SQLException
     {
         super(db);
-        this.numCols = columnMetaData.size();
         this.availDAO = availDAO;
+
+        this.numCols = columnMetaData.size();
         this.table = new Table(numCols, columnMetaData);
+
+        this.reportCols = reportMetaData.size();
+        this.reportTable = new Table(reportCols, reportMetaData);
     }
 
     public Boolean insertBooking(Availability availability, String renter_id, PaymentInfo payment) throws DuplicateKeyException
@@ -174,29 +191,70 @@ public class BookingDAO extends DAO
         return bookedUnderDate;
     }
 
-    public Integer getNumberOfBookings(LocalDate start, LocalDate end, String country, String city)
+    public ArrayList<Pair<String, Integer>> getNumberOfBookings(Integer n, LocalDate start, LocalDate end, String country, String city)
     {
         /* 
-         * TODO:
          * This functions should return the number of bookings within a given city, where I ASSUME:
          *  the start date lies in between the start and end provided?
          *  I dont think we need to check if both booking dates lie in between
          *  But thats up to interpretation, up to you.
          * 
         */
+        ArrayList<Pair<String, Integer>> report = new ArrayList<Pair<String, Integer>>();
 
-        return 0;
+        db.setPStatement("SELECT bookings.Listing_id, COUNT(*) as Count FROM bookings NATURAL JOIN locations " +
+                         "WHERE locations.Country=? AND locations.City=? AND bookings.Start_date >= ? AND bookings.End_date <= ? " +
+                         "GROUP BY bookings.Listing_id ORDER BY Count DESC");
+        db.setPStatementString(1, country);
+        db.setPStatementString(2, city);
+        db.setPStatementDate(3, Date.valueOf(start));
+        db.setPStatementDate(4, Date.valueOf(end));
+
+        if (!db.executeSetQueryReturnN(Globals.DEFAULT_N, reportTable))
+            throw new RunQueryException();
+
+        if (table.isEmpty())
+            return report;
+
+        for (int i = 0; i < table.size(); i++)
+        {
+            report.add(new Pair<String, Integer>((String) reportTable.extractValueFromRowByName(i, "ListingID"), (Integer) reportTable.extractValueFromRowByName(i, "Count")));
+        }
+        table.clearTable();
+
+        return report;
     }
 
-    public Integer getNumberOfBookings(LocalDate start, LocalDate end, String country, String city, String postalCode)
+    public ArrayList<Pair<String, Integer>> getNumberOfBookings(LocalDate start, LocalDate end, String country, String city, String postalCode)
     {
         /* 
-         * TODO:
          * Same thing as above, but narrow with postal code as well
          * 
         */
+        ArrayList<Pair<String, Integer>> report = new ArrayList<Pair<String, Integer>>();
 
-        return 0;
+        db.setPStatement("SELECT bookings.Listing_id, COUNT(*) as Count FROM bookings NATURAL JOIN locations " +
+                         "WHERE locations.Country=? AND locations.City=? AND locations.postalCode=? bookings.Start_date >= ? AND bookings.End_date <= ? " +
+                         "GROUP BY bookings.Listing_id ORDER BY Count DESC");
+        db.setPStatementString(1, country);
+        db.setPStatementString(2, city);
+        db.setPStatementString(2, postalCode);
+        db.setPStatementDate(4, Date.valueOf(start));
+        db.setPStatementDate(5, Date.valueOf(end));
+
+        if (!db.executeSetQueryReturnN(Globals.DEFAULT_N, reportTable))
+            throw new RunQueryException();
+
+        if (table.isEmpty())
+            return report;
+
+        for (int i = 0; i < table.size(); i++)
+        {
+            report.add(new Pair<String, Integer>((String) reportTable.extractValueFromRowByName(i, "ListingID"), (Integer) reportTable.extractValueFromRowByName(i, "Count")));
+        }
+        table.clearTable();
+
+        return report;
     }
 
     private Booking getBookingFromTable(Integer rowNum)
