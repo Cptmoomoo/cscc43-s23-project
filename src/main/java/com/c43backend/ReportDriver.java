@@ -119,13 +119,13 @@ public class ReportDriver
         if (getYesNo())
         {
             postalCode = setPostalCode();
-            total = bdao.getNumberOfBookings(start, end, country, city, postalCode);
+            total = bdao.getNumberOfBookings(Globals.DEFAULT_N, start, end, country, city, postalCode);
 
             System.out.println(String.format("The number of bookings in %s, %s, %s during %s - %s is: %d.", city, country, postalCode, start.toString(), end.toString(), total));
         }
         else
         {
-            total = bdao.getNumberOfBookings(start, end, country, city);
+            total = bdao.getNumberOfBookings(Globals.DEFAULT_N, start, end, country, city);
             System.out.println(String.format("The number of bookings in %s, %s during %s - %s is: %d.", city, country, start.toString(), end.toString(), total));
         }
     }
