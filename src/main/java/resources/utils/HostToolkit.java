@@ -16,6 +16,7 @@ public class HostToolkit
             put(AmenityType.POOL, (float) 0.25);
             put(AmenityType.WIFI, (float) 0.05);
             put(AmenityType.KITCHEN, (float) 0.15);
+            put(AmenityType.PARKING, (float) 0.05);
             put(AmenityType.JACUZZI, (float) 0.15);
             put(AmenityType.AIR_CONDITIONING, (float) 0.1);
             put(AmenityType.HEATER, (float) 0.2);

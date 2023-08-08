@@ -155,8 +155,8 @@ public class LocationDAO extends DAO
                             (String) table.extractValueFromRowByName(rowNum, "postalCode"),
                             (String) table.extractValueFromRowByName(rowNum, "streetNum"),
                             (String) table.extractValueFromRowByName(rowNum, "streetName"),
-                            (String) table.extractValueFromRowByName(rowNum, "city"),
                             (String) table.extractValueFromRowByName(rowNum, "country"),
-                            (String) table.extractValueFromRowByName(rowNum, "province"));
+                            (String) table.extractValueFromRowByName(rowNum, "province"),
+                            (String) table.extractValueFromRowByName(rowNum, "city"));
     }
 }
