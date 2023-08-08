@@ -99,9 +99,11 @@ public class BookingDAO extends DAO
         db.setPStatement("UPDATE bookings SET Cancelled_by=? WHERE Booking_id=?");
         db.setPStatementString(1, user_id);
         db.setPStatementString(2, bookingID);
+
+        db.executeUpdateSetQuery();
         
         Booking booking;
-        db.setPStatement("SELECT * bookings WHERE Booking_id=?");
+        db.setPStatement("SELECT * FROM bookings WHERE Booking_id=?");
         db.setPStatementString(1, bookingID);
 
         if (!db.executeSetQueryReturnN(1, table)) 
