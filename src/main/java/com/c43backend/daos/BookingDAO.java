@@ -37,7 +37,6 @@ public class BookingDAO extends DAO
                 add(new Triplet<String, Integer, Class<?>>("cancelledBy", 7, String.class));
             }
         };
-
     private Table table;
 
     private final Integer reportCols;
@@ -48,7 +47,6 @@ public class BookingDAO extends DAO
                 add(new Triplet<String, Integer, Class<?>>("Count", 1, Integer.class));
             }
         };
-
     private Table reportTable;
 
     private final AvailabilityDAO availDAO;
@@ -191,7 +189,7 @@ public class BookingDAO extends DAO
         return bookedUnderDate;
     }
 
-    public ArrayList<Pair<String, Integer>> getNumberOfBookings(Integer n, LocalDate start, LocalDate end, String country, String city)
+    public Integer getNumberOfBookings(Integer n, LocalDate start, LocalDate end, String country, String city)
     {
         /* 
          * This functions should return the number of bookings within a given city, where I ASSUME:
@@ -200,61 +198,49 @@ public class BookingDAO extends DAO
          *  But thats up to interpretation, up to you.
          * 
         */
-        ArrayList<Pair<String, Integer>> report = new ArrayList<Pair<String, Integer>>();
-
-        db.setPStatement("SELECT bookings.Listing_id, COUNT(*) as Count FROM bookings NATURAL JOIN locations " +
-                         "WHERE locations.Country=? AND locations.City=? AND bookings.Start_date >= ? AND bookings.End_date <= ? " +
-                         "GROUP BY bookings.Listing_id ORDER BY Count DESC");
+        db.setPStatement("SELECT locations.City, COUNT(*) as Count FROM (bookings NATURAL JOIN belongs_to NATURAL JOIN locations) " +
+                         "WHERE locations.Country=? AND locations.City=? AND bookings.Start_date >= ? AND bookings.End_date <= ? GROUP BY locations.City");
         db.setPStatementString(1, country);
         db.setPStatementString(2, city);
         db.setPStatementDate(3, Date.valueOf(start));
         db.setPStatementDate(4, Date.valueOf(end));
 
-        if (!db.executeSetQueryReturnN(Globals.DEFAULT_N, reportTable))
+        if (!db.executeSetQueryReturnN(n, reportTable))
             throw new RunQueryException();
 
-        if (table.isEmpty())
-            return report;
+        if (reportTable.isEmpty())
+            return 0;
 
-        for (int i = 0; i < table.size(); i++)
-        {
-            report.add(new Pair<String, Integer>((String) reportTable.extractValueFromRowByName(i, "ListingID"), (Integer) reportTable.extractValueFromRowByName(i, "Count")));
-        }
-        table.clearTable();
+        Integer number_of_bookings = (Integer) reportTable.extractValueFromRowByName(0, "Count");
+        reportTable.clearTable();
 
-        return report;
+        return number_of_bookings;
     }
 
-    public ArrayList<Pair<String, Integer>> getNumberOfBookings(LocalDate start, LocalDate end, String country, String city, String postalCode)
+    public Integer getNumberOfBookings(Integer n, LocalDate start, LocalDate end, String country, String city, String postalCode)
     {
         /* 
          * Same thing as above, but narrow with postal code as well
          * 
         */
-        ArrayList<Pair<String, Integer>> report = new ArrayList<Pair<String, Integer>>();
-
-        db.setPStatement("SELECT bookings.Listing_id, COUNT(*) as Count FROM bookings NATURAL JOIN locations " +
-                         "WHERE locations.Country=? AND locations.City=? AND locations.postalCode=? bookings.Start_date >= ? AND bookings.End_date <= ? " +
-                         "GROUP BY bookings.Listing_id ORDER BY Count DESC");
+        db.setPStatement("SELECT locations.City, COUNT(*) as Count FROM (bookings NATURAL JOIN belongs_to NATURAL JOIN locations) " +
+                         "WHERE locations.Country=? AND locations.City=? AND locations.Postal_code=? AND bookings.Start_date >= ? AND bookings.End_date <= ? GROUP BY locations.City");
         db.setPStatementString(1, country);
         db.setPStatementString(2, city);
-        db.setPStatementString(2, postalCode);
+        db.setPStatementString(3, postalCode);
         db.setPStatementDate(4, Date.valueOf(start));
         db.setPStatementDate(5, Date.valueOf(end));
 
-        if (!db.executeSetQueryReturnN(Globals.DEFAULT_N, reportTable))
+        if (!db.executeSetQueryReturnN(n, reportTable))
             throw new RunQueryException();
 
-        if (table.isEmpty())
-            return report;
+        if (reportTable.isEmpty())
+            return 0;
 
-        for (int i = 0; i < table.size(); i++)
-        {
-            report.add(new Pair<String, Integer>((String) reportTable.extractValueFromRowByName(i, "ListingID"), (Integer) reportTable.extractValueFromRowByName(i, "Count")));
-        }
-        table.clearTable();
+        Integer number_of_bookings = (Integer) reportTable.extractValueFromRowByName(0, "Count");
+        reportTable.clearTable();
 
-        return report;
+        return number_of_bookings;
     }
 
     private Booking getBookingFromTable(Integer rowNum)
