@@ -356,13 +356,11 @@ public class Driver
         ArrayList<String> cmds;
         ArrayList<Listing> listings = new ArrayList<>();
 
-        Boolean cond = false;
-
-        while (!cond)
+        while (true)
         {
             System.out.println("What would you like to search by?");
             printSearchOptions();
-            System.out.println("Type q to quit.");
+            System.out.println("Type q to quit when you are satisfied.");
     
             cmds = parseCmd(r.readLine());
         
@@ -381,8 +379,7 @@ public class Driver
                     listings = searchByDates();
                     break;
                 case "q":
-                    cond = true;
-                    break;
+                    return listings;
                 default:
                     System.out.println("Invalid option!");
                     continue;
@@ -398,8 +395,6 @@ public class Driver
             
             listings = filterResults(listings);
         }
-
-        return listings;
     }
 
     private ArrayList<Listing> filterResults(ArrayList<Listing> listings) throws IOException
@@ -1286,7 +1281,15 @@ public class Driver
 
         // choose what to search with
 
-        searchResults = bookByHost();
+        System.out.println("Search the platform for listings you wish to book.");
+        System.out.println("Quit the search menu when the listing you want to book is in your search results.");
+
+        searchResults = searchMenu();
+
+        System.out.println(Globals.TERMINAL_DIVIDER);
+        System.out.println("Here are your search results:");
+
+        printListings(searchResults);
 
         while (!cond)
         {
@@ -1482,6 +1485,8 @@ public class Driver
                 }
             }
 
+            cond = false;
+        
             if (cond2)
             {
                 System.out.println("Would you like to confirm the following dates? (y/n)");
@@ -2830,11 +2835,7 @@ public class Driver
             return listings;
         }
 
-        for (Listing l : listings)
-        {
-            System.out.println(Globals.TERMINAL_DIVIDER);
-            System.out.println(l.toString());
-        }
+        printListings(listings);
 
         return listings;
     }
