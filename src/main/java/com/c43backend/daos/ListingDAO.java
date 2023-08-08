@@ -5,6 +5,8 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 
 import org.javatuples.Triplet;
 
@@ -271,6 +273,7 @@ public class ListingDAO extends DAO
 
         listingTable.clearTable();
 
+        Collections.sort(listings, sortByDistance(latitude, longitude));
         return listings;
     }
 
@@ -389,5 +392,35 @@ public class ListingDAO extends DAO
                             location,
                             (int) listingTable.extractValueFromRowByName(rowNum, "maxGuests"),
                             getAvgPriceOfListing(listingID));
+    }
+
+    private Comparator<Listing> sortByDistance(Float longitude, Float latitude)
+    {
+        return new Comparator<Listing>()
+            {
+                @Override
+                public int compare(Listing l1, Listing l2)
+                {
+                    return Float.compare(getDistance(lDAO.getLatitudeByListing(l1.getListingID()), lDAO.getLongitudeByListing(l1.getListingID()), latitude, longitude), 
+                                         getDistance(lDAO.getLatitudeByListing(l2.getListingID()), lDAO.getLongitudeByListing(l2.getListingID()), latitude, longitude));
+                }
+            };
+    }
+
+    public static Float getDistance(Float lat1, Float long1, Float lat2, Float long2) {
+
+        final int R = 6371; // Radius of the earth
+
+        double latDistance = Math.toRadians(lat2 - lat1);
+        double lonDistance = Math.toRadians(long2 - long1);
+        double a = Math.sin(latDistance / 2) * Math.sin(latDistance / 2)
+                + Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2))
+                * Math.sin(lonDistance / 2) * Math.sin(lonDistance / 2);
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        double distance = R * c * 1000; // convert to meters
+
+        distance = Math.pow(distance, 2);
+
+        return Double.valueOf(Math.sqrt(distance)).floatValue();
     }
 }
