@@ -826,6 +826,8 @@ public class Driver
             System.out.println("No listings within the vicinity of this postal code.");
             return listings;
         }
+
+        printListings(listings);
     
         return listings;
     }
@@ -1560,7 +1562,7 @@ public class Driver
         PaymentInfo payInfo;
         
 
-        if ((avail = pickAvailDates(toBook)).getValue0() == null)
+        if ((avail = pickAvailDates(toBook)) == null)
             return false;
      
         System.out.println("Which payment method would you like to use?");
