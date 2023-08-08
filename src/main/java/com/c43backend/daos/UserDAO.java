@@ -178,7 +178,7 @@ public class UserDAO extends DAO
         // Returns a list of Pairs, user + number of cancellations
         ArrayList<Pair<String, Integer>> report = new ArrayList<Pair<String, Integer>>();
 
-        db.setPStatement("SELECT Cancelled_by as Username, COUNT(*) as Count FROM bookings WHERE YEAR(Start_date)=? OR YEAR(End_date)=? GROUP BY Username ORDER BY Count DESC");
+        db.setPStatement("SELECT Cancelled_by as Username, COUNT(*) as Count FROM bookings WHERE Cancelled_by IS NOT NULL AND YEAR(Start_date)=? OR YEAR(End_date)=? GROUP BY Username ORDER BY Count DESC");
         db.setPStatementInt(1, year);
 
         if (!db.executeSetQueryReturnN(n, reportTable))
