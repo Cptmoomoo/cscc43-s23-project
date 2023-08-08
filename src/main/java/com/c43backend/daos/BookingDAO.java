@@ -198,21 +198,18 @@ public class BookingDAO extends DAO
          *  But thats up to interpretation, up to you.
          * 
         */
-        db.setPStatement("SELECT locations.City, COUNT(*) as Count FROM (bookings NATURAL JOIN belongs_to NATURAL JOIN locations) " +
-                         "WHERE locations.Country=? AND locations.City=? AND bookings.Start_date >= ? AND bookings.End_date <= ? GROUP BY locations.City");
+        db.setPStatement("SELECT bookings.Booking_id, bookings.Listing_id, bookings.Start_Date, bookings.End_date, bookings.Renter_id, bookings.Total_price, bookings.Card_number, bookings.Cancelled_by " + 
+                         "FROM (bookings NATURAL JOIN belongs_to NATURAL JOIN locations) WHERE locations.Country=? AND locations.City=? AND bookings.Start_date >= ? AND bookings.End_date <= ?");
         db.setPStatementString(1, country);
         db.setPStatementString(2, city);
         db.setPStatementDate(3, Date.valueOf(start));
         db.setPStatementDate(4, Date.valueOf(end));
 
-        if (!db.executeSetQueryReturnN(n, reportTable))
+        if (!db.executeSetQueryReturnN(n, table))
             throw new RunQueryException();
 
-        if (reportTable.isEmpty())
-            return 0;
-
-        Integer number_of_bookings = (Integer) reportTable.extractValueFromRowByName(0, "Count");
-        reportTable.clearTable();
+        int number_of_bookings = table.size();
+        table.clearTable();
 
         return number_of_bookings;
     }
@@ -223,8 +220,8 @@ public class BookingDAO extends DAO
          * Same thing as above, but narrow with postal code as well
          * 
         */
-        db.setPStatement("SELECT locations.City, COUNT(*) as Count FROM (bookings NATURAL JOIN belongs_to NATURAL JOIN locations) " +
-                         "WHERE locations.Country=? AND locations.City=? AND locations.Postal_code=? AND bookings.Start_date >= ? AND bookings.End_date <= ? GROUP BY locations.City");
+        db.setPStatement("SELECT bookings.Booking_id, bookings.Listing_id, bookings.Start_Date, bookings.End_date, bookings.Renter_id, bookings.Total_price, bookings.Card_number, bookings.Cancelled_by " + 
+                         "FROM (bookings NATURAL JOIN belongs_to NATURAL JOIN locations) WHERE locations.Country=? AND locations.City=? AND locations.Postal_code=? AND bookings.Start_date >= ? AND bookings.End_date <= ?");
         db.setPStatementString(1, country);
         db.setPStatementString(2, city);
         db.setPStatementString(3, postalCode);
@@ -234,11 +231,11 @@ public class BookingDAO extends DAO
         if (!db.executeSetQueryReturnN(n, reportTable))
             throw new RunQueryException();
 
-        if (reportTable.isEmpty())
-            return 0;
+        if (!db.executeSetQueryReturnN(n, table))
+            throw new RunQueryException();
 
-        Integer number_of_bookings = (Integer) reportTable.extractValueFromRowByName(0, "Count");
-        reportTable.clearTable();
+        int number_of_bookings = table.size();
+        table.clearTable();
 
         return number_of_bookings;
     }
