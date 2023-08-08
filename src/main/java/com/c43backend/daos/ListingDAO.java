@@ -1,7 +1,9 @@
 package com.c43backend.daos;
 
+import java.sql.Date;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.ArrayList;
 
 import org.javatuples.Triplet;
@@ -237,7 +239,7 @@ public class ListingDAO extends DAO
         return listings;
     }
 
-    public ArrayList<Listing> getNListingsInVicinity(Integer n, Float longitude, Float latitude, Float distance)
+    public ArrayList<Listing> getListingsByDistance(Integer n, Float longitude, Float latitude, Float distance)
     {
         String listingID;
         ArrayList<Listing> listings = new ArrayList<Listing>();
@@ -269,7 +271,7 @@ public class ListingDAO extends DAO
         return listings;
     }
 
-    public ArrayList<Listing> getNListingsByPostalCode(Integer n, String postal_code, String sort_by, String order)
+    public ArrayList<Listing> getListingsByPostalCode(Integer n, String postal_code)
     {
         String listingID;
         ArrayList<Listing> listings = new ArrayList<Listing>();
@@ -278,10 +280,7 @@ public class ListingDAO extends DAO
 
         db.setPStatement("SELECT listings.Listing_id, listings.Listing_type, listings.Suite_number, listings.Is_active, listings.Max_guests, listings.Price_per_day, listings.Time_listed " +
                          "FROM belongs_to NATURAL JOIN locations WHERE SUBSTRING(locations.Postal_code, 1, 3) = ?");
-                        //  + "ORDER BY ? ?");
         db.setPStatementString(1, postal_code.substring(0, 4));
-        // db.setPStatementString(2, sort_by == "distance" ? "SQRT(POWER(belongs_to.Longitude - ?, 2) + POWER(belongs_to.Latitude - ?, 2))" : "listings.Price_per_day");
-        // db.setPStatementString(3, order == "ascending" ? "ASC" : "DESC");
 
         if (!db.executeSetQueryReturnN(n, listingTable))
             throw new RunQueryException();
@@ -299,6 +298,37 @@ public class ListingDAO extends DAO
 
         return listings;
     }
+
+    public ArrayList<Listing> getListingsByAvailabilities(Integer n, LocalDate start_date, LocalDate end_date)
+    {
+        String listingID;
+        ArrayList<Listing> listings = new ArrayList<Listing>();
+        ArrayList<AmenityType> amenities;
+        Location location;
+
+        db.setPStatement("SELECT listings.Listing_id, listings.Listing_type, listings.Suite_number, listings.Is_active, listings.Max_guests, listings.Price_per_day, listings.Time_listed " +
+                         "FROM listings NATURAL JOIN availability WHERE (? BETWEEN availability.StartDate AND availability.EndDate) " +
+                                                                   "AND (? BETWEEN availability.EndDate AND availability.EndDate) ");
+        db.setPStatementDate(1, Date.valueOf(start_date));
+        db.setPStatementDate(2, Date.valueOf(end_date));
+
+        if (!db.executeSetQueryReturnN(n, listingTable))
+            throw new RunQueryException();
+
+        for (int i = 0; i < listingTable.size(); i++)
+        {
+            listingID = (String) listingTable.extractValueFromRowByName(i, "listingID");
+            amenities = getAmenitiesFromListing(listingID);
+            location = getLocationFromTable(listingID);
+
+            listings.add(getListingFromTable(i, amenities, location));
+        }
+
+        listingTable.clearTable();
+
+        return listings;
+    }
+
 
     private Location getLocationFromTable(String listingID)
     {
