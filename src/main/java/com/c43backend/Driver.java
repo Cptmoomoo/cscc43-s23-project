@@ -544,7 +544,7 @@ public class Driver
         Float latitude;
         Float distance = (float) 10;
         String cmd;
-        ArrayList<Listing> listings = new ArrayList<>();
+        ArrayList<Listing> listings;
 
         longitude = setLongitude();
         latitude = setLatitude();
@@ -585,11 +585,11 @@ public class Driver
     private ArrayList<Listing> searchByPostalcode() throws IOException
     {
         String postal;
-        ArrayList<Listing> listings = new ArrayList<>();
+        ArrayList<Listing> listings;
 
         postal = setPostalCode();
 
-        listingDAO.getListingsByPostalCode(Globals.DEFAULT_N, postal);
+        listings = listingDAO.getListingsByPostalCode(Globals.DEFAULT_N, postal);
 
         if (listings.isEmpty())
         {
@@ -605,7 +605,7 @@ public class Driver
         LocalDate start = null;
         LocalDate end = null;
         Boolean cond = false;
-        ArrayList<Listing> listings = new ArrayList<>();
+        ArrayList<Listing> listings;
 
         while (!cond)
         {
@@ -644,7 +644,7 @@ public class Driver
             }
         }
 
-        listingDAO.getListingsByAvailabilities(Globals.DEFAULT_N, start, end);
+        listings = listingDAO.getListingsByAvailabilities(Globals.DEFAULT_N, start, end);
 
         if (listings.isEmpty())
         {
