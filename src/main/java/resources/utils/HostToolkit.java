@@ -71,6 +71,7 @@ public class HostToolkit
 
         for (AmenityType a : amenityWeight.keySet())
         {
+            System.out.println(a);
             if (amenities.contains(a))
                 continue;
 
@@ -102,6 +103,7 @@ public class HostToolkit
                 three = two;
                 two = one;
                 one = a;
+                continue;
             }
             else if (weight > amenityWeight.get(two))
             {
@@ -109,12 +111,14 @@ public class HostToolkit
                 total += amenityWeight.get(a);
                 three = two;
                 two = a;
+                continue;
             }
             else if (weight > amenityWeight.get(three))
             {
                 total -= amenityWeight.get(three);
                 total += amenityWeight.get(a);
                 three = a;
+                continue;
             }
         }
 

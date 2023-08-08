@@ -2690,9 +2690,9 @@ public class Driver
         Float pricePerDay = (float) 0;
         Float suggestedPrice = HostToolkit.suggestPrice(listing.getListingType(), listing.getMaxGuests(), listing.getAmenities());
 
-        System.out.println(Globals.APP_NAME + "suggests the following price given your listing type and amenities.");
+        System.out.println(Globals.APP_NAME + " suggests the following price given your listing type and amenities:");
         System.out.println(String.format("$%.2f per night", suggestedPrice));
-        System.out.println("Would you like to use the suggested price?");
+        System.out.println("Would you like to use the suggested price? (y/n)");
 
         if (getYesNo())
             return suggestedPrice;
