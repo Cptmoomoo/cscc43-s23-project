@@ -244,7 +244,7 @@ public class ListingDAO extends DAO
         return listings;
     }
 
-    public ArrayList<Listing> getListingsByDistance(Integer n, Float longitude, Float latitude, Float distance)
+    public ArrayList<Listing> getListingsByDistance(Integer n, final Float longitude, final Float latitude, Float distance)
     {
         String listingID;
         ArrayList<Listing> listings = new ArrayList<Listing>();
@@ -394,7 +394,7 @@ public class ListingDAO extends DAO
                             getAvgPriceOfListing(listingID));
     }
 
-    private Comparator<Listing> sortByDistance(Float longitude, Float latitude)
+    private Comparator<Listing> sortByDistance(final Float longitude, final Float latitude)
     {
         return new Comparator<Listing>()
             {
