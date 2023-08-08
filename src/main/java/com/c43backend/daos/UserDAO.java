@@ -206,7 +206,7 @@ public class UserDAO extends DAO
          */
         ArrayList<Pair<String, Integer>> report = new ArrayList<Pair<String, Integer>>();
 
-        db.setPStatement("SELECT host_of.Username, COUNT(*) as Count FROM (host_of NATURAL JOIN belongs_to NATURAL JOIN locations) WHERE locations.Country=? GROUP BY host_of ORDER BY Count DESC");
+        db.setPStatement("SELECT host_of.Username, COUNT(*) as Count FROM (host_of NATURAL JOIN belongs_to NATURAL JOIN locations) WHERE locations.Country=? GROUP BY host_of.Username ORDER BY Count DESC");
         db.setPStatementString(1, country);
 
         if (!db.executeSetQueryReturnN(n, reportTable))
@@ -234,7 +234,7 @@ public class UserDAO extends DAO
          */
         ArrayList<Pair<String, Integer>> report = new ArrayList<Pair<String, Integer>>();
 
-        db.setPStatement("SELECT host_of.Username, COUNT(*) as Count FROM (host_of NATURAL JOIN belongs_to NATURAL JOIN locations) WHERE locations.Country=? AND locations.City=? GROUP BY host_of ORDER BY Count DESC");
+        db.setPStatement("SELECT host_of.Username, COUNT(*) as Count FROM (host_of NATURAL JOIN belongs_to NATURAL JOIN locations) WHERE locations.Country=? AND locations.City=? GROUP BY host_of.Username ORDER BY Count DESC");
         db.setPStatementString(1, country);
         db.setPStatementString(2, city);
 
