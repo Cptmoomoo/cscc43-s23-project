@@ -13,7 +13,6 @@ import com.c43backend.dbconnectionservice.DBConnectionService;
 import resources.exceptions.DuplicateKeyException;
 import resources.exceptions.RunQueryException;
 import resources.entities.Comment;
-import resources.entities.Listing;
 import resources.enums.CommentType;
 import resources.utils.Globals;
 import resources.utils.Table;
@@ -239,7 +238,7 @@ public class CommentDAO extends DAO
         return comments;
     }
 
-    public ArrayList<Pair<Listing, ArrayList<String>>> getPopularNounPhrases(Integer n)
+    public ArrayList<Pair<String, ArrayList<String>>> getPopularNounPhrases(Integer n)
     {
         /*
          * TODO: return the noun phrases associated witn n listings
