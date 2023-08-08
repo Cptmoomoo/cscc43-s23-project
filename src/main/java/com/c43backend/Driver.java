@@ -881,6 +881,8 @@ public class Driver
             System.out.println("No listings are available within these dates!");
             return listings;
         }
+
+        printListings(listings);
     
         return listings;
     }

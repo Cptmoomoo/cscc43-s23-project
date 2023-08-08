@@ -281,6 +281,8 @@ public class UserDAO extends DAO
         // reportTable.clearTable();
 
         // return report;
+
+        return new ArrayList<String>();
     }
 
     public ArrayList<Pair<String, Integer>> rankRentersByBookingNumbers(LocalDate start, LocalDate end, Integer n)

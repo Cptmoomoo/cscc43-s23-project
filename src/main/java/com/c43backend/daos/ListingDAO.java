@@ -313,8 +313,7 @@ public class ListingDAO extends DAO
         Location location;
 
         db.setPStatement("SELECT listings.Listing_id, listings.Listing_type, listings.Suite_number, listings.Max_guests, listings.Is_active, listings.Time_listed " +
-                         "FROM listings NATURAL JOIN availability WHERE (? BETWEEN availability.Start_Date AND availability.End_Date) " +
-                                                                   "AND (? BETWEEN availability.End_Date AND availability.End_Date) ");
+                         "FROM listings NATURAL JOIN availability WHERE (? >= availability.Start_date AND ? <= availability.End_Date) ");
         db.setPStatementDate(1, Date.valueOf(start_date));
         db.setPStatementDate(2, Date.valueOf(end_date));
 
