@@ -113,6 +113,8 @@ public class AvailabilityDAO extends DAO
         if (table.isEmpty())
             return false;
 
+        table.clearTable();
+
         return true;
 
     }

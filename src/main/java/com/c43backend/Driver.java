@@ -510,6 +510,7 @@ public class Driver
         LocalDate end = null;
         Availability avail;
         Boolean cond = false;
+        Integer res;
 
         while (!cond)
         {
@@ -555,10 +556,13 @@ public class Driver
 
         availabilityDAO.deleteAvailability(toUpdate);
 
-        if (!insertAvailability(avail))
+        res = insertAvailability(avail);
+        if (res == 0)
             System.out.println("Listing is already available at this time!");
+        else if (res == -1)
+            System.out.println("A user has already booked this listing at this time!");
         else
-            System.out.println("Dates updated!");
+            System.out.println("Availability added!");
     }
 
     private void updateAvailabilityPrice(Availability toUpdate, String listingID) throws IOException
@@ -2151,6 +2155,7 @@ public class Driver
         LocalDate end = null;
         Availability avail;
         Boolean cond = false;
+        Integer res;
 
         while (!cond)
         {
@@ -2194,8 +2199,11 @@ public class Driver
 
         avail = new Availability(start, end, listingID, getPricePerDay());
 
-        if (!insertAvailability(avail))
+        res = insertAvailability(avail);
+        if (res == 0)
             System.out.println("Listing is already available at this time!");
+        else if (res == -1)
+            System.out.println("A user has already booked this listing at this time!");
         else
             System.out.println("Availability added!");
     }
@@ -2206,6 +2214,7 @@ public class Driver
         LocalDate end = null;
         Availability avail;
         Boolean cond = false;
+        Integer res;
 
         while (!cond)
         {
@@ -2248,8 +2257,11 @@ public class Driver
 
         avail = new Availability(start, end, listingID, getPricePerDay());
 
-        if (!insertAvailability(avail))
+        res = insertAvailability(avail);
+        if (res == 0)
             System.out.println("Listing is already available at this time!");
+        else if (res == -1)
+            System.out.println("A user has already booked this listing at this time!");
         else
             System.out.println("Availability added!");
     }
@@ -2260,6 +2272,7 @@ public class Driver
         String cmd;
         Availability avail;
         Integer year = 0;
+        Integer res;
 
         System.out.println("Input the year you would like the listing to be available.");
     
@@ -2286,29 +2299,32 @@ public class Driver
 
         avail = new Availability (LocalDate.of(year, 1, 1), LocalDate.of(year, 12, 31), listingID, getPricePerDay());
         
-        if (!insertAvailability(avail))
+        res = insertAvailability(avail);
+        if (res == 0)
             System.out.println("Listing is already available at this time!");
+        else if (res == -1)
+            System.out.println("A user has already booked this listing at this time!");
         else
             System.out.println("Availability added!");
     }
 
-    private Boolean insertAvailability(Availability avail)
+    private Integer insertAvailability(Availability avail)
     {
         try
         {
             if (availabilityDAO.isAvailible(avail.getStartDate(), avail.getListingID()))
-                return false;
+                return 0;
             else if (bookingDAO.isBookedUnderDate(avail.getListingID(), avail))
-                return false;
+                return -1;
             else
                 availabilityDAO.insertAvailability(avail);
         }
         catch (DuplicateKeyException e)
         {
-            return false;
+            return 0;
         }
 
-        return true;
+        return 1;
     }
 
     private Float getPricePerDay() throws IOException

@@ -172,6 +172,9 @@ public class BookingDAO extends DAO
         db.setPStatementDate(6, Date.valueOf(avail.getStartDate()));
         db.setPStatementDate(7, Date.valueOf(avail.getEndDate()));
 
+        if (!db.executeSetQueryReturnN(1, table))
+            return false;
+
         Boolean bookedUnderDate = !table.isEmpty();
         table.clearTable();
 
