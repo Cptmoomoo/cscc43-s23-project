@@ -16,7 +16,7 @@ public class Globals
     public static final String POSTAL_CODE_REGEX = "[A-Z][0-9][A-Z] ?[0-9][A-Z][0-9]";
 
     // I/O
-    public static final String TABLE_CREATE_FILE = "airbnb.sql";
+    public static final String TABLE_CREATE_FILE = "skybnb.sql";
     public static final String DROP_TABLES_FILE = "droptables.sql";
 
     public static void exitWithError(String msg, Exception e)
