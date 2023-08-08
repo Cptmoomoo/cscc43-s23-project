@@ -118,6 +118,10 @@ public class Driver
                         loggedInRoutine();
                     break;
 
+                case "reports":
+                case "rep":
+                    break;
+
                 default:
                     System.out.println("Invalid command!");
                     System.out.println("Type h or help to see a list of commands.");
@@ -155,6 +159,7 @@ public class Driver
         System.out.println("register/r: register a user.");
         System.out.println("login/l: [username, password] login to the app, if a username and password are given it will automatically try to login with the given credentials.");
         System.out.println(Globals.TERMINAL_INDENT + "If none is given then you will be prompted.");
+        System.out.println("reports/rep: go to the reports menu.");
     }
 
     private void hostHelp()

@@ -181,6 +181,31 @@ public class BookingDAO extends DAO
         return bookedUnderDate;
     }
 
+    public ArrayList<Booking> getBookingsByDateAndCity(LocalDate start, LocalDate end, String city)
+    {
+        /* 
+         * TODO:
+         * This functions should return all the bookings within a given city, where I ASSUME:
+         *  the start date lies in between the start and end provided?
+         *  I dont think we need to check if both booking dates lie in between
+         *  But thats up to interpretation, up to you.
+         * 
+        */
+
+        return new ArrayList<>();
+    }
+
+    public ArrayList<Booking> getBookingsByDateAndCityPostal(LocalDate start, LocalDate end, String city, String postalCode)
+    {
+        /* 
+         * TODO:
+         * Same thing as above, but narrow with postal code as well
+         * 
+        */
+
+        return new ArrayList<>();
+    }
+
     private Booking getBookingFromTable(Integer rowNum)
     {
         return new Booking((String) table.extractValueFromRowByName(rowNum, "bookingID"),

@@ -6,6 +6,7 @@ import java.sql.Time;
 import java.util.ArrayList;
 import java.util.UUID;
 
+import org.javatuples.Pair;
 import org.javatuples.Triplet;
 
 import com.c43backend.dbconnectionservice.DBConnectionService;
@@ -13,6 +14,7 @@ import com.c43backend.dbconnectionservice.DBConnectionService;
 import resources.exceptions.DuplicateKeyException;
 import resources.exceptions.RunQueryException;
 import resources.entities.Comment;
+import resources.entities.Listing;
 import resources.enums.CommentType;
 import resources.utils.Globals;
 import resources.utils.Table;
@@ -236,6 +238,19 @@ public class CommentDAO extends DAO
         userTable.clearTable();
 
         return comments;
+    }
+
+    public ArrayList<Pair<Listing, ArrayList<String>>> getPopularNounPhrases(Integer n)
+    {
+        /*
+         * TODO: return the noun phrases associated witn n listings
+         * return a list of Pairs (tuple) that holds the listing, and the associated list of noun phrases
+         * for that listing
+         * 
+         * you will probably have to come up with some way to determine what a noun phrase is cuz idk
+         */
+
+         return new ArrayList<>();
     }
 
 

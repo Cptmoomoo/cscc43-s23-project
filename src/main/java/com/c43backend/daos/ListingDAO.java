@@ -333,6 +333,28 @@ public class ListingDAO extends DAO
         return listings;
     }
 
+    public Integer getNumberOfListings(String country)
+    {
+        // TODO: get number of listings for this country
+        return 0;
+    }
+
+    public Integer getNumberOfListings(String country, String city)
+    {
+        // TODO: get number of listings this country and city
+        // function name is the same on purpose, just overriding
+
+        return 0;
+    }
+
+    public Integer getNumberOfListings(String country, String city, String postalCode)
+    {
+        // TODO: get number of listings this country and city and postalCode
+        // function name is the same on purpose, just overriding
+        return 0;
+    }
+
+
 
     private Location getLocationFromTable(String listingID)
     {
