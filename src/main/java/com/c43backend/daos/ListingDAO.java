@@ -10,6 +10,7 @@ import org.javatuples.Triplet;
 
 import com.c43backend.dbconnectionservice.DBConnectionService;
 
+import resources.entities.Availability;
 import resources.entities.Listing;
 import resources.entities.Location;
 import resources.enums.ListingType;
@@ -46,14 +47,16 @@ public class ListingDAO extends DAO
     private Table amenityTable;
 
     private final LocationDAO lDAO;
+    private final AvailabilityDAO aDAO;
 
-    public ListingDAO(DBConnectionService db, LocationDAO lDAO) throws ClassNotFoundException, SQLException
+    public ListingDAO(DBConnectionService db, LocationDAO lDAO, AvailabilityDAO aDAO) throws ClassNotFoundException, SQLException
     {
         super(db);
         this.listingNumCols = listingColumnMetaData.size();
         this.amenityNumCols = amenityColumnMetaData.size();
 
         this.lDAO = lDAO;
+        this.aDAO = aDAO;
         this.listingTable = new Table(listingNumCols, listingColumnMetaData);
         this.amenityTable = new Table(amenityNumCols, amenityColumnMetaData);
     }
@@ -335,15 +338,34 @@ public class ListingDAO extends DAO
         return lDAO.getLocationByListing(listingID);
     }
 
+    private Float getAvgPriceOfListing(String listingID)
+    {
+        ArrayList<Availability> avails;
+        Float total = (float) 0;
+
+        avails = aDAO.getAvailabilitiesByListing(listingID);
+
+        if (avails.isEmpty())
+            return (float) 0;
+
+        for (Availability a : avails)
+            total += a.getPricePerDay();
+
+        return total / avails.size();
+    }
+
     private Listing getListingFromTable(Integer rowNum, ArrayList<AmenityType> amenities, Location location)
     {
-        return new Listing((String) listingTable.extractValueFromRowByName(rowNum, "listingID"),
+        String listingID = (String) listingTable.extractValueFromRowByName(rowNum, "listingID");
+
+        return new Listing(listingID,
                             ListingType.valueOf((String) listingTable.extractValueFromRowByName(rowNum, "listingType")),
                             (String) listingTable.extractValueFromRowByName(rowNum, "suiteNum"),
                             (Boolean) listingTable.extractValueFromRowByName(rowNum, "isActive"),
                             ((Timestamp) listingTable.extractValueFromRowByName(rowNum, "timeListed")).toLocalDateTime(),
                             amenities,
                             location,
-                            (int) listingTable.extractValueFromRowByName(rowNum, "maxGuests"));
+                            (int) listingTable.extractValueFromRowByName(rowNum, "maxGuests"),
+                            getAvgPriceOfListing(listingID));
     }
 }

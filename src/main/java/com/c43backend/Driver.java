@@ -404,15 +404,15 @@ public class Driver
 
     private ArrayList<Listing> filterResults(ArrayList<Listing> listings) throws IOException
     {
-        System.out.println("How would you like to filter your results?");
-        printFilterOptions();
-        System.out.println("Type q to quit.");
-
         Pair<Float, Float> priceRange;
         Pair<LocalDate, LocalDate> dateRange;
 
         while (true)
         {
+            System.out.println("How would you like to filter your results?");
+            printFilterOptions();
+            System.out.println("Type q to quit.");
+    
             switch (r.readLine().trim().toLowerCase())
             {
                 case "sa":
@@ -425,7 +425,7 @@ public class Driver
                     listings = lf.filterByPostalCode(listings, setPostalCode());
                     break;
                 case "a":
-                    listings = lf.filterByAmenities(listings, getAmenities());
+                    listings = lf.filterByAmenities(listings, getAmenities(false));
                     break;
                 case "pr":
                     priceRange = getPriceRange();
@@ -441,6 +441,8 @@ public class Driver
                     System.out.println("Invalid option!");
                     continue;
             }
+
+            printListings(listings);
         }
     }
 
@@ -2388,7 +2390,7 @@ public class Driver
             location = createLocationRoutine(longitude, latitude);
         }
 
-        listing = new Listing(listingType, suiteNum, getAmenities(), location, numGuests);
+        listing = new Listing(listingType, suiteNum, getAmenities(true), location, numGuests);
 
         try
         {
@@ -2861,7 +2863,7 @@ public class Driver
         return loggedUser != null;
     }
 
-    private ArrayList<AmenityType> getAmenities() throws IOException
+    private ArrayList<AmenityType> getAmenities(Boolean suggest) throws IOException
     {
         Boolean cond = false;
         Quartet<AmenityType, AmenityType, AmenityType, Float> suggested;
@@ -3059,19 +3061,24 @@ public class Driver
                 
                 case "quit":
                 case "q":
-                    suggested = HostToolkit.suggestAmenities(amenities);
-
-                    if (suggested != null)
+                    if (suggest)
                     {
-                        System.out.println("Here are the top 3 amenities that would lead to the highest profit:");
-                        System.out.println(String.format("1. %s", suggested.getValue0().toString()));
-                        if (suggested.getValue1() != null)
-                            System.out.println(String.format("2. %s", suggested.getValue1().toString()));
-                        if (suggested.getValue2() != null)
-                            System.out.println(String.format("3. %s", suggested.getValue2().toString()));
-                        System.out.println(String.format("Adding these amenities would lead to a %.2f%% increase!", suggested.getValue3() * 100));
-                        System.out.println("Would you like to go back and add those amenities? (y/n)");
-                        cond = !getYesNo();
+                        suggested = HostToolkit.suggestAmenities(amenities);
+
+                        if (suggested != null)
+                        {
+                            System.out.println("Here are the top 3 amenities that would lead to the highest profit:");
+                            System.out.println(String.format("1. %s", suggested.getValue0().toString()));
+                            if (suggested.getValue1() != null)
+                                System.out.println(String.format("2. %s", suggested.getValue1().toString()));
+                            if (suggested.getValue2() != null)
+                                System.out.println(String.format("3. %s", suggested.getValue2().toString()));
+                            System.out.println(String.format("Adding these amenities would lead to a %.2f%% increase!", suggested.getValue3() * 100));
+                            System.out.println("Would you like to go back and add those amenities? (y/n)");
+                            cond = !getYesNo();
+                        }
+                        else
+                            cond = true;
                     }
                     else
                         cond = true;

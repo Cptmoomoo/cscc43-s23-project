@@ -71,7 +71,6 @@ public class HostToolkit
 
         for (AmenityType a : amenityWeight.keySet())
         {
-            System.out.println(a);
             if (amenities.contains(a))
                 continue;
 

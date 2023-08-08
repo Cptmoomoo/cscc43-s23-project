@@ -7,7 +7,6 @@ import java.util.Comparator;
 
 import com.c43backend.daos.AvailabilityDAO;
 
-import resources.entities.Availability;
 import resources.entities.Listing;
 import resources.enums.AmenityType;
 
@@ -41,16 +40,22 @@ public class ListingFilter
     public ArrayList<Listing> filterByAmenities(ArrayList<Listing> listings, ArrayList<AmenityType> amenities)
     {
         ArrayList<Listing> filtered = new ArrayList<Listing>();
+        Boolean cond = true;
 
         for (Listing l : listings)
         {
+            cond = true;
             for (AmenityType a : amenities)
             {
                 if (!l.getAmenities().contains(a))
-                    continue;
+                {
+                    cond = false;
+                    break;
+                }
             }
 
-            filtered.add(l);
+            if (cond)
+                filtered.add(l);
         }
 
         return filtered;
@@ -63,7 +68,7 @@ public class ListingFilter
 
         for (Listing l : listings)
         {
-            avg = getAvgPriceOfListing(l);
+            avg = l.getAvgPrice();
             if (max >= avg && min <= avg)
                 filtered.add(l);
         }
@@ -92,7 +97,7 @@ public class ListingFilter
                     @Override
                     public int compare(Listing l1, Listing l2)
                     {
-                        return Float.compare(getAvgPriceOfListing(l2), getAvgPriceOfListing(l1));
+                        return Float.compare(l1.getAvgPrice(), l2.getAvgPrice());
                     }
                 };
         else
@@ -101,24 +106,8 @@ public class ListingFilter
                 @Override
                 public int compare(Listing l1, Listing l2)
                 {
-                    return Float.compare(getAvgPriceOfListing(l1), getAvgPriceOfListing(l2));
+                    return Float.compare(l2.getAvgPrice(), l1.getAvgPrice());
                 }
             };
-    }
-
-    private Float getAvgPriceOfListing(Listing l)
-    {
-        ArrayList<Availability> avails;
-        Float total = (float) 0;
-
-        avails = aDAO.getAvailabilitiesByListing(l.getListingID());
-
-        if (avails.isEmpty())
-            return (float) 0;
-
-        for (Availability a : avails)
-            total += a.getPricePerDay();
-
-        return total / avails.size();
     }
 }
