@@ -542,12 +542,34 @@ public class Driver
     {
         Float longitude;
         Float latitude;
+        Float distance = (float) 10;
+        String cmd;
         ArrayList<Listing> listings = new ArrayList<>();
 
         longitude = setLongitude();
         latitude = setLatitude();
 
-        // GET HERE
+        while (true)
+        {
+            System.out.println("What is the max distance you would like to search?");
+            System.out.println("Leave blank for default 10 KM");
+
+            try
+            {
+                cmd = r.readLine().trim();
+                if (cmd.isBlank())
+                    break;
+        
+                distance = Float.parseFloat(cmd);
+                break;
+            }
+            catch (NumberFormatException e)
+            {
+                System.out.println("Invalid number");
+            }
+        }
+
+        listings = listingDAO.getListingsByDistance(Globals.DEFAULT_N, longitude, latitude, distance);
 
         if (listings.isEmpty())
         {
@@ -567,7 +589,7 @@ public class Driver
 
         postal = setPostalCode();
 
-        // GET HERE
+        listingDAO.getListingsByPostalCode(Globals.DEFAULT_N, postal);
 
         if (listings.isEmpty())
         {
@@ -622,7 +644,7 @@ public class Driver
             }
         }
 
-        // GET HERE
+        listingDAO.getListingsByAvailabilities(Globals.DEFAULT_N, start, end);
 
         if (listings.isEmpty())
         {
