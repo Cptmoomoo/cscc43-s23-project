@@ -826,6 +826,8 @@ public class Driver
             System.out.println("No listings within the vicinity of this postal code.");
             return listings;
         }
+
+        printListings(listings);
     
         return listings;
     }
