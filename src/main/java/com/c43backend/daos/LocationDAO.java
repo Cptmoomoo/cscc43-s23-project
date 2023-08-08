@@ -8,15 +8,13 @@ import org.javatuples.Triplet;
 import com.c43backend.dbconnectionservice.DBConnectionService;
 
 import resources.entities.Location;
-import resources.enums.AmenityType;
 import resources.exceptions.DuplicateKeyException;
 import resources.exceptions.RunQueryException;
-import resources.utils.Globals;
 import resources.utils.Table;
 
 public class LocationDAO extends DAO
 {
-    private final Integer listingNumCols;
+    private final Integer numCols;
     private static final ArrayList<Triplet<String, Integer, Class<?>>> columnMetaData = new ArrayList<Triplet<String, Integer, Class<?>>>()
         {
             {
@@ -36,8 +34,8 @@ public class LocationDAO extends DAO
     public LocationDAO(DBConnectionService db) throws ClassNotFoundException, SQLException
     {
         super(db);
-        this.listingNumCols = columnMetaData.size();
-        this.table = new Table(listingNumCols, columnMetaData);
+        this.numCols = columnMetaData.size();
+        this.table = new Table(numCols, columnMetaData);
     }
 
 

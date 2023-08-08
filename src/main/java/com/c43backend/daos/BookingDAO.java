@@ -1,9 +1,7 @@
 package com.c43backend.daos;
 
 import java.sql.SQLException;
-import java.sql.Timestamp;
 import java.sql.Date;
-import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.UUID;
 import java.time.LocalDate;
@@ -15,14 +13,9 @@ import com.c43backend.dbconnectionservice.DBConnectionService;
 
 import resources.entities.Availability;
 import resources.entities.PaymentInfo;
-import resources.entities.User;
-import resources.enums.AmenityType;
-import resources.enums.UserType;
-import resources.entities.Listing;
 import resources.exceptions.DuplicateKeyException;
 import resources.exceptions.RunQueryException;
 import resources.relations.Booking;
-import resources.entities.Comment;
 import resources.utils.Globals;
 import resources.utils.Table;
 

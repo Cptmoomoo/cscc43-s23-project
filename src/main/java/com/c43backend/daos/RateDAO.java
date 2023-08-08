@@ -1,6 +1,5 @@
 package com.c43backend.daos;
 
-import java.sql.Date;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -9,10 +8,6 @@ import org.javatuples.Triplet;
 
 import com.c43backend.dbconnectionservice.DBConnectionService;
 
-import resources.entities.Availability;
-import resources.entities.Comment;
-import resources.entities.PaymentInfo;
-import resources.enums.CommentType;
 import resources.enums.RatingType;
 import resources.exceptions.DuplicateKeyException;
 import resources.exceptions.RunQueryException;

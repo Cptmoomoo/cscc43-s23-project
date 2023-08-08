@@ -19,9 +19,7 @@ import com.c43backend.dbconnectionservice.DBConnectionService;
 import resources.utils.Globals;
 import resources.utils.PasswordHasher;
 
-import resources.entities.Listing;
 import resources.enums.AmenityType;
-import resources.enums.ListingType;
 
 /**
  * Main app, initialized db and DAOs, then runs the main driver.
@@ -88,14 +86,8 @@ public class App
             a.add(AmenityType.AIR_CONDITIONING);
             a.add(AmenityType.KITCHEN);
             a.add(AmenityType.HEATER);
-
-            // Listing l = new Listing(ListingType.APARTMENT, (float) 50.00, a);
-
-            // if (!ldao.insertListing(l))
-            //     System.out.println("FAILED!");
             
             driver = new Driver(db, userDAO, listingDAO, locationDAO, availabilityDAO, bookingDAO, rateDAO, commentDAO, paymentDAO);
-
 
             driver.run();
 

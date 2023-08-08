@@ -9,7 +9,6 @@ import java.time.format.DateTimeParseException;
 import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.regex.Pattern;
 
 import org.javatuples.Pair;
 import org.javatuples.Quartet;
@@ -1509,28 +1508,6 @@ public class Driver
 
         
         return new Pair<>(chosen, base);
-    }
-
-    private ArrayList<Listing> bookByHost() throws IOException
-    {
-        ArrayList<Listing> listings;
-        String username;
-
-        System.out.println("Input host username");
-        username = r.readLine().trim().toLowerCase();
-    
-
-        listings = listingDAO.getNListingsByHost(Globals.DEFAULT_N, username);
-
-        if (listings.isEmpty())
-        {
-            System.out.println(String.format("No listings were found for host with username %s.", username));
-            return listings;
-        }
-
-        printListings(listings);
-
-        return listings;
     }
 
     private void deleteAccount() throws IOException
