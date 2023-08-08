@@ -237,21 +237,20 @@ public class ListingDAO extends DAO
         return listings;
     }
 
-    public ArrayList<Listing> getNListingsInVicinity(Integer n, Float longitude, Float latitude, Float distance, String sort_by, String order)
+    public ArrayList<Listing> getNListingsInVicinity(Integer n, Float longitude, Float latitude, Float distance)
     {
         String listingID;
         ArrayList<Listing> listings = new ArrayList<Listing>();
         ArrayList<AmenityType> amenities;
         Location location;
 
-        db.setPStatement("SELECT listings.Listing_id, listings.Listing_type, listings.Suite_number, listings.Is_active, listings.Max_guests, listings.Price_per_day, listings.Time_listed " +
-                         "FROM belongs_to NATURAL JOIN locations WHERE SQRT(POWER(belongs_to.Longitude - ?, 2) + POWER(belongs_to.Latitude - ?, 2)) <= ? ");
-                        //  + "ORDER BY ? ?");
-        db.setPStatementFloat(1, longitude);
-        db.setPStatementFloat(2, latitude);
-        db.setPStatementFloat(3, distance);
-        // db.setPStatementString(4, sort_by == "distance"? "SQRT(POWER(belongs_to.Longitude - ?, 2) + POWER(belongs_to.Latitude - ?, 2))" : "Listings.Price_per_day");
-        // db.setPStatementString(5, order == "ascending" ? "ASC" : "DESC");
+        db.setPStatement("SELECT listings.Listing_id, listings.Listing_type, listings.Suite_number, listings.Is_active, listings.Max_guests, listings.Price_per_day, listings.Time_listed, " +
+                         "FROM ((belongs_to NATURAL JOIN locations) NATURAL JOIN listings) WHERE " +
+                         "(111.111 * DEGREES(ACOS(LEAST(1.0, COS(RADIANS(locations.Latitude)) * COS(RADIANS(?)) * COS(RADIANS(locations.Longitude - ?)) + SIN(RADIANS(locations.Latitude)) * SIN(RADIANS(?)))))) <= ?");
+        db.setPStatementFloat(1, latitude);
+        db.setPStatementFloat(2, longitude);
+        db.setPStatementFloat(3, latitude);
+        db.setPStatementFloat(4, distance);
 
         if (!db.executeSetQueryReturnN(n, listingTable))
             throw new RunQueryException();
